@@ -1,0 +1,113 @@
+/* components/ConfigurationPanel.module.css */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-content {
+  display: flex;
+  flex: 1;
+}
+
+.main-content {
+  flex: 1;
+  padding: 1.5rem 2rem;
+  background-color: #fff;
+}
+
+.panelContainer {
+  display: flex;
+  flex-direction: column;
+  max-width: 1200px;
+  margin: 20px auto;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+}
+
+.titleBar {
+  background: #317ac3;
+  color: #ffffff;
+  padding: 12px 20px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.tabBar {
+  display: flex;
+  align-items: center;
+  background: #ecf0f1;
+  padding: 10px 20px;
+  border-bottom: 1px solid #ddd;
+  overflow-x: auto;
+}
+
+.tabButton {
+  background: transparent;
+  border: none;
+  color: #2c3e50;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  border-radius: 4px;
+  margin-right: 5px;
+  white-space: nowrap;
+}
+
+.tabButton:hover {
+  background: #d5dbdb;
+  color: #34495e;
+}
+
+.activeTab {
+  background: #3498db;
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
+}
+
+.contentArea {
+  flex: 1;
+  min-height: 500px;
+  background: #f5f6f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contentPlaceholder {
+  min-width: 90%;
+  color: #7f8c8d;
+  font-size: 16px;
+  font-weight: 400;
+  text-align: center;
+  padding: 20px;
+}
+
+.footer {
+  background: #ffffff;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid #e0e0e0;
+}
+
+.closeButton {
+  background: #e74c3c;
+  border: none;
+  color: #ffffff;
+  padding: 8px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.closeButton:hover {
+  background: #c0392b;
+}

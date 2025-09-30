@@ -1,0 +1,587 @@
+/* ProgressStepper.module.css */
+.progressContainer {
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Horizontal Phases */
+.horizontalPhases {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    padding: 0.5rem 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.horizontalPhases::-webkit-scrollbar {
+  display: none;
+}
+
+.phaseConnector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.5rem;
+  color: #d1d5db;
+  transition: all 0.2s ease;
+}
+
+.phaseConnector.connectorActive {
+  color: #6366f1;
+}
+
+.connectorIcon {
+  width: 16px;
+  height: 16px;
+}
+
+.phaseItem {
+  flex: 0 0 auto;
+  min-width: 120px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.75rem;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.phaseItem:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.phaseItem.phaseExpanded {
+  border-color: #6366f1;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+  background: #f8fafc;
+}
+
+.phaseItem.phaseCompleted {
+  border-color: #10b981;
+}
+
+.phaseItem.phaseInProgress {
+  border-color: #6366f1;
+}
+
+.phaseContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.phaseCircle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: white;
+  border: 2px solid #e5e7eb;
+  transition: all 0.2s ease;
+}
+
+.phaseCircle.completed {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.phaseCircle.inProgress {
+  background: #6366f1;
+  border-color: #6366f1;
+  color: white;
+}
+
+.phaseIcon {
+  width: 14px;
+  height: 14px;
+}
+
+.phaseNumber {
+  font-size: 0.9rem;
+}
+
+.phaseInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.phaseTitle {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.phaseStatus {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.4rem;
+  border-radius: 6px;
+  text-transform: uppercase;
+}
+
+.phaseStatus.en_cours {
+  background: #eef2ff;
+  color: #4338ca;
+}
+
+.phaseStatus.terminee {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.phaseStatus.en_attente {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+/* Steps Section */
+.stepsSection {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  animation: slideDown 0.2s ease;
+}
+
+.stepsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.stepsTitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.closeButton {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #6b7280;
+}
+
+.closeButton:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.closeIcon {
+  width: 16px;
+  height: 16px;
+}
+
+/* Horizontal Steps */
+.horizontalSteps {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  gap: 0;
+}
+
+.horizontalSteps::-webkit-scrollbar {
+  display: none;
+}
+
+.stepConnector {
+    width: 100%;
+    height: 2px;
+    background: #e5e7eb;
+    margin: 0 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.stepConnector.connectorActive {
+  background: #6366f1;
+}
+
+.stepItem {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  padding: 0.5rem;
+  min-width: 50px;
+}
+
+.stepItem:hover {
+  transform: translateY(-1px);
+}
+
+.stepCircle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: white;
+  border: 2px solid #e5e7eb;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.stepCircle.completed {
+  background: #10b981;
+  border-color: #10b981;
+  color: white;
+}
+
+.stepCircle.active {
+  background: #6366f1;
+  border-color: #6366f1;
+  color: white;
+  animation: pulse 2s infinite;
+}
+
+.stepIcon {
+  width: 12px;
+  height: 12px;
+}
+
+.stepNumber {
+  font-size: 0.8rem;
+}
+
+.stepTooltip {
+position: relative;
+    left: 35%;
+    transform: translateX(-50%);
+    background: #374151;
+    color: white;
+    padding: 0.4rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stepTooltip::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #374151;
+}
+
+.stepName {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.1rem;
+}
+
+.stepStatus {
+  font-size: 0.65rem;
+  opacity: 0.9;
+  text-transform: uppercase;
+}
+
+.stepStatus.en_cours {
+  color: #93c5fd;
+}
+
+.stepStatus.terminee {
+  color: #6ee7b7;
+}
+
+.stepStatus.en_attente {
+  color: #d1d5db;
+}
+
+.stepItem.stepLocked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.stepItem.stepLocked:hover {
+  transform: none;
+}
+
+/* Next Phase Button */
+.nextPhaseButton {
+  width: 100%;
+  padding: 0.6rem 1rem;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nextPhaseButton:hover:not(:disabled) {
+  background: #4f46e5;
+  transform: translateY(-1px);
+}
+
+.nextPhaseButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Animations */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .phaseItem {
+    min-width: 100px;
+    padding: 0.6rem;
+  }
+  
+  .phaseCircle {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .phaseTitle {
+    font-size: 0.75rem;
+  }
+  
+  .phaseStatus {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.3rem;
+  }
+  
+  .horizontalSteps {
+    gap: 0.5rem;
+  }
+  
+  .stepItem {
+    min-width: 45px;
+    padding: 0.4rem;
+  }
+  
+  .stepCircle {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .stepTooltip {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+    top: -40px;
+  }
+  
+  .stepConnector {
+    width: 20px;
+    margin: 0 0.3rem;
+  }
+  
+  .phaseConnector {
+    padding: 0 0.3rem;
+  }
+  
+  .connectorIcon {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .horizontalPhases {
+    gap: 0;
+  }
+  
+  .phaseItem {
+    min-width: 90px;
+    padding: 0.5rem;
+  }
+  
+  .phaseCircle {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .phaseTitle {
+    font-size: 0.7rem;
+  }
+  
+  .phaseNumber {
+    font-size: 0.8rem;
+  }
+  
+  .horizontalSteps {
+    gap: 0;
+  }
+  
+  .stepItem {
+    min-width: 40px;
+    padding: 0.3rem;
+  }
+  
+  .stepCircle {
+    width: 22px;
+    height: 22px;
+  }
+  
+  .stepNumber {
+    font-size: 0.7rem;
+  }
+  
+  .stepConnector {
+    width: 15px;
+    margin: 0 0.2rem;
+  }
+  
+  .phaseConnector {
+    padding: 0 0.2rem;
+  }
+  
+  .connectorIcon {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+/* ProgressStepper.module.css additions */
+
+.dataLoadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.dataLoadingContent {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.dataLoadingSpinner {
+  animation: spin 1s linear infinite;
+  font-size: 1.5rem;
+  color: #007bff;
+}
+
+.dataLoadingText h4 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.dataReadinessStatus {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.875rem;
+}
+
+.ready {
+  color: #28a745;
+  font-weight: 500;
+}
+
+.pending {
+  color: #6c757d;
+}
+
+.dataTimeoutWarning {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #dc3545;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.noDataContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin: 1rem 0;
+}
+
+.noDataContent {
+  text-align: center;
+  color: #6c757d;
+}
+
+.noDataIcon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #dc3545;
+}
+
+.phaseLocked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.stepLocked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

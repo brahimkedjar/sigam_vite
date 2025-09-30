@@ -1,0 +1,38 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vite/client", "react", "react-dom", "node"],
+    "jsx": "react-jsx",
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["*"],
+      "next/router": ["src/next-compat/router.tsx"],
+      "next/link": ["src/next-compat/link.tsx"],
+      "next/image": ["src/next-compat/image.tsx"],
+      "next/head": ["src/next-compat/head.tsx"],
+      "next": ["src/next-compat/next.ts"],
+      "next/app": ["src/next-compat/next-app.ts"],
+      "next/dynamic": ["src/next-compat/dynamic.tsx"]
+    },
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": false,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "esModuleInterop": true,
+
+    /* Linting */
+    "strict": true,
+    
+    "noFallthroughCasesInSwitch": true,
+    
+  },
+  "include": ["src", "pages", "components", "utils", "styles", "lib", "types"],
+  "exclude": ["pages/_app.tsx"]
+}

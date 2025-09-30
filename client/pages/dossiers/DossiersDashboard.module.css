@@ -1,0 +1,253 @@
+/* Light, clean, and smooth visuals */
+.container {
+  padding: 24px;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+}
+
+.search {
+  height: 36px;
+  min-width: 260px;
+  padding: 6px 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  color: #0f172a;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+
+
+.panel {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.panelTitle {
+  margin: 0 0 10px;
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.journalList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow: auto;
+}
+
+.journalItem {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.journalTitle {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.journalMeta {
+  color: #475569;
+  font-size: 12px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.statCard {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.statValue {
+  font-size: 20px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.statLabel {
+  color: #475569;
+  font-size: 12px;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 540px;
+  overflow: auto;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr 0.9fr 0.7fr 0.7fr 0.8fr;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.rowMain {
+  display: flex;
+  flex-direction: column;
+}
+
+.demandeCode {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.detenteur {
+  color: #475569;
+  font-size: 12px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+}
+
+.ok { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
+.warn { background: #fff7ed; color: #9a3412; border-color: #fed7aa; }
+.error { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+
+.countdown {
+  font-variant-numeric: tabular-nums;
+  color: #0f172a;
+}
+
+.links {
+  display: flex;
+  gap: 8px;
+}
+
+.linkBtn {
+  height: 30px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 8px;
+  padding: 0 10px;
+}
+
+.linkBtnPrimary {
+  background: #2563eb;
+  border-color: #1d4ed8;
+  color: #ffffff;
+}
+
+.empty {
+  padding: 40px;
+  text-align: center;
+  color: #64748b;
+}
+
+/* Table styles */
+.tableWrapper {
+  overflow: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #ffffff;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  background: #f1f5f9;
+  color: #0f172a;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  padding: 10px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.table tbody td {
+  padding: 12px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #0f172a;
+  vertical-align: middle;
+  font-size: 13px;
+}
+
+.table tbody tr:hover td {
+  background: #f8fafc;
+}
+
+.code {
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.subtle {
+  color: #475569;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.nowrap { white-space: nowrap; }
+
+.actions {
+  display: inline-flex;
+  gap: 8px;
+}
