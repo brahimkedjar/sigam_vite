@@ -33,7 +33,8 @@ export default function Navbar() {
 
   useEffect(() => {
     fetchNotifications();
-    setupSSE();
+    const cleanup = setupSSE();
+    return cleanup;
   }, []);
 
   const fetchNotifications = async () => {
@@ -53,26 +54,35 @@ export default function Navbar() {
 
 
   const setupSSE = () => {
-    const eventSource = new EventSource(`${apiURL}/notifications/sse`);
+    let reconnectTimer: number | undefined;
+    const es = new EventSource(`${apiURL}/notifications/sse`);
 
-    eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      setUnreadCount(data.count);
+    es.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (typeof data?.count === 'number') {
+          setUnreadCount(data.count);
+        }
+      } catch {}
 
-      // If notifications panel is open, refresh the list
       if (isNotificationsOpen) {
         fetchNotifications();
       }
     };
 
-    eventSource.onerror = (error) => {
+    es.onerror = (error) => {
       console.error('SSE connection error:', error);
-      eventSource.close();
-      // Reconnect after 5 seconds
-      setTimeout(setupSSE, 5000);
+      try { es.close(); } catch {}
+      // Lazy reconnect
+      reconnectTimer = window.setTimeout(() => {
+        setupSSE();
+      }, 5000);
     };
 
-    return () => eventSource.close();
+    return () => {
+      if (reconnectTimer) window.clearTimeout(reconnectTimer);
+      try { es.close(); } catch {}
+    };
   };
 
   const markAsRead = async (notificationId: number) => {

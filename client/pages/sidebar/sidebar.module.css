@@ -11,6 +11,9 @@
   z-index: 100;
   transition: all 0.3s ease;
   transform: translateX(0);
+  /* Keep sidebar pinned and full-height so footer can stick to bottom */
+  position: sticky;
+  height: 100vh;
 }
 
 .sidebar.collapsed {
@@ -128,7 +131,7 @@
 
 /* Navigation Menu */
 .sidebarNav {
-  overflow-y: auto;
+  /* Keep content anchored at the top; no scrolling inside */
   padding: 20px 0;
   transition: all 0.3s ease;
 }
@@ -221,6 +224,8 @@
   padding: 20px;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   transition: all 0.3s ease;
+  /* Push footer to the bottom of the sidebar */
+  margin-top: auto;
 }
 
 .sidebar.collapsed .sidebarFooter {

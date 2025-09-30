@@ -78,12 +78,12 @@ function AppShell() {
     <LoadingProvider>
       <StepGuardProvider>
         <ConfigProvider componentSize="small">
-          <GlobalSpinner />
           <ToastContainer theme="colored" />
           <GlobalRouteLoading />
           <NavigatorBinder />
           <RouteEventsBridge />
           <ClientLayout>
+            <GlobalSpinner />
             <RemountOnRouteChange>
               <AutoRoutes />
             </RemountOnRouteChange>
