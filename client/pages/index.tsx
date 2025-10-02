@@ -7,13 +7,14 @@ import Image from 'next/image';
 import styles from './login.module.css';
 import Link from 'next/link';
 import router from 'next/router';
+import { useLoading } from '@/components/globalspinner/LoadingContext';
 
 export default function LoginPage() {
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { startLoading, stopLoading, isLoading } = useLoading();
   const login = useAuthStore((s) => s.login); 
   const [error, setError] = useState<string | null>(null);
   const auth = useAuthStore.getState().auth;
@@ -28,7 +29,7 @@ export default function LoginPage() {
     }
   });
   const handleLogin = async () => {
-    setIsLoading(true);
+    startLoading();
     setError(null);
     
     try {
@@ -50,7 +51,7 @@ export default function LoginPage() {
       console.error('Login error:', err);
       setError('Email ou mot de passe invalide');
     } finally {
-      setIsLoading(false);
+      stopLoading();
     }
   };
 
@@ -62,18 +63,7 @@ export default function LoginPage() {
 
   return (
     <div className={styles.loginContainer}>
-      {/* Full-page loading overlay */}
-      {isLoading && (
-        <div className={styles.loadingOverlay}>
-          <div className={styles.quantumSpinner}>
-            <div className={styles.quantumDot}></div>
-            <div className={styles.quantumDot}></div>
-            <div className={styles.quantumDot}></div>
-            <div className={styles.quantumDot}></div>
-          </div>
-          <div className={styles.loadingText}>Authentification en cours...</div>
-        </div>
-      )}
+      {/* GlobalSpinner is handled at App level via LoadingProvider */}
 
       {/* Left side - Branding/Illustration */}
       <div className={`${styles.brandSection} ${isLoading ? styles.blurred : ''}`}>

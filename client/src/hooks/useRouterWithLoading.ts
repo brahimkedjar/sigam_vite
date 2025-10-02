@@ -3,6 +3,9 @@ import { useRouter } from 'next/router';
 import { useLoading } from '@/components/globalspinner/LoadingContext';
 import { useEffect } from 'react';
 
+const EVENT_START = 'routeChangeStart';
+const EVENT_COMPLETE = 'routeChangeComplete';
+
 export const useRouterWithLoading = () => {
   const router = useRouter();
   const { startLoading, stopLoading } = useLoading();
@@ -30,21 +33,20 @@ export const useRouterWithLoading = () => {
   // Return enhanced router with loading-aware methods
   return {
     ...router,
-    push: async (url: string) => {
-      startLoading();
+    push: (url: string) => {
+      // Emit a global start event so GlobalRouteLoading can show the spinner
       try {
-        await router.push(url);
-      } finally {
-        stopLoading();
-      }
+        window.dispatchEvent(new CustomEvent(EVENT_START, { detail: { url } }));
+      } catch {}
+      // Wait for the RouteEventsBridge to emit COMPLETE on real navigation
+      // No premature stop here; GlobalRouteLoading handles stop.
+      router.push(url);
     },
-    replace: async (url: string) => {
-      startLoading();
+    replace: (url: string) => {
       try {
-        await router.replace(url);
-      } finally {
-        stopLoading();
-      }
+        window.dispatchEvent(new CustomEvent(EVENT_START, { detail: { url } }));
+      } catch {}
+      router.replace(url);
     },
   };
 };

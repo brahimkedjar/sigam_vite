@@ -1,6 +1,6 @@
 // components/GlobalSpinner.tsx
 import { Box, Backdrop, keyframes, styled } from '@mui/material';
-import { useLoading } from './LoadingContext';
+import { useLoading } from '@/components/globalspinner/LoadingContext';
 
 // Letter charging animations
 const letterGlow = keyframes`

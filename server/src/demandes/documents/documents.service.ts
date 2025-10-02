@@ -484,15 +484,20 @@ export class DocumentsService {
           },
         });
 
-        if (demande.id_proc) {
-          await prisma.procedure.update({
-            where: { id_proc: demande.id_proc },
-            data: {
-              statut_proc: StatutProcedure.TERMINEE,
-              date_fin_proc: now,
-            },
-          });
-        }
+        // Do not auto-close the whole procedure when saving documents
+        // Saving an étape should only update the step's status, not the procedure's.
+        // If a rejection needs to close the procedure, call the explicit
+        // procedure termination endpoint or updateDemandeStatus instead.
+        // Keeping the procedure open here avoids premature TERMINEE status.
+        // if (demande.id_proc) {
+        //   await prisma.procedure.update({
+        //     where: { id_proc: demande.id_proc },
+        //     data: {
+        //       statut_proc: StatutProcedure.TERMINEE,
+        //       date_fin_proc: now,
+        //     },
+        //   });
+        // }
       }
 
       const deadlines = this.computeDeadlines(summary, {
