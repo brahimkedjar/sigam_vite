@@ -1,6 +1,6 @@
 ﻿'use client';
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { FiPlus, FiTrash2, FiCheckCircle, FiAlertTriangle, FiMapPin, FiEdit2, FiRefreshCw, FiChevronLeft, FiSave, FiDownload, FiUpload, FiChevronRight } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiCheckCircle, FiAlertTriangle, FiMapPin, FiEdit2, FiRefreshCw, FiChevronLeft, FiSave, FiDownload, FiUpload, FiChevronRight, FiLayers } from 'react-icons/fi';
 import * as turf from '@turf/turf';
 import styles from './cadastre.module.css';
 import { useRouter } from 'next/router';
@@ -18,7 +18,7 @@ import dynamic from 'next/dynamic';
 import { Phase, Procedure, ProcedureEtape, ProcedurePhase, StatutProcedure } from '@/src/types/procedure';
 import proj4 from 'proj4';
 
-const ArcGISMap = dynamic(() => import('@/components/map/ArcGISMap'), { ssr: false });
+const ArcGISMap = dynamic(() => import('@/components/arcgismap/ArcgisMap'), { ssr: false });
 
 export type CoordinateSystem = 'WGS84' | 'UTM' | 'LAMBERT' | 'MERCATOR';
 
@@ -57,6 +57,7 @@ export default function CadastrePage() {
   const [comment, setComment] = useState('');
   const [overlapDetected, setOverlapDetected] = useState(false);
   const [overlapPermits, setOverlapPermits] = useState<string[]>([]);
+  const [miningTitleOverlaps, setMiningTitleOverlaps] = useState<any[]>([]);
   const searchParams = useSearchParams();
   const idProcStr = searchParams?.get('id');
   const idProc = idProcStr ? parseInt(idProcStr, 10) : undefined;
@@ -88,11 +89,11 @@ export default function CadastrePage() {
   const [refetchTrigger, setRefetchTrigger] = useState(0);
   const [hasActivatedStep5, setHasActivatedStep5] = useState(false);
   const [coordinateSystem, setCoordinateSystem] = useState<CoordinateSystem>('UTM');
-  const [utmZone, setUtmZone] = useState<number>(31); // Default UTM zone
-  const [utmHemisphere, setUtmHemisphere] = useState<'N'>('N'); // Default Northern hemisphere
+  const [utmZone, setUtmZone] = useState<number>(31);
+  const [utmHemisphere, setUtmHemisphere] = useState<'N'>('N');
   const [activatedSteps, setActivatedSteps] = useState<Set<number>>(new Set());
-
-  const router = useRouter(); // Pages router hook
+  const [showLayerPanel, setShowLayerPanel] = useState(false);
+  const router = useRouter();
 
   const fetchProcedureData = async () => {
     if (!idProc) return;
@@ -202,162 +203,36 @@ export default function CadastrePage() {
 
   const [existingPolygons, setExistingPolygons] = useState<{idProc: number; num_proc: string; coordinates: [number, number][]}[]>([]);
 
-  useEffect(() => {
-    const fetchExisting = async () => {
-      try {
-        const res = await axios.get(`${apiURL}/coordinates/existing`);
-        const polygons = res.data.map((poly: any) => ({
-          idProc: poly.idProc,
-          num_proc: poly.num_proc,
-          coordinates: poly.coordinates.map((coord: [number, number]) => [
-            coord[0],
-            coord[1]
-          ])
-        }));
-        setExistingPolygons(polygons);
-      } catch (err) {
-        console.error('Failed to fetch polygons', err);
-        setExistingPolygons([]);
-        setError('Failed to fetch existing polygons');
-        setTimeout(() => setError(null), 4000);
-      }
-    };
-    fetchExisting();
-  }, [apiURL]);
-
-  useEffect(() => {
-    if (!idProc) return;
-    const fetchCoordinates = async () => {
-      try {
-        try {
-          const provRes = await axios.get(`${apiURL}/inscription-provisoire/procedure/${idProc}`);
-          const rec = provRes.data;
-          const pts = Array.isArray(rec?.points) ? rec.points : [];
-          const mappedPoints = pts.map((p: any, idx: number) => ({
-            id: idx + 1,
-            idTitre: 1007,
-            h: 32,
-            x: parseFloat(p.x),
-            y: parseFloat(p.y),
-            system: (p.system as CoordinateSystem) || 'UTM',
-            zone: p.zone,
-            hemisphere: p.hemisphere,
-          }));
-          if (mappedPoints.length > 0) {
-            setPoints(mappedPoints);
-            if (rec?.superficie_declaree != null) setSuperficieDeclaree(rec.superficie_declaree);
-            setCoordinateSystem(mappedPoints[0].system);
-            if (mappedPoints[0].zone) setUtmZone(mappedPoints[0].zone as any);
-            if (mappedPoints[0].hemisphere) setUtmHemisphere(mappedPoints[0].hemisphere as any);
-          } else {
-            throw new Error('No provisional points');
-          }
-        } catch {
-          const res = await axios.get(`${apiURL}/coordinates/procedure/${idProc}`);
-          const coords = res.data;
-          const safeCoords = (coords ?? []).filter((c: any) => {
-            const point = c?.coordonnee;
-            return typeof point?.x !== 'undefined' && typeof point?.y !== 'undefined';
-          });
-          const mappedPoints = safeCoords.map((c: any) => {
-            const point = c.coordonnee;
-            return {
-              id: point.id,
-              idTitre: point.idTitre || 1007,
-              h: point.h || 32,
-              x: point.x,
-              y: point.y,
-              system: point.system || 'UTM',
-              zone: point.system === 'UTM' ? (point.zone || utmZone) : undefined,
-              hemisphere: point.system === 'UTM' ? (point.hemisphere || utmHemisphere) : undefined
-            };
-          });
-          setPoints(mappedPoints);
-          if (mappedPoints.length > 0 && mappedPoints[0].system) {
-            setCoordinateSystem(mappedPoints[0].system);
-            if (mappedPoints[0].zone) setUtmZone(mappedPoints[0].zone);
-            if (mappedPoints[0].hemisphere) setUtmHemisphere(mappedPoints[0].hemisphere);
-          }
-        }
-      } catch (err) {
-        console.error('? Failed to load coordinates:', err);
-        setError('Failed to load coordinates');
-        setTimeout(() => setError(null), 4000);
-      }
-    };
-    fetchCoordinates();
-  }, [idProc, utmZone, utmHemisphere]);
-
-  // Load verification flags and declared area when demande is known
-  useEffect(() => {
-    const run = async () => {
-      if (!idDemande) return;
-      try {
-        const [verRes, provRes] = await Promise.allSettled([
-          axios.get(`${apiURL}/verification-geo/demande/${idDemande}`),
-          axios.get(`${apiURL}/inscription-provisoire/demande/${idDemande}`),
-        ]);
-        if (verRes.status === 'fulfilled' && verRes.value?.data) {
-          const d = verRes.value.data as any;
-          if (typeof d.sit_geo_ok === 'boolean') setSitGeoOk(d.sit_geo_ok);
-          if (typeof d.empiet_ok === 'boolean') setEmpietOk(d.empiet_ok);
-          if (typeof d.geom_ok === 'boolean') setGeomOk(d.geom_ok);
-          if (typeof d.superf_ok === 'boolean') setSuperfOk(d.superf_ok);
-          if (typeof d.superficie_cadastrale === 'number') setSuperficieCadastrale(d.superficie_cadastrale);
-        }
-        if (provRes.status === 'fulfilled' && provRes.value?.data) {
-          const p = provRes.value.data as any;
-          if (typeof p.superficie_declaree === 'number') setSuperficieDeclaree(p.superficie_declaree);
-        }
-      } catch (e) {
-        // ignore
-      }
-    };
-    run();
-  }, [idDemande, apiURL]);
-
-  const saveCoordinatesToBackend = async () => {
-    if (!points || points.length < 3) {
-      setError("Le polygone doit contenir au moins 3 points.");
+  // Add new function to check mining title overlaps
+  const checkMiningTitleOverlaps = async () => {
+    if (!mapRef.current || points.length < 3) {
+      setError("Dessinez d'abord un polygone valide");
       setTimeout(() => setError(null), 4000);
       return;
     }
+
     try {
-      await axios.post(`${apiURL}/coordinates/update`, {
-        id_proc: idProc,
-        id_zone_interdite: null,
-        points,
-        superficie
-      });
-      setSuccess("✅ Coordonnées sauvegardées avec succés !");
-      setTimeout(() => setSuccess(null), 4000);
-    } catch (err) {
-      console.error("❌ Erreur lors de la sauvegarde des coordonnées:", err);
-      setError("❌ échec de la sauvegarde des coordonnées.");
+      const overlappingTitles = await mapRef.current.queryMiningTitles();
+      setMiningTitleOverlaps(overlappingTitles);
+      
+      if (overlappingTitles.length > 0) {
+        setOverlapDetected(true);
+        setOverlapPermits(overlappingTitles.map((title: { NOM: any; OBJECTID: any; }) => title.NOM || title.OBJECTID || 'Titre minier inconnu'));
+        setError(`Chevauchement détecté avec ${overlappingTitles.length} titre(s) minier(s) ANAM`);
+        setTimeout(() => setError(null), 5000);
+      } else {
+        setOverlapDetected(false);
+        setSuccess('Aucun chevauchement avec les titres miniers ANAM');
+        setTimeout(() => setSuccess(null), 3000);
+      }
+    } catch (error) {
+      console.error('Error checking mining title overlaps:', error);
+      setError('Erreur lors de la vérification des titres miniers');
       setTimeout(() => setError(null), 4000);
     }
   };
 
-  // Fixed useEffect - removed router.isReady and router.query.id
-  useEffect(() => {
-    if (!idProc) return; // Use idProc from searchParams instead
-    
-    const fetchDemande = async () => {
-      try {
-        const res = await axios.get(`${apiURL}/api/procedures/${idProc}/demande`);
-        setIdDemande(res.data.id_demande);
-        setStatutProc(res.data.procedure.statut_proc);
-      } catch (error) {
-        console.error('❌ Failed to fetch demande:', error);
-        setError('Failed to fetch demande data');
-        setTimeout(() => setError(null), 4000);
-      }
-    };
-    
-    fetchDemande();
-  }, [idProc, apiURL]);
-
-  const handleSaveEtape = async () => {
+   const handleSaveEtape = async () => {
     if (!idProc) {
       setError("ID procédure manquant !");
       setTimeout(() => setError(null), 4000);
@@ -534,51 +409,21 @@ export default function CadastrePage() {
     })));
   };
 
-  const checkForOverlaps = useCallback(() => {
-    const validPoints = points.filter(p => !isNaN(p.x) && !isNaN(p.y) && validateCoordinate(p));
-    if (validPoints.length < 3) return;
-    const coordinates = validPoints.map(p => [p.x, p.y]);
-    const first = coordinates[0];
-    const last = coordinates[coordinates.length - 1];
-    if (first[0] !== last[0] || first[1] !== last[1]) {
-      coordinates.push([...first]);
-    }
-    const newPoly = turf.polygon([coordinates]);
-    const overlappingSites: string[] = [];
-    existingPolygons.forEach(({ num_proc, coordinates: existingCoords }) => {
-      try {
-        if (!existingCoords || !Array.isArray(existingCoords)) {
-          console.warn('Invalid existing coordinates for:', num_proc);
-          return;
-        }
-        const existingPoly = turf.polygon([existingCoords]);
-        const isSame = turf.booleanEqual(newPoly, existingPoly);
-        if (isSame) return;
-        const overlap = turf.booleanOverlap(newPoly, existingPoly) || turf.booleanIntersects(newPoly, existingPoly);
-        if (overlap) {
-          overlappingSites.push(num_proc);
-        }
-      } catch (e) {
-        console.warn("Invalid polygon skipped:", num_proc, e);
-      }
-    });
-    setOverlapDetected(overlappingSites.length > 0);
-    setOverlapPermits(overlappingSites);
-  }, [points, existingPolygons]);
-
-  const handleMapClick = useCallback((x: number, y: number) => {
-    if (isDrawing) {
-      addPoint({ x, y });
-    }
-  }, [isDrawing, addPoint]);
-
-  useEffect(() => {
-    calculateArea();
-    checkForOverlaps();
-  }, [points, calculateArea, checkForOverlaps]);
-
   const polygonValid = points.length >= 4 && hasUniqueCoords;
   const allFilled = points.every(p => !isNaN(p.x) && !isNaN(p.y) && !isNaN(p.h));
+
+ const handleNext = () => {
+    router.push(`/demande/step6/page6?id=${idProc}`);
+  };
+
+  const handleBack = () => {
+    if (!idProc) {
+      setError("ID procédure manquant");
+      setTimeout(() => setError(null), 4000);
+      return;
+    }
+    router.push(`/demande/step4/page4?id=${idProc}`);
+  };
 
   const exportData = () => {
     const data = { points, superficie, permitData, createdAt: new Date().toISOString() };
@@ -622,19 +467,74 @@ export default function CadastrePage() {
     reader.readAsText(file);
   };
 
-  const handleNext = () => {
-    router.push(`/demande/step6/page6?id=${idProc}`);
-  };
-
-  const handleBack = () => {
-    if (!idProc) {
-      setError("ID procédure manquant");
-      setTimeout(() => setError(null), 4000);
-      return;
+  const handleMapClick = useCallback((x: number, y: number) => {
+    if (isDrawing) {
+      addPoint({ x, y });
     }
-    router.push(`/demande/step4/page4?id=${idProc}`);
+  }, [isDrawing, addPoint]);
+
+  // Update the existing checkForOverlaps function to include mining titles
+  const checkForOverlaps = useCallback(() => {
+    const validPoints = points.filter(p => !isNaN(p.x) && !isNaN(p.y) && validateCoordinate(p));
+    if (validPoints.length < 3) return;
+    const coordinates = validPoints.map(p => [p.x, p.y]);
+    const first = coordinates[0];
+    const last = coordinates[coordinates.length - 1];
+    if (first[0] !== last[0] || first[1] !== last[1]) {
+      coordinates.push([...first]);
+    }
+    const newPoly = turf.polygon([coordinates]);
+    const overlappingSites: string[] = [];
+    existingPolygons.forEach(({ num_proc, coordinates: existingCoords }) => {
+      try {
+        if (!existingCoords || !Array.isArray(existingCoords)) {
+          console.warn('Invalid existing coordinates for:', num_proc);
+          return;
+        }
+        const existingPoly = turf.polygon([existingCoords]);
+        const isSame = turf.booleanEqual(newPoly, existingPoly);
+        if (isSame) return;
+        const overlap = turf.booleanOverlap(newPoly, existingPoly) || turf.booleanIntersects(newPoly, existingPoly);
+        if (overlap) {
+          overlappingSites.push(num_proc);
+        }
+      } catch (e) {
+        console.warn("Invalid polygon skipped:", num_proc, e);
+      }
+    });
+    
+    // Include mining title overlaps
+    const allOverlaps = [...overlappingSites, ...miningTitleOverlaps.map(title => title.NOM || 'Titre minier')];
+    setOverlapDetected(allOverlaps.length > 0);
+    setOverlapPermits(allOverlaps);
+  }, [points, existingPolygons, miningTitleOverlaps]);
+
+  // Update useEffect to include mining title checks
+  useEffect(() => {
+    calculateArea();
+    checkForOverlaps();
+    
+    // Auto-check mining titles when polygon is complete
+    if (points.length >= 3 && isPolygonValid) {
+      setTimeout(() => {
+        checkMiningTitleOverlaps();
+      }, 1000);
+    }
+  }, [points, calculateArea, checkForOverlaps, isPolygonValid]);
+
+  // Add function to calculate area using ArcGIS
+  const calculateAreaWithArcGIS = () => {
+    if (mapRef.current) {
+      const area = mapRef.current.calculateArea();
+      setSuperficie(parseFloat(area.toFixed(2)));
+      setSuccess('Superficie calculée avec ArcGIS');
+      setTimeout(() => setSuccess(null), 3000);
+    } else {
+      calculateArea(); // fallback to existing method
+    }
   };
 
+  // Update the map section in your return statement
   return (
     <div className={styles['app-container']}>
       <Navbar />
@@ -658,88 +558,109 @@ export default function CadastrePage() {
             )}
             <div className={styles['cadastre-app']}>
               <header className={styles['app-header']}>
-                <h1>Définir le périmétre du permis minier</h1>
-                <p className={styles['subtitle']}>Délimitation géographique et vérification des empiétements territoriaux</p>
+                <h1>Définir le périmètre du permis minier</h1>
+                <p className={styles['subtitle']}>Délimitation géographique et vérification des empiétements territoriaux avec ArcGIS Enterprise ANAM</p>
               </header>
               <div className={styles['app-layout']}>
+                {/* UPDATED MAP SECTION */}
                 <section className={styles['map-container']}>
                   <div className={styles['map-header']}>
                     <h2>
-                      <FiMapPin /> Carte interactive
+                      <FiMapPin /> Carte ANAM ArcGIS Enterprise
                       <span className={styles['badge']}>{points.length} points</span>
                     </h2>
-                    <div className={styles['coordinate-system-controls']}>
-                      <select
-                        value={coordinateSystem}
-                        onChange={(e) => handleCoordinateSystemChange(e.target.value as CoordinateSystem)}
-                        className={styles['system-select']}
-                      >
-                        <option value="WGS84">WGS84 (Lat/Lon)</option>
-                        <option value="UTM">UTM</option>
-                        <option value="LAMBERT">Lambert</option>
-                        <option value="MERCATOR">Mercator</option>
-                      </select>
-                      {coordinateSystem === 'UTM' && (
-                        <>
-                          <select
-                            value={utmZone}
-                            onChange={(e) => setUtmZone(parseInt(e.target.value))}
-                            className={styles['zone-select']}
-                          >
-                            {Array.from({ length: 4 }, (_, i) => i + 29).map(zone => (
-                              <option key={zone} value={zone}>{zone}</option>
-                            ))}
-                          </select>
-                          <select
-                            value={utmHemisphere}
-                            onChange={(e) => setUtmHemisphere(e.target.value as 'N')}
-                            className={styles['hemisphere-select']}
-                          >
-                            <option value="N">Nord (N)</option>
-                          </select>
-                        </>
-                      )}
-                    </div>
-                    <div className={styles['map-controls']}>
-                      <button
-                        className={`${styles['map-btn']} ${isDrawing ? styles['active'] : ''}`}
-                        onClick={() => isCadastre && setIsDrawing(!isDrawing)}
-                        //disabled={!isCadastre || statutProc === 'TERMINEE' || !statutProc}
-                      >
-                        <FiEdit2 /> {isDrawing ? 'Mode dessin actif' : 'Dessiner un polygone'}
-                      </button>
-                      <button className={styles['map-btn']} onClick={calculateArea}
-                      // disabled={!isCadastre || statutProc === 'TERMINEE' || !statutProc}
-                       >
-                        <FiRefreshCw /> Calculer superficie
-                      </button>
+                    <div className={styles['map-controls-group']}>
+                      <div className={styles['coordinate-system-controls']}>
+                        <select
+                          value={coordinateSystem}
+                          onChange={(e) => handleCoordinateSystemChange(e.target.value as CoordinateSystem)}
+                          className={styles['system-select']}
+                        >
+                          <option value="WGS84">WGS84 (Lat/Lon)</option>
+                          <option value="UTM">UTM</option>
+                          <option value="LAMBERT">Lambert</option>
+                          <option value="MERCATOR">Mercator</option>
+                        </select>
+                        {coordinateSystem === 'UTM' && (
+                          <>
+                            <select
+                              value={utmZone}
+                              onChange={(e) => setUtmZone(parseInt(e.target.value))}
+                              className={styles['zone-select']}
+                            >
+                              {Array.from({ length: 4 }, (_, i) => i + 29).map(zone => (
+                                <option key={zone} value={zone}>{zone}</option>
+                              ))}
+                            </select>
+                            <select
+                              value={utmHemisphere}
+                              onChange={(e) => setUtmHemisphere(e.target.value as 'N')}
+                              className={styles['hemisphere-select']}
+                            >
+                              <option value="N">Nord (N)</option>
+                            </select>
+                          </>
+                        )}
+                      </div>
+                      <div className={styles['map-controls']}>
+                        <button
+                          className={`${styles['map-btn']} ${isDrawing ? styles['active'] : ''}`}
+                          onClick={() => isCadastre && setIsDrawing(!isDrawing)}
+                        >
+                          <FiEdit2 /> {isDrawing ? 'Dessin Actif' : 'Dessiner'}
+                        </button>
+                        <button 
+                          className={styles['map-btn']} 
+                          onClick={calculateAreaWithArcGIS}
+                        >
+                          <FiRefreshCw /> Calculer
+                        </button>
+                        <button 
+                          className={styles['map-btn']}
+                          onClick={checkMiningTitleOverlaps}
+                          disabled={points.length < 3}
+                        >
+                          <FiAlertTriangle /> Vérifier Chevauchements
+                        </button>
+                        <button 
+                          className={styles['map-btn']}
+                          onClick={() => setShowLayerPanel(!showLayerPanel)}
+                        >
+                          <FiLayers /> Couches
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <ArcGISMap
-                    ref={mapRef}
-                    points={points}
-                    superficie={superficie}
-                    isDrawing={isDrawing}
-                    onMapClick={handleMapClick}
-                    onPolygonChange={(polygon) => {
-                      if (polygon && polygon.length >= 3) {
-                        setPoints(polygon.map((coord, index) => ({
-                          id: generateId(),
-                          idTitre: points.length > 0 ? points[0].idTitre : 1007,
-                          h: points.length > 0 ? points[0].h : 32,
-                          x: coord[0],
-                          y: coord[1],
-                          system: coordinateSystem,
-                          zone: coordinateSystem === "UTM" ? utmZone : undefined,
-                          hemisphere: coordinateSystem === "UTM" ? utmHemisphere : undefined
-                        })));
-                      }
-                    }}
-                    existingPolygons={existingPolygons}
-                    coordinateSystem={coordinateSystem}
-                    utmZone={utmZone}
-                    utmHemisphere={utmHemisphere}
-                  />
+                  
+                  {/* ArcGIS Map with Enterprise Services */}
+                  <div className={styles['map-wrapper']}>
+                    <ArcGISMap
+                      ref={mapRef}
+                      points={points}
+                      superficie={superficie}
+                      isDrawing={isDrawing}
+                      onMapClick={handleMapClick}
+                      onPolygonChange={(polygon) => {
+                        if (polygon && polygon.length >= 3) {
+                          setPoints(polygon.map((coord, index) => ({
+                            id: generateId(),
+                            idTitre: points.length > 0 ? points[0].idTitre : 1007,
+                            h: points.length > 0 ? points[0].h : 32,
+                            x: coord[0],
+                            y: coord[1],
+                            system: coordinateSystem,
+                            zone: coordinateSystem === "UTM" ? utmZone : undefined,
+                            hemisphere: coordinateSystem === "UTM" ? utmHemisphere : undefined
+                          })));
+                        }
+                      }}
+                      existingPolygons={existingPolygons}
+                      coordinateSystem={coordinateSystem}
+                      utmZone={utmZone}
+                      utmHemisphere={utmHemisphere}
+                    />
+                  </div>
+                  
                   <div className={styles['map-footer']}>
                     <div className={styles['area-display']}>
                       <span>Superficie calculée:</span>
@@ -751,28 +672,31 @@ export default function CadastrePage() {
                           <strong> {superficieDeclaree.toLocaleString()} ha</strong>
                         </>
                       )}
+                      
+                      {miningTitleOverlaps.length > 0 && (
+                        <>
+                          <span style={{ marginLeft: 16 }}> | Chevauchements:</span>
+                          <strong style={{ color: '#dc2626' }}> {miningTitleOverlaps.length} titre(s) minier(s)</strong>
+                        </>
+                      )}
                     </div>
                     <div className={styles['map-export']}>
-                      <button className={styles['export-btn']} onClick={exportData}
-                      //disabled={statutProc === 'TERMINEE' || !statutProc}
-                       >
+                      <button className={styles['export-btn']} onClick={exportData}>
                         <FiDownload /> Exporter
                       </button>
                       <label className={styles['import-btn']}>
                         <FiUpload /> Importer
-                        <input type="file" accept=".json" onChange={importData} hidden
-                         //disabled={!isCadastre}
-                          />
+                        <input type="file" accept=".json" onChange={importData} hidden />
                       </label>
                     </div>
                   </div>
                 </section>
+
                 <section className={styles['data-panel']}>
                   <div className={styles['panel-tabs']}>
                     <button
                       className={`${styles['tab-btn']} ${activeTab === 'coordinates' ? styles['active'] : ''}`}
                       onClick={() => setActiveTab('coordinates')}
-                   //   disabled={statutProc === 'TERMINEE' || !statutProc}
                     >
                       Coordonnées
                     </button>
@@ -789,6 +713,7 @@ export default function CadastrePage() {
                       Résumé
                     </button>
                   </div>
+                  
                   <div className={styles['panel-content']}>
                     {activeTab === 'coordinates' && (
                       <>
@@ -861,32 +786,63 @@ export default function CadastrePage() {
                         </div>
                       </>
                     )}
+                    
                     {activeTab === 'validation' && (
                       <div className={styles['validation-section']}>
+                        {/* Enhanced Overlap Detection Card */}
                         <div className={`${styles['validation-card']} ${overlapDetected ? styles['error'] : styles['success']}`}>
                           <div className={styles['card-header']}>
                             {overlapDetected ? <FiAlertTriangle /> : <FiCheckCircle />}
-                            <h3>Vérification des empiétements</h3>
+                            <h3>Vérification des empiétements ANAM</h3>
                           </div>
                           {overlapDetected ? (
                             <>
-                              <p>Empiétements détectés avec les permis suivants :</p>
+                              <p>Empiétements détectés avec :</p>
                               <ul>
                                 {overlapPermits.map((permit, idx) => (
                                   <li key={idx}>{permit}</li>
                                 ))}
                               </ul>
+                              
+                              {miningTitleOverlaps.length > 0 && (
+                                <div className={styles['mining-overlaps']}>
+                                  <h4>Détails des titres miniers chevauchants :</h4>
+                                  {miningTitleOverlaps.map((title, idx) => (
+                                    <div key={idx} className={styles['mining-title-detail']}>
+                                      <strong>{title.NOM || `Titre ${title.OBJECTID}`}</strong>
+                                      <div className={styles['title-details']}>
+                                        {title.TYPE_TITRE && <span>Type: {title.TYPE_TITRE}</span>}
+                                        {title.STATUT && <span>Statut: {title.STATUT}</span>}
+                                        {title.TITULAIRE && <span>Titulaire: {title.TITULAIRE}</span>}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                              
                               <textarea
-                                placeholder="Ajouter une remarque sur cet empiétement..."
+                                placeholder="Ajouter une remarque sur ces empiétements..."
                                 value={comment}
                                 onChange={(e) => setComment(e.target.value)}
-                             //   disabled={!isCadastre}
+                                className={styles['overlap-comment']}
                               />
                             </>
                           ) : (
-                            <p>Aucun empiétement détecté</p>
+                            <p>Aucun empiétement détecté avec les titres miniers ANAM</p>
                           )}
+                          
+                          <div className={styles['validation-actions']}>
+                            <button
+                              className={styles['map-btn']}
+                              onClick={checkMiningTitleOverlaps}
+                              disabled={points.length < 3}
+                            >
+                              <FiRefreshCw /> Re-vérifier
+                            </button>
+                          </div>
                         </div>
+
+                        {/* Keep your existing validation cards */}
                         <div className={`${styles['validation-card']} ${!polygonValid || !allFilled || !isPolygonValid ? styles['warning'] : styles['success']}`}>
                           <div className={styles['card-header']}>
                             {!polygonValid || !allFilled || !isPolygonValid ? <FiAlertTriangle /> : <FiCheckCircle />}
@@ -940,7 +896,7 @@ export default function CadastrePage() {
                                 try {
                                   await axios.post(`${apiURL}/verification-geo/demande/${idDemande}`, {
                                     sit_geo_ok: sitGeoOk,
-                                    empiet_ok: empietOk,
+                                    empiet_ok: empietOk && !overlapDetected, // Auto-set based on overlap detection
                                     geom_ok: geomOk,
                                     superf_ok: superfOk,
                                     superficie_cadastrale: typeof superficieCadastrale === 'number' ? superficieCadastrale : superficie,
@@ -952,15 +908,14 @@ export default function CadastrePage() {
                                   setTimeout(() => setError(null), 4000);
                                 }
                               }}
-                            //  disabled={!statutProc}
                             >
                               Enregistrer la vérification
                             </button>
-            
                           </div>
                         </div>
                       </div>
                     )}
+                    
                     {activeTab === 'summary' && (
                       <div className={styles['summary-section']}>
                         <div className={styles['summary-card']}>
