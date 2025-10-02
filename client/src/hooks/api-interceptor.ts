@@ -8,6 +8,7 @@ declare global {
     __SIGAM_API_PATCHED__?: boolean
     __SIGAM_ORIGINAL_FETCH__?: typeof fetch
     __SIGAM_NAV_ABORT__?: AbortController
+    __SIGAM_ACTIVE_REQUESTS__?: number
   }
 }
 
@@ -24,6 +25,24 @@ if (typeof window !== 'undefined' && !window.__SIGAM_API_PATCHED__) {
     window.__SIGAM_NAV_ABORT__ = new AbortController();
   };
   window.addEventListener('routeChangeStart', resetAbort);
+
+  // Global loading counter helpers
+  const onGlobalStart = () => {
+    try { window.dispatchEvent(new Event('globalLoadingStart')) } catch {}
+  };
+  const onGlobalStop = () => {
+    try { window.dispatchEvent(new Event('globalLoadingStop')) } catch {}
+  };
+  const reqStart = () => {
+    const n = (window.__SIGAM_ACTIVE_REQUESTS__ ?? 0) + 1;
+    window.__SIGAM_ACTIVE_REQUESTS__ = n;
+    if (n === 1) onGlobalStart();
+  };
+  const reqStop = () => {
+    const n = Math.max(0, (window.__SIGAM_ACTIVE_REQUESTS__ ?? 0) - 1);
+    window.__SIGAM_ACTIVE_REQUESTS__ = n;
+    if (n === 0) onGlobalStop();
+  };
 
   axios.interceptors.request.use((config) => {
     try {
@@ -47,11 +66,26 @@ if (typeof window !== 'undefined' && !window.__SIGAM_API_PATCHED__) {
           // ignore
         }
       }
+      // Count request start unless opt-out
+      const noLoad = (headers.get('x-no-global-loading') === '1') || (config as any).__noGlobalLoading === true;
+      (config as any).__gl_track__ = !noLoad;
+      if (!noLoad) reqStart();
     } catch {
       // noop
     }
     return config;
   });
+
+  axios.interceptors.response.use(
+    (response) => {
+      try { if ((response?.config as any)?.__gl_track__) reqStop(); } catch {}
+      return response;
+    },
+    (error) => {
+      try { if ((error?.config as any)?.__gl_track__) reqStop(); } catch {}
+      return Promise.reject(error);
+    }
+  );
 
   // Patch fetch once and preserve original
   if (!window.__SIGAM_ORIGINAL_FETCH__) {
@@ -81,7 +115,13 @@ if (typeof window !== 'undefined' && !window.__SIGAM_API_PATCHED__) {
         } catch {
           // ignore
         }
-        return originalFetch(nextInput, nextInit);
+        // Track request lifecycle unless opted-out
+        const noLoad = headers.get('x-no-global-loading') === '1' || (nextInit as any).__noGlobalLoading === true;
+        if (!noLoad) reqStart();
+        return originalFetch(nextInput, nextInit)
+          .finally(() => {
+            if (!noLoad) reqStop();
+          });
       } catch {
         return originalFetch(input, init);
       }

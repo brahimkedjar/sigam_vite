@@ -88,20 +88,21 @@ export class DocumentsReminderService implements OnModuleInit, OnModuleDestroy {
           });
         }
 
-        // Close procedure if exists and not terminated
-        if (demande.id_proc) {
-          const proc = await this.prisma.procedure.findUnique({ where: { id_proc: demande.id_proc } });
-          if (proc && proc.statut_proc !== StatutProcedure.TERMINEE) {
-            await this.prisma.procedure.update({
-              where: { id_proc: demande.id_proc },
-              data: {
-                statut_proc: StatutProcedure.TERMINEE,
-                date_fin_proc: now,
-                resultat: 'REJET',
-              },
-            });
-          }
-        }
+        // Do not auto-close the procedure on overdue reminders.
+        // Keep procedure open until an explicit finalization endpoint is called.
+        // if (demande.id_proc) {
+        //   const proc = await this.prisma.procedure.findUnique({ where: { id_proc: demande.id_proc } });
+        //   if (proc && proc.statut_proc !== StatutProcedure.TERMINEE) {
+        //     await this.prisma.procedure.update({
+        //       where: { id_proc: demande.id_proc },
+        //       data: {
+        //         statut_proc: StatutProcedure.TERMINEE,
+        //         date_fin_proc: now,
+        //         resultat: 'REJET',
+        //       },
+        //     });
+        //   }
+        // }
       }
     }
 

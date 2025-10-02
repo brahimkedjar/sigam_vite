@@ -44,14 +44,14 @@ export class CoordonneesService {
               z: parseFloat(p.z),
               system: p.system || 'WGS84',
               zone: p.zone || null,
-              hemisphere: p.hemisphere || null,
+              hemisphere: 'N',
               point: JSON.stringify({ 
                 x: p.x, 
                 y: p.y, 
                 z: p.z,
                 system: p.system,
                 zone: p.zone,
-                hemisphere: p.hemisphere
+                hemisphere: 'N'
               }),
             }
           })
@@ -212,14 +212,14 @@ async getExistingPerimeters() {
                 z: parseFloat(p.z),
                 system: p.system || 'WGS84',
                 zone: p.zone || null,
-                hemisphere: p.hemisphere || null,
+                hemisphere: 'N',
                 point: JSON.stringify({ 
                   x: p.x, 
                   y: p.y, 
                   z: p.z,
                   system: p.system,
                   zone: p.zone,
-                  hemisphere: p.hemisphere
+                  hemisphere: 'N'
                 }),
               },
             })

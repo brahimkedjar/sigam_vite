@@ -543,15 +543,17 @@ export class DocumentsService {
       include: { procedure: true },
     });
 
-    if (statut_demande === 'REJETEE' && updatedDemande.id_proc) {
-      await this.prisma.procedure.update({
-        where: { id_proc: updatedDemande.id_proc! },
-        data: {
-          statut_proc: StatutProcedure.TERMINEE,
-          date_fin_proc: now,
-        },
-      });
-    }
+    // Do not auto-close the procedure here on rejection.
+    // Keep procedure open until an explicit finalization endpoint is called.
+    // if (statut_demande === 'REJETEE' && updatedDemande.id_proc) {
+    //   await this.prisma.procedure.update({
+    //     where: { id_proc: updatedDemande.id_proc! },
+    //     data: {
+    //       statut_proc: StatutProcedure.TERMINEE,
+    //       date_fin_proc: now,
+    //     },
+    //   });
+    // }
 
     return updatedDemande;
   }

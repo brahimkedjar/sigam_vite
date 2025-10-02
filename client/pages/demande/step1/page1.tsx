@@ -810,10 +810,16 @@ export default function Step5_Documents() {
     [isNavigationBlocked, attente, submitDossier, router, idProc, isNavigating]
   );
 
-  const handleBack = async () => {
-
-      router.push(`/demande/step1_typepermis/page1_typepermis?id=${idProc}`)
-  }
+  const handleBack = useCallback(
+    debounce(() => {
+      if (isNavigating) return;
+      setIsNavigating(true);
+      router.push(`/demande/step1_typepermis/page1_typepermis?id=${idProc}`).finally(() => {
+        setIsNavigating(false);
+      });
+    }, 300),
+    [router, idProc, isNavigating]
+  );
 
   const handleSaveEtape = async () => {
     if (statutProc === 'TERMINEE') {

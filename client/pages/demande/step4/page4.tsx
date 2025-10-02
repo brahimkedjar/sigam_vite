@@ -1057,7 +1057,10 @@ const checkButtonConditions = () => {
       return;
     }
 
-    if (!selectedWilaya || !superficie) {
+    // Accept either computed superficie (from polygon) or declared superficie input
+    const superficieComputed = superficie && superficie.trim() !== '' && !isNaN(Number(superficie)) && Number(superficie) > 0;
+    const superficieDecl = superficieDeclaree && superficieDeclaree.trim() !== '' && !isNaN(Number(superficieDeclaree)) && Number(superficieDeclaree) > 0;
+    if (!selectedWilaya || (!superficieComputed && !superficieDecl)) {
       toast.error('Veuillez remplir tous les champs obligatoires (Wilaya, Superficie)');
       return;
     }

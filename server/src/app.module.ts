@@ -18,6 +18,7 @@ import { AdminModule } from './role/admin.module';
 import { TypePermisModule } from './demandes/type permis/type_permis.module';
 import { AdminDossierModule } from './role/admin_dossier_administratif.module';
 import { CoordonneesModule } from './demandes/cadastre/coordonnees.module';
+import { VerificationGeoModule } from './demandes/cadastre/verification-geo.module';
 import { CommuneModule } from './demandes/antennes/commune/commune.module';
 import { WilayaModule } from './demandes/antennes/wilaya/wilaya.module';
 import { DairaModule } from './demandes/antennes/daira/daira.module';
@@ -65,6 +66,7 @@ import { ChatModule } from './chat/chat.module';
 import { ProceduretechniqueModule } from './fichetechnique/fichtechnique.module';
 import { PortailModule } from './portail/portail.module';
 import { ArticleSetsModule } from './article_sets/article-sets.module';
+import { InscriptionProvisoireModule } from './demandes/inscription_provisoire/inscription-provisoire.module';
 
 
 @Module({
@@ -81,12 +83,12 @@ import { ArticleSetsModule } from './article_sets/article-sets.module';
     }),ProcedureRenouvellementModule,BaremProduitDroitModule,SuperficiaireBaremeModule,TypeProceduresconfModule,
     RedevancesconfModule,StatutPermisconfModule,TypePermisconfModule,DecisionTrackingModule,ComitenModule,DecisionModule,
     SeanceModule,ExpertMinierModule,SessionModule,AuditLogModule,PermisDashboardfModule,TimelineModule,CahierChargeModule,
-    GeneratePdfModule,GeneratePermisModule,WilayaModule,DairaModule,CommuneModule,AdminDossierModule,CoordonneesModule,
+    GeneratePdfModule,GeneratePermisModule,WilayaModule,DairaModule,CommuneModule,AdminDossierModule,CoordonneesModule,VerificationGeoModule,
     TypePermisModule,AuthModule,AdminModule,PrismaModule,ProcedureEtapeModule,ProcedureModule,ComiteDirectionModule,SocieteModule,
     InteractionWaliModule,CapacitesModule,SubstancesModule,DocumentsModule,DemandeSummaryControllerModule,SubstancesconfModule,
     StatutsJuridiquesconfconfModule,WilayasconfModule,DairasconfModule,CommunesconfModule,AntennesconfModule,DetenteurMorale_confModule,
     TypePermis_confModule,StatutPermis_confModule,Permis_confModule,Antenne_confModule,DemandesDashboardModule,TransfertModule,
-    NotificationsModule,ChatModule,ProceduretechniqueModule,PortailModule,ArticleSetsModule],
+    NotificationsModule,ChatModule,ProceduretechniqueModule,PortailModule,ArticleSetsModule,InscriptionProvisoireModule],
   controllers: [DemandesController],
   providers: [DemandeService,
     //{

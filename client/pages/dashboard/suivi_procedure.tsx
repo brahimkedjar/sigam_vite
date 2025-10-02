@@ -11,6 +11,7 @@ import {
   FiChevronUp, FiInfo, FiExternalLink
 } from 'react-icons/fi';
 import styles from './suivi.module.css';
+import { useLoading } from '@/components/globalspinner/LoadingContext';
 import Navbar from '../navbar/Navbar';
 import dynamic from 'next/dynamic';
 import { useAuthStore } from '../../src/store/useAuthStore';
@@ -140,6 +141,7 @@ export default function SuiviDemandes() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { resetLoading } = useLoading();
   const { currentView, navigateTo } = useViewNavigator('procedures');
   const [searchTerm, setSearchTerm] = useState('');
   const { auth, isLoaded } = useAuthStore();
@@ -247,11 +249,15 @@ const toggleDropdown = (demandeId: number) => {
     
     try {
       const res = await axios.get(`${apiURL}/api/procedures`, {
-          withCredentials: true,
+        withCredentials: true,
         cancelToken: cancelToken.token,
         params: {
           timestamp: new Date().getTime() // Prevent caching
-        }
+        },
+        // Opt-out of GlobalSpinner without adding a custom header (avoids CORS preflight issues)
+        // Our interceptor checks this custom config flag.
+        // @ts-expect-error custom config flag used by api-interceptor
+        __noGlobalLoading: true,
       });
       
       setDemandes(res.data);
@@ -288,6 +294,13 @@ const toggleDropdown = (demandeId: number) => {
       return;
     }
   }, [isLoaded, auth, router]);
+
+  // Safety: when local loading is done, ensure global spinner closes
+  useEffect(() => {
+    if (!isLoading && !isRefreshing) {
+      try { resetLoading(); } catch {}
+    }
+  }, [isLoading, isRefreshing, resetLoading]);
 
   useEffect(() => {
     if (!isAuthReady || !isLoaded || currentView !== 'procedures') {
@@ -523,7 +536,12 @@ const toggleDropdown = (demandeId: number) => {
 
     try {
       const response = await axios.delete(`${apiURL}/api/procedures/${procedureId}`,
-        { withCredentials: true });
+        {
+          withCredentials: true,
+          // @ts-expect-error custom config flag used by api-interceptor
+          __noGlobalLoading: true,
+        }
+      );
       
       if (response.status === 200) {
         toast.success('Procédure supprimée avec succès');

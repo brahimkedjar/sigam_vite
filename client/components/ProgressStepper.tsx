@@ -311,7 +311,7 @@ const ProgressStepper: React.FC<Props> = ({
         await axios.post(`${apiURL}/api/procedure-etape/phase/${currentProcedureId}/next`, {
           currentPhaseId,
         });
-        router.reload();
+       router.reload();
       } catch (error) {
         console.error('Error starting next phase:', error);
       } finally {

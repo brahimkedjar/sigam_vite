@@ -1,4 +1,4 @@
-// pages/permis_dashboard/view/page.tsx
+ï»¿// pages/permis_dashboard/view/page.tsx
 import React, { useState, useEffect, useCallback } from 'react';
 import styles from './PermisView.module.css';
 import { 
@@ -320,8 +320,8 @@ const DocumentViewer: React.FC<{
         <div className={styles.documentViewerContent}>
           <div className={styles.documentPreview}>
             <FileText size={64} className={styles.documentIconLarge} />
-            <p>Prévisualisation non disponible</p>
-            <p className={styles.documentInfo}>Type: {document.type} • Taille: {formatFileSize(document.taille)}</p>
+            <p>PrÃ©visualisation non disponible</p>
+            <p className={styles.documentInfo}>Type: {document.type} â€¢ Taille: {formatFileSize(document.taille)}</p>
           </div>
         </div>
         <div className={styles.modalFooter}>
@@ -330,7 +330,7 @@ const DocumentViewer: React.FC<{
           </button>
           <button onClick={onDownload} className={styles.modalPrimaryButton}>
             <Download size={16} />
-            Télécharger
+            TÃ©lÃ©charger
           </button>
         </div>
       </div>
@@ -347,7 +347,7 @@ const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
     
     navigator.clipboard.writeText(coordinatesText)
       .then(() => {
-        toast.success('Coordonnées copiées avec succés');
+        toast.success('CoordonnÃ©es copiÃ©es avec succÃ©s');
       })
       .catch((err) => {
         console.error('Erreur lors de la copie:', err);
@@ -358,13 +358,13 @@ const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
         textArea.select();
         document.execCommand('copy');
         document.body.removeChild(textArea);
-        toast.success('Coordonnées copiées avec succés');
+        toast.success('CoordonnÃ©es copiÃ©es avec succÃ©s');
       });
   }, []);
 
   const handleViewOnMap = useCallback((coord: any) => {
     if (coord.x === null || coord.y === null) {
-      toast.error('Coordonnées X et Y sont requises pour afficher sur la carte');
+      toast.error('CoordonnÃ©es X et Y sont requises pour afficher sur la carte');
       return;
     }
 
@@ -375,7 +375,7 @@ const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
 
   const handleExport = useCallback(() => {
     if (coordinates.length === 0) {
-      toast.error('Aucune coordonnée à exporter');
+      toast.error('Aucune coordonnÃ©e Ã  exporter');
       return;
     }
 
@@ -404,14 +404,14 @@ const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
     
     // Clean up
     setTimeout(() => URL.revokeObjectURL(url), 100);
-    toast.success('Coordonnées exportées avec succés');
+    toast.success('CoordonnÃ©es exportÃ©es avec succÃ©s');
   }, [coordinates, procedureNumber]);
   
   if (!coordinates || coordinates.length === 0) {
     return (
       <div className={styles.emptyState}>
         <MapPin size={24} />
-        <p>Aucune coordonnée disponible pour cette procédure</p>
+        <p>Aucune coordonnÃ©e disponible pour cette procÃ©dure</p>
       </div>
     );
   }
@@ -422,7 +422,7 @@ const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
       <div className={styles.headerContent}>
         <div className={styles.headerTitle}>
           <MapPin size={20} className={styles.headerIcon} />
-          <h3>Coordonnées de la procédure #{procedureNumber}</h3>
+          <h3>CoordonnÃ©es de la procÃ©dure #{procedureNumber}</h3>
         </div>
         <div className={styles.headerActions}>
           <button className={styles.exportButton} onClick={handleExport}>
@@ -431,23 +431,23 @@ const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
           </button>
         </div>
       </div>
-      <p className={styles.coordinatesCount}>{coordinates.length} ensembles de coordonnées</p>
+      <p className={styles.coordinatesCount}>{coordinates.length} ensembles de coordonnÃ©es</p>
     </div>
     
     {coordinates.length === 0 ? (
       <div className={styles.emptyCoordinates}>
         <MapPin size={48} className={styles.emptyIcon} />
-        <h4>Aucune coordonnée disponible</h4>
-        <p>Aucune donnée de coordonnées pour cette procédure.</p>
+        <h4>Aucune coordonnÃ©e disponible</h4>
+        <p>Aucune donnÃ©e de coordonnÃ©es pour cette procÃ©dure.</p>
       </div>
     ) : (
       <div className={styles.coordinatesTableWrap}>
         <table className={styles.coordinatesTable}>
           <thead>
             <tr>
-              <th className={styles.columnX}>Coordonnée X</th>
-              <th className={styles.columnY}>Coordonnée Y</th>
-              <th className={styles.columnZ}>Coordonnée Z</th>
+              <th className={styles.columnX}>CoordonnÃ©e X</th>
+              <th className={styles.columnY}>CoordonnÃ©e Y</th>
+              <th className={styles.columnZ}>CoordonnÃ©e Z</th>
               <th className={styles.columnActions}>Actions</th>
             </tr>
           </thead>
@@ -455,13 +455,13 @@ const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
             {coordinates.map((coord) => (
               <tr key={coord.id_coordonnees} className={styles.coordinateRow}>
                 <td className={styles.coordinateCell}>
-                  <span className={styles.coordinateValue}>{coord.x ?? '—'}</span>
+                  <span className={styles.coordinateValue}>{coord.x ?? 'â€”'}</span>
                 </td>
                 <td className={styles.coordinateCell}>
-                  <span className={styles.coordinateValue}>{coord.y ?? '—'}</span>
+                  <span className={styles.coordinateValue}>{coord.y ?? 'â€”'}</span>
                 </td>
                 <td className={styles.coordinateCell}>
-                  <span className={styles.coordinateValue}>{coord.z ?? '—'}</span>
+                  <span className={styles.coordinateValue}>{coord.z ?? 'â€”'}</span>
                 </td>
                 <td className={styles.actionsCell}>
                   <div className={styles.actionButtons1}>
@@ -475,7 +475,7 @@ const CoordinatesDisplay: React.FC<CoordinatesDisplayProps> = ({
                     <button 
                       className={styles.actionButton1}
                       onClick={() => handleCopyCoordinates(coord)}
-                      title="Copier les coordonnées"
+                      title="Copier les coordonnÃ©es"
                     >
                       <Copy size={16} />
                     </button>
@@ -550,7 +550,7 @@ const TimelineChart: React.FC<{
             <div className={styles.timelineContent}>
               <span className={styles.timelineDate}>{formatDate(renewal.date_decision)}</span>
               <span className={styles.timelineTitle}>Renouvellement #{index + 1}</span>
-              <span className={styles.timelineDesc}>Décision: {renewal.num_decision}</span>
+              <span className={styles.timelineDesc}>DÃ©cision: {renewal.num_decision}</span>
             </div>
           </div>
         ))}
@@ -578,8 +578,8 @@ const SubstanceTable: React.FC<{ substances: any[] }> = ({ substances }) => {
           <tr>
             <th>Nom (FR)</th>
             <th>Nom (AR)</th>
-            <th>Catégorie</th>
-            <th>Priorité</th> 
+            <th>CatÃ©gorie</th>
+            <th>PrioritÃ©</th> 
           </tr>
         </thead>
         <tbody>
@@ -631,13 +631,13 @@ const ActionConfirmationModal: React.FC<{
   const getActionDescription = () => {
     switch (actionType) {
       case 'renouvellement': 
-        return 'Êtes-vous sûr de vouloir demander un renouvellement pour ce permis?';
+        return 'ÃŠtes-vous sÃ»r de vouloir demander un renouvellement pour ce permis?';
       case 'modification': 
-        return 'Êtes-vous sûr de vouloir demander une modification pour ce permis?';
+        return 'ÃŠtes-vous sÃ»r de vouloir demander une modification pour ce permis?';
       case 'transfert': 
-        return 'Êtes-vous sûr de vouloir demander une transfert pour ce permis?';
+        return 'ÃŠtes-vous sÃ»r de vouloir demander un transfert pour ce permis?';
       case 'renonciation': 
-        return 'Êtes-vous sûr de vouloir demander une renonciation pour ce permis? Cette action est irréversible.';
+        return 'ÃŠtes-vous sÃ»r de vouloir demander une renonciation pour ce permis? Cette action est irrÃ©versible.';
       default: return 'Confirmez-vous cette action?';
     }
   };
@@ -655,7 +655,7 @@ const ActionConfirmationModal: React.FC<{
           <div className={styles.confirmationInfo}>
             <p>{getActionDescription()}</p>
             <div className={styles.permisDetails}>
-              <h4>Détails du permis:</h4>
+              <h4>DÃ©tails du permis:</h4>
               <ul>
                 <li><strong>Code:</strong> {permisDetails.code}</li>
                 <li><strong>Type:</strong> {permisDetails.type}</li>
@@ -1010,7 +1010,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ document, onView, onDownloa
           <p className={styles.documentDescription}>{document.description}</p>
         )}
         <p className={styles.documentMeta}>
-          Ajouté le {formatDate(document.date_upload)} • {formatFileSize(document.taille)}
+          AjoutÃ© le {formatDate(document.date_upload)} â€¢ {formatFileSize(document.taille)}
           {document.status && (
             <span className={`${styles.documentStatus} ${styles[`status${document.status}`]}`}>
               {document.status}
@@ -1031,7 +1031,7 @@ const DocumentCard: React.FC<DocumentCardProps> = ({ document, onView, onDownloa
             <button 
               className={styles.iconButton}
               onClick={() => onDownload(document)}
-              title="Télécharger"
+              title="TÃ©lÃ©charger"
             >
               <Download size={16} />
             </button>
@@ -1129,9 +1129,9 @@ if (permis?.date_expiration) {
       daysUntilExpiry = differenceInDays(expiryDate, today);
         
         if (daysUntilExpiry < 0) {
-          validityStatus = 'Expirée';
+          validityStatus = 'ExpirÃ©e';
         } else if (daysUntilExpiry < 30) {
-          validityStatus = 'Expire bientôt';
+          validityStatus = 'Expire bientÃ´t';
         } else {
           validityStatus = 'Valide';
         }
@@ -1165,7 +1165,7 @@ if (permis?.date_expiration) {
   }
 
   const formatDate = (date: Date | string | null) => {
-  if (!date) return 'Non définie';
+  if (!date) return 'Non dÃ©finie';
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   return format(dateObj, 'PPP', { locale: fr });
 };
@@ -1186,8 +1186,8 @@ if (permis?.date_expiration) {
   const diffTime = expiry.getTime() - today.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-  if (diffDays < 0) return 'Expirée';
-  if (diffDays < 30) return 'Expire bientôt';
+  if (diffDays < 0) return 'ExpirÃ©e';
+  if (diffDays < 30) return 'Expire bientÃ´t';
   return 'Valide';
 };
 
@@ -1248,7 +1248,7 @@ const getAllSubstances = () => {
       if (!allSubstances.some(s => s.id_sub === sub.substance.id_sub)) {
         allSubstances.push({
           ...sub.substance,
-          priorite: sub.priorite   // ? garder la priorité
+          priorite: sub.priorite   // ? garder la prioritÃ©
         });
         console.log("xxxxxxxxxxx", procedure.SubstanceAssocieeDemande);
       }
@@ -1339,7 +1339,7 @@ const getAllSubstances = () => {
     //   if (error.response) {
     //     errorMessage = error.response.data.message || error.response.statusText;
     //   } else if (error.request) {
-    //     errorMessage = "Pas de réponse du serveur";
+    //     errorMessage = "Pas de rÃ©ponse du serveur";
     //   } else {
     //     errorMessage = error.message;
     //   }
@@ -1378,7 +1378,7 @@ const getAllSubstances = () => {
     if (error.response) {
       errorMessage = error.response.data.message || error.response.statusText;
     } else if (error.request) {
-      errorMessage = "Pas de réponse du serveur";
+      errorMessage = "Pas de rÃ©ponse du serveur";
     } else {
       errorMessage = error.message;
     }
@@ -1434,7 +1434,7 @@ const getAllSubstances = () => {
   const handleDocumentView = (document: Document) => {
   if (!document.url) {
     toast.error(
-     'Ce document n\'est pas disponible en téléchargement'
+     'Ce document n\'est pas disponible en tÃ©lÃ©chargement'
     );
     return;
   }
@@ -1445,13 +1445,13 @@ const getAllSubstances = () => {
 
  const handleDocumentDownload = async (doc: Document) => {
   if (!doc.url) {
-    toast.error('Ce document n\'est pas disponible en téléchargement');
+    toast.error('Ce document n\'est pas disponible en tÃ©lÃ©chargement');
     return;
   }
   
   try {
     // Show loading notification
-    setNotif({ message: `Téléchargement de ${doc.nom} en cours...`, type: 'info' });
+    setNotif({ message: `TÃ©lÃ©chargement de ${doc.nom} en cours...`, type: 'info' });
     
     // Create a hidden anchor element for download
     const link = document.createElement('a');
@@ -1471,11 +1471,11 @@ const getAllSubstances = () => {
     }
     
     // Success notification
-    setNotif({ message: `${doc.nom} téléchargé avec succés`, type: 'success' });
+    setNotif({ message: `${doc.nom} tÃ©lÃ©chargÃ© avec succÃ©s`, type: 'success' });
     
   } catch (error) {
     console.error('Download error:', error);
-    setNotif({ message: 'Erreur lors du téléchargement', type: 'error' });
+    setNotif({ message: 'Erreur lors du tÃ©lÃ©chargement', type: 'error' });
   }
 };
 
@@ -1522,7 +1522,7 @@ const getAllSubstances = () => {
       <div className={styles.container}>
         <div className={styles.loadingState}>
           <div className={styles.spinner}></div>
-          <p>Chargement des données...</p>
+          <p>Chargement des donnÃ©es...</p>
         </div>
       </div>
     );
@@ -1546,9 +1546,9 @@ const getAllSubstances = () => {
       <div className={styles.header}>
         <div className={styles.headerContent}>
           <div>
-            <h1 className={styles.headerTitle}>Détails du Permis</h1>
+            <h1 className={styles.headerTitle}>DÃ©tails du Permis</h1>
             <p className={styles.headerSubtitle}>
-              Informations complétes sur le permis {permis.code_permis}
+              Informations complÃ©tes sur le permis {permis.code_permis}
             </p>
           </div>
           <div className={styles.headerActions}>
@@ -1573,7 +1573,7 @@ const getAllSubstances = () => {
             onClick={() => setActiveTab('overview')}
           >
             <FileText size={16} />
-            Aperçu
+            AperÃ§u
           </button>
 
           <button 
@@ -1581,7 +1581,7 @@ const getAllSubstances = () => {
             onClick={() => setActiveTab('procedures')}
           >
             <Clock size={16} />
-            Procédures ({permis.procedures.length})
+            ProcÃ©dures ({permis.procedures.length})
           </button>
           <button 
   className={`${styles.tab} ${activeTab === 'documents' ? styles.tabActive : ''}`}
@@ -1638,10 +1638,10 @@ const getAllSubstances = () => {
                 className={styles.filterSelect}
               >
                 <option value="all">Tous les statuts</option>
-                <option value="Payé">Payé</option>
-                <option value="A payer">À payer</option>
+                <option value="PayÃ©">PayÃ©</option>
+                <option value="A payer">Ã€ payer</option>
                 <option value="En retard">En retard</option>
-                <option value="Partiellement payé">Partiellement payé</option>
+                <option value="Partiellement payÃ©">Partiellement payÃ©</option>
               </select>
             </div>
 
@@ -1660,13 +1660,13 @@ const getAllSubstances = () => {
             </div>
 
             <div className={styles.filterGroup}>
-              <label className={styles.filterLabel}>Année</label>
+              <label className={styles.filterLabel}>AnnÃ©e</label>
               <select
                 value={filters.year}
                 onChange={(e) => setFilters(prev => ({ ...prev, year: e.target.value }))}
                 className={styles.filterSelect}
               >
-                <option value="all">Toutes les années</option>
+                <option value="all">Toutes les annÃ©es</option>
                 {Array.from(new Set(obligations.map(ob => ob.fiscalYear)))
                   .sort((a, b) => b - a)
                   .map(year => (
@@ -1693,7 +1693,7 @@ const getAllSubstances = () => {
                 value={filters.maxAmount}
                 onChange={(e) => setFilters(prev => ({ ...prev, maxAmount: e.target.value }))}
                 className={styles.filterInput}
-                placeholder="âˆž"
+                placeholder="Ã¢Ë†Å¾"
               />
             </div>
 
@@ -1709,7 +1709,7 @@ const getAllSubstances = () => {
                 className={styles.resetButton}
               >
                 <X size={16} />
-                Réinitialiser
+                RÃ©initialiser
               </button>
             </div>
           </div>
@@ -1733,10 +1733,10 @@ const getAllSubstances = () => {
                 </span>
               </div>
               <div className={styles.statItem}>
-                <span className={styles.statLabel}>Payé</span>
+                <span className={styles.statLabel}>PayÃ©</span>
                 <span className={styles.statValue}>
                   {obligations
-                    .filter(ob => ob.status === 'Payé')
+                    .filter(ob => ob.status === 'PayÃ©')
                     .reduce((sum, ob) => sum + ob.amount, 0)
                     .toLocaleString('fr-FR')} DZD
                 </span>
@@ -1745,7 +1745,7 @@ const getAllSubstances = () => {
                 <span className={styles.statLabel}>En attente</span>
                 <span className={styles.statValue}>
                   {obligations
-                    .filter(ob => ob.status !== 'Payé')
+                    .filter(ob => ob.status !== 'PayÃ©')
                     .reduce((sum, ob) => sum + ob.amount, 0)
                     .toLocaleString('fr-FR')} DZD
                 </span>
@@ -1769,19 +1769,19 @@ const getAllSubstances = () => {
                         {obligation.typePaiement.libelle}
                       </h3>
                       <div className={styles.obligationMeta}>
-                        <span className={styles.obligationYear}>Année {obligation.fiscalYear}</span>
-                        <span className={styles.obligationFrequency}>• {obligation.typePaiement.frequence}</span>
+                        <span className={styles.obligationYear}>AnnÃ©e {obligation.fiscalYear}</span>
+                        <span className={styles.obligationFrequency}>â€¢ {obligation.typePaiement.frequence}</span>
                         <span className={styles.obligationDue}>
-                          • Échéance: {new Date(obligation.dueDate).toLocaleDateString('fr-FR')}
+                          â€¢ Ã‰chÃ©ance: {new Date(obligation.dueDate).toLocaleDateString('fr-FR')}
                         </span>
                       </div>
                     </div>
                     
                     <div className={styles.obligationStatus}>
                       <span className={`${styles.statusBadge} ${
-                        obligation.status === 'Payé' ? styles.statusPaid :
+                        obligation.status === 'PayÃ©' ? styles.statusPaid :
                         obligation.status === 'En retard' ? styles.statusOverdue :
-                        obligation.status === 'Partiellement payé' ? styles.statusPartial :
+                        obligation.status === 'Partiellement payÃ©' ? styles.statusPartial :
                         styles.statusPending
                       }`}>
                         {obligation.status}
@@ -1804,7 +1804,7 @@ const getAllSubstances = () => {
                       {/* Payment Period Information */}
                       {obligation.tsPaiements && obligation.tsPaiements.length > 0 && (
                         <div className={styles.detailSection}>
-                          <h4>Période de paiement</h4>
+                          <h4>PÃ©riode de paiement</h4>
                           <div className={styles.periodGrid}>
                             {obligation.tsPaiements.map(ts => (
                               <div key={ts.id_tsPaiement} className={styles.periodItem}>
@@ -1828,7 +1828,7 @@ const getAllSubstances = () => {
                           <div className={styles.paymentsTable}>
                             <div className={styles.tableHeader}>
                               <span>Date</span>
-                              <span>Méthode</span>
+                              <span>MÃ©thode</span>
                               <span>Quittance</span>
                               <span>Montant</span>
                             </div>
@@ -1844,7 +1844,7 @@ const getAllSubstances = () => {
                             ))}
                           </div>
                         ) : (
-                          <p className={styles.noData}>Aucun paiement effectué</p>
+                          <p className={styles.noData}>Aucun paiement effectuÃ©</p>
                         )}
                       </div>
 
@@ -1852,13 +1852,13 @@ const getAllSubstances = () => {
                       <div className={styles.actionsSection}>
                         <button className={styles.actionBtn}>
                           <Download size={16} />
-                          Télécharger le reçu
+                          TÃ©lÃ©charger le reÃ§u
                         </button>
                         <button className={styles.actionBtn}>
                           <Eye size={16} />
                           Voir justificatif
                         </button>
-                        {obligation.status !== 'Payé' && (
+                        {obligation.status !== 'PayÃ©' && (
                           <button className={styles.payBtn}>
                             <CreditCard size={16} />
                             Payer maintenant
@@ -1880,7 +1880,7 @@ const getAllSubstances = () => {
                   className={styles.paginationButton}
                 >
                   <ChevronLeft size={16} />
-                  Précédent
+                  PrÃ©cÃ©dent
                 </button>
 
                 <div className={styles.paginationPages}>
@@ -1942,7 +1942,7 @@ const getAllSubstances = () => {
               })}
             >
               <Filter size={16} />
-              Réinitialiser les filtres
+              RÃ©initialiser les filtres
             </button>
           </div>
         )}
@@ -1960,13 +1960,13 @@ const getAllSubstances = () => {
   trend={
     statsData?.validityStatus === "Valide"
       ? "positive"
-      : statsData?.validityStatus === "Expire bientôt"
+      : statsData?.validityStatus === "Expire bientÃ´t"
       ? "warning"
       : "negative"
   }
   subtitle={
     statsData?.validityStatus ||
-    (daysUntilExpiry !== null ? `${daysUntilExpiry} jours restants` : "Non défini")
+    (daysUntilExpiry !== null ? `${daysUntilExpiry} jours restants` : "Non dÃ©fini")
   }
 />
 
@@ -1985,7 +1985,7 @@ const getAllSubstances = () => {
 />
 
             <StatisticCard
-              title="Procédures actives"
+              title="ProcÃ©dures actives"
               value={statsData?.activeProcedures.toString() || '0'}
               icon={<Clock size={20} />}
               trend="neutral"
@@ -2009,7 +2009,7 @@ const getAllSubstances = () => {
                   <div className={styles.cardHeaderIcon}>
                     <FileText size={20} />
                   </div>
-                  <h2 className={styles.cardTitle}>Informations générales</h2>
+                  <h2 className={styles.cardTitle}>Informations gÃ©nÃ©rales</h2>
                 </div>
                 <div className={styles.cardContent}>
                   <div className={styles.infoGrid}>
@@ -2032,13 +2032,13 @@ const getAllSubstances = () => {
                     <div className={styles.infoItem}>
                       <span className={styles.infoLabel}>Superficie</span>
                       <span className={styles.infoValue}>
-                        {permis.superficie ? `${permis.superficie} Ha` : 'Non définie'}
+                        {permis.superficie ? `${permis.superficie} Ha` : 'Non dÃ©finie'}
                       </span>
                     </div>
                     <div className={styles.infoItem}>
                       <span className={styles.infoLabel}>Titulaire</span>
                       <span className={styles.infoValue}>
-                        {permis.detenteur?.nom_societeFR || 'Non défini'}
+                        {permis.detenteur?.nom_societeFR || 'Non dÃ©fini'}
                       </span>
                     </div>
                     <div className={styles.infoItem}>
@@ -2051,7 +2051,7 @@ const getAllSubstances = () => {
                             </span>
                           ))
                         ) : (
-                          <span className="text-gray-500">Non spécifiées</span>
+                          <span className="text-gray-500">Non spÃ©cifiÃ©es</span>
                         )}
                       </div>
                     </div>
@@ -2110,7 +2110,7 @@ const getAllSubstances = () => {
       <div className={styles.cardHeaderIcon}>
         <MapPin size={20} />
       </div>
-      <h2 className={styles.cardTitle}>Coordonnées</h2>
+      <h2 className={styles.cardTitle}>CoordonnÃ©es</h2>
     </div>
     <div className={styles.cardContent}>
       {permis.procedures.length > 0 ? (
@@ -2118,7 +2118,7 @@ const getAllSubstances = () => {
           {permis.procedures.map(procedure => (
             procedure.coordonnees?.length > 0 && (
               <div key={procedure.id_proc} className={styles.procedureCoordinates}>
-                <h4>Procédure {procedure.num_proc}</h4>
+                <h4>ProcÃ©dure {procedure.num_proc}</h4>
                 <CoordinatesDisplay 
                   coordinates={procedure.coordonnees.map(c => c.coordonnee)}
                   procedureNumber={procedure.num_proc}
@@ -2130,7 +2130,7 @@ const getAllSubstances = () => {
       ) : (
         <div className={styles.emptyState}>
           <MapPin size={24} />
-          <p>Aucune coordonnée disponible</p>
+          <p>Aucune coordonnÃ©e disponible</p>
         </div>
       )}
     </div>
@@ -2218,7 +2218,7 @@ const getAllSubstances = () => {
                     className={`${styles.actionButton} ${styles.actionButtonSuccess}`}
                     onClick={() => handleActionWithConfirmation('modification', () => {
                       // Handle modification request
-                      setNotif({ message: 'Demande de modification initiée', type: 'info' });
+                      setNotif({ message: 'Demande de modification initiÃ©e', type: 'info' });
                     })}
                   >
                     <Edit2 size={18} />
@@ -2249,7 +2249,7 @@ const getAllSubstances = () => {
                     className={`${styles.actionButton} ${styles.actionButtonDanger}`}
                     onClick={() => handleActionWithConfirmation('renonciation', () => {
                       // Handle renunciation request
-                      setNotif({ message: 'Demande de renonciation initiée', type: 'info' });
+                      setNotif({ message: 'Demande de renonciation initiÃ©e', type: 'info' });
                     })}
                   >
                     <XCircle size={18} />
@@ -2287,13 +2287,13 @@ const getAllSubstances = () => {
               <div className={styles.cardHeaderIcon}>
                 <Clock size={20} />
               </div>
-              <h2 className={styles.cardTitle}>Procédures associées</h2>
-              <span className={styles.badge}>{permis.procedures.length} procédures</span>
+              <h2 className={styles.cardTitle}>ProcÃ©dures associÃ©es</h2>
+              <span className={styles.badge}>{permis.procedures.length} procÃ©dures</span>
             </div>
             <div className={styles.cardContent}>
               {/* Procedure Types Section */}
               <div className={styles.procedureTypes}>
-                <h3 className={styles.procedureTypesTitle}>Types de procédures</h3>
+                <h3 className={styles.procedureTypesTitle}>Types de procÃ©dures</h3>
                 <div className={styles.procedureTypesList}>
                   {procedureTypes.map(type => (
                     <button
@@ -2309,7 +2309,7 @@ const getAllSubstances = () => {
 
               {/* Procedures List */}
               <div className={styles.proceduresList}>
-                <h3 className={styles.proceduresListTitle}>Toutes les procédures</h3>
+                <h3 className={styles.proceduresListTitle}>Toutes les procÃ©dures</h3>
                 {permis.procedures.length > 0 ? (
                   <div className={styles.procedureItems}>
                     {permis.procedures.map(procedure => (
@@ -2337,7 +2337,7 @@ const getAllSubstances = () => {
                         </div>
                         <div className={styles.procedureItemFooter}>
                           <span className={styles.procedureSteps}>
-                            {procedure.ProcedureEtape.length} étape(s)
+                            {procedure.ProcedureEtape.length} Ã©tape(s)
                           </span>
                           <ChevronRight size={16} className={styles.chevronIcon} />
                         </div>
@@ -2347,7 +2347,7 @@ const getAllSubstances = () => {
                 ) : (
                   <div className={styles.emptyState}>
                     <FileText size={48} className={styles.emptyStateIcon} />
-                    <p>Aucune procédure associée à ce permis</p>
+                    <p>Aucune procÃ©dure associÃ©e Ã  ce permis</p>
                   </div>
                 )}
               </div>
@@ -2363,7 +2363,7 @@ const getAllSubstances = () => {
         <div className={styles.cardHeaderIcon}>
           <FileSearch size={20} />
         </div>
-        <h2 className={styles.cardTitle}>Documents associés</h2>
+        <h2 className={styles.cardTitle}>Documents associÃ©s</h2>
         <span className={styles.badge}>{documentsData?.totalCount || 0} documents</span>
       </div>
       <div className={styles.cardContent}>
@@ -2384,7 +2384,7 @@ const getAllSubstances = () => {
                   onClick={() => toggleProcedure(procedure.id_proc)}
                 >
                   <h3 className={styles.documentCategoryTitle}>
-                    Procédure: {procedure.num_proc} :  
+                    ProcÃ©dure: {procedure.num_proc} :  
                     <span className={styles.procedureStatus}>
                       { procedure.statut_proc}
                     </span>
@@ -2420,14 +2420,14 @@ const getAllSubstances = () => {
             {documentsData.totalCount === 0 && (
               <div className={styles.emptyState}>
                 <FileText size={48} className={styles.emptyStateIcon} />
-                <p>Aucun document associé à ce permis</p>
+                <p>Aucun document associÃ© Ã  ce permis</p>
               </div>
             )}
           </div>
         ) : (
           <div className={styles.emptyState}>
             <FileText size={48} className={styles.emptyStateIcon} />
-            <p>Aucun document associé à ce permis</p>
+            <p>Aucun document associÃ© Ã  ce permis</p>
           </div>
         )}
       </div>
@@ -2456,13 +2456,13 @@ const getAllSubstances = () => {
                         </div>
                         <div className={styles.renewalDetails}>
                           <div className={styles.renewalHeader}>
-                            <span className={styles.renewalDecision}>Décision: {renewal.num_decision}</span>
+                            <span className={styles.renewalDecision}>DÃ©cision: {renewal.num_decision}</span>
                             <span className={styles.renewalDate}>
                               {formatDate(renewal.date_decision)}
                             </span>
                           </div>
                           <div className={styles.renewalPeriod}>
-                            <span>Période: {formatDate(renewal.date_debut_validite)} - {formatDate(renewal.date_fin_validite)}</span>
+                            <span>PÃ©riode: {formatDate(renewal.date_debut_validite)} - {formatDate(renewal.date_fin_validite)}</span>
                             <span className={styles.renewalDuration}>
                               ({permis.typePermis.duree_renouv} {permis.typePermis.duree_renouv > 1 ? 'ans' : 'an'})
                             </span>
@@ -2494,7 +2494,7 @@ const getAllSubstances = () => {
                                   ></div>
                                 </div>
                                 <div className={styles.renewalLimitText}>
-                                  {permis.nombre_renouvellements} / {permis.typePermis.nbr_renouv_max} renouvellements utilisés
+                                  {permis.nombre_renouvellements} / {permis.typePermis.nbr_renouv_max} renouvellements utilisÃ©s
                                 </div>
                                 {permis.nombre_renouvellements >= permis.typePermis.nbr_renouv_max && (
                                   <div className={styles.renewalMaxReached}>
@@ -2512,7 +2512,7 @@ const getAllSubstances = () => {
                   <div className={styles.currentStatus}>
                     <div className={styles.statusLabel}>Statut actuel:</div>
                     <div className={`${styles.statusValue} ${calculateValidityStatus(permis.date_expiration) === 'Valide' ? styles.statusValid :
-                        calculateValidityStatus(permis.date_expiration) === 'Expire bientôt' ? styles.statusWarning :
+                        calculateValidityStatus(permis.date_expiration) === 'Expire bientÃ´t' ? styles.statusWarning :
                           styles.statusExpired
                       }`}>
                       {calculateValidityStatus(permis.date_expiration)}
@@ -2527,7 +2527,7 @@ const getAllSubstances = () => {
               ) : (
                 <div className={styles.noRenewals}>
                   <RefreshCw size={48} className={styles.emptyStateIcon} />
-                  <p>Ce permis n'a pas encore été renouvelé.</p>
+                  <p>Ce permis n'a pas encore Ã©tÃ© renouvelÃ©.</p>
                   <button 
                     className={styles.primaryButton}
                     onClick={() => handleRenewalClick(permis.id)}
@@ -2561,7 +2561,7 @@ const getAllSubstances = () => {
             <div className={styles.modalBody}>
               <div className={styles.modalProcedureInfo}>
                 <div className={styles.modalProcedureDates}>
-                  <span>Début: {formatDate(selectedProcedure.date_debut_proc)}</span>
+                  <span>DÃ©but: {formatDate(selectedProcedure.date_debut_proc)}</span>
                   <span> - </span>
                   <span>Fin: {formatDate(selectedProcedure.date_fin_proc)}</span>
                 </div>
@@ -2573,7 +2573,7 @@ const getAllSubstances = () => {
 
               {selectedProcedures.length > 1 && (
                 <div className={styles.procedureSelector}>
-                  <label className={styles.procedureSelectorLabel}>Choisir une procédure :</label>
+                  <label className={styles.procedureSelectorLabel}>Choisir une procÃ©dure :</label>
                   <select
                     className={styles.procedureSelectorDropdown}
                     value={selectedProcedure?.id_proc}
@@ -2592,7 +2592,7 @@ const getAllSubstances = () => {
               )}
 
               <div className={styles.modalStepsContainer}>
-                <h3 className={styles.modalStepsTitle}>Étapes de la procédure</h3>
+                <h3 className={styles.modalStepsTitle}>Ã‰tapes de la procÃ©dure</h3>
                 {selectedProcedure.ProcedureEtape.map((step) => (
                   <div key={step.id_etape} className={styles.stepItem}>
                     <div
@@ -2622,7 +2622,7 @@ const getAllSubstances = () => {
 
               {selectedProcedure.SubstanceAssocieeDemande.length > 0 && (
                 <div className={styles.modalSubstances}>
-                  <h3 className={styles.modalSubstancesTitle}>Substances concernées</h3>
+                  <h3 className={styles.modalSubstancesTitle}>Substances concernÃ©es</h3>
                   <div className={styles.substancesList}>
                     {selectedProcedure.SubstanceAssocieeDemande.map((sub, index) => (
                       <span key={index} className={styles.substanceBadge}>
@@ -2648,7 +2648,7 @@ const getAllSubstances = () => {
                 }}
                 className={styles.modalPrimaryButton}
               >
-                Voir la procédure
+                Voir la procÃ©dure
               </button>
             </div>
           </div>
@@ -2662,7 +2662,7 @@ const getAllSubstances = () => {
 
             <div className={styles.modalInfoText}>
               <p>Renouvellements restants: {permis.typePermis.nbr_renouv_max - (permis.nombre_renouvellements || 0)}/{permis.typePermis.nbr_renouv_max}</p>
-              <p>Vous pouvez effectuer {permis.typePermis.nbr_renouv_max - (permis.nombre_renouvellements || 0)} renouvellement(s) supplémentaire(s)</p>
+              <p>Vous pouvez effectuer {permis.typePermis.nbr_renouv_max - (permis.nombre_renouvellements || 0)} renouvellement(s) supplÃ©mentaire(s)</p>
             </div>
 
             <h3 className={styles.modalSubtitle}>Choisir une date de demande</h3>
@@ -2718,10 +2718,10 @@ const getAllSubstances = () => {
                 <strong>Type de permis:</strong> {permis.typePermis.lib_type} ({permis.typePermis.code_type})
               </p>
               <p>
-                <strong>Renouvellements effectués:</strong> {permis.nombre_renouvellements || 0} / {permis.typePermis.nbr_renouv_max}
+                <strong>Renouvellements effectuÃ©s:</strong> {permis.nombre_renouvellements || 0} / {permis.typePermis.nbr_renouv_max}
               </p>
               <div className={styles.modalWarningText}>
-                Ce permis a atteint le nombre maximum de renouvellements autorisés.
+                Ce permis a atteint le nombre maximum de renouvellements autorisÃ©s.
                 Vous ne pouvez pas effectuer de nouveaux renouvellements pour ce permis.
               </div>
             </div>
@@ -2767,4 +2767,5 @@ const getAllSubstances = () => {
 }
 
 export default PermisViewPage;
+
 

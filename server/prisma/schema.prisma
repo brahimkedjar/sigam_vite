@@ -603,6 +603,7 @@ model Procedure {
     seance                   SeanceCDPrevue?            @relation("SeanceProcedures", fields: [id_seance], references: [id_seance])
     //TypeProcedure            TypeProcedure?             @relation(fields: [typeProcedureId], references: [id])
     typeProcedureId          Int?
+    inscriptionProvisoire    InscriptionProvisoire?
     @@map("procedure")
 }
 
@@ -672,6 +673,7 @@ sources_financement  String?
     obs             demandeObs?
     min             demandeMin?
     CahierCharge    CahierCharge[]
+    inscriptionProvisoire InscriptionProvisoire?
 
     @@map("demande")
 }
@@ -810,6 +812,7 @@ model demandeVerificationGeo {
     superf_ok                  Boolean?
     geom_ok                    Boolean?
     verification_cadastrale_ok Boolean?
+    superficie_cadastrale      Float?
 
     demande Demande @relation(fields: [id_demande], references: [id_demande])
 }
@@ -1132,6 +1135,25 @@ model Coordonnee {
   procedureLinks    ProcedureCoord[]
   
   @@map("coordonnee")
+}
+
+// Provisional inscription for coordinates provided at Step 4
+model InscriptionProvisoire {
+  id                   Int        @id @default(autoincrement())
+  id_proc              Int        @unique
+  id_demande           Int        @unique
+  points               Json
+  system               String?
+  zone                 Int?
+  hemisphere           String?
+  superficie_declaree  Float?
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  procedure            Procedure  @relation(fields: [id_proc], references: [id_proc])
+  demande              Demande    @relation(fields: [id_demande], references: [id_demande])
+
+  @@map("inscription_provisoire")
 }
 
 model CahierCharge {

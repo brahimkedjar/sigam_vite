@@ -25,6 +25,7 @@ type InfosGeneralesData = {
   adresse: string;
   //nationalite: string;
   id_pays: number | null;
+  id_nationalite?: number | null;
 };
 
 type InfosGeneralesProps = {
@@ -207,17 +208,17 @@ export default function InfosGenerales({
       <div className={styles.formGroup}>
   <label className={styles.inputLabel}>Nationalité *</label>
   <select
-    name="id_pays"
+    name="id_nationalite"
     className={`${styles.inputField} ${styles.selectField}`}
-    value={data.id_pays || ''}
-    onChange={(e) => onChange({ ...data, id_pays: parseInt(e.target.value) })}
+    value={data.id_nationalite ?? ''}
+    onChange={(e) => onChange({ ...data, id_nationalite: parseInt(e.target.value) })}
     required
     disabled={disabled}
   >
     <option value="">Sélectionnez</option>
     {paysOptions.map(pays => (
       <option key={pays.id_pays} value={pays.id_pays}>
-        {pays.nom_pays} ({pays.nationalite})
+        {pays.nationalite}
       </option>
     ))}
   </select>

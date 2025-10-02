@@ -183,7 +183,7 @@
 .editButton,
 .deleteButton,
 .expandButton {
-  width: 36px;
+  width: 52px;
   height: 36px;
   display: flex;
   align-items: center;

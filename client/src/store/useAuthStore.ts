@@ -40,20 +40,36 @@ function readAuthFromStorage(): AuthData | null {
   }
 
   try {
+    // Primary key used by this app
     const raw = window.localStorage.getItem('auth');
-    if (!raw) {
-      return null;
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        token: parsed.token ?? null,
+        id: parsed.id ?? null,
+        username: parsed.username ?? null,
+        email: parsed.email ?? null,
+        role: parsed.role ?? null,
+        permissions: Array.isArray(parsed.permissions) ? parsed.permissions : [],
+      };
     }
 
-    const parsed = JSON.parse(raw);
-    return {
-      token: parsed.token ?? null,
-      id: parsed.id ?? null,
-      username: parsed.username ?? null,
-      email: parsed.email ?? null,
-      role: parsed.role ?? null,
-      permissions: Array.isArray(parsed.permissions) ? parsed.permissions : [],
-    };
+    // Backward-compat: some environments store under 'auth-storage'
+    const legacy = window.localStorage.getItem('auth-storage');
+    if (legacy) {
+      const parsed = JSON.parse(legacy);
+      const s = parsed?.state?.auth ?? {};
+      return {
+        token: s.token ?? null,
+        id: s.id ?? null,
+        username: s.username ?? null,
+        email: s.email ?? null,
+        role: s.role ?? null,
+        permissions: Array.isArray(s.permissions) ? s.permissions : [],
+      };
+    }
+
+    return null;
   } catch (error) {
     console.warn('Failed to read auth from storage', error);
     return null;

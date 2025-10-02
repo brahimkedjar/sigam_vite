@@ -1,58 +1,24 @@
 // src/hooks/useSessionLoader.ts
 'use client';
 import { useEffect } from 'react';
-import axios from 'axios';
 import { useAuthStore } from '../store/useAuthStore';
 
+// Hydrate auth from localStorage and verify token if present.
+// This runs once on app start via ClientLayout, so Navbar/Sidebar
+// get user + permissions on hard refresh even without a token field.
 export function useSessionLoader() {
   const initialize = useAuthStore((s) => s.initialize);
-  const setLoaded = () => useAuthStore.setState({ isLoaded: true });
-  const apiURL = process.env.NEXT_PUBLIC_API_URL;
 
   useEffect(() => {
-    const load = async () => {
+    let mounted = true;
+    (async () => {
       try {
-        // Use the verify endpoint instead of /auth/me
-        const token = useAuthStore.getState().auth.token;
-        
-        if (token) {
-          const res = await axios.post(`${apiURL}/auth/verify`, 
-            { token },
-            { withCredentials: true }
-          );
-          
-          // Update the store with verified user data
-          useAuthStore.setState({
-            auth: {
-              token,
-              id: res.data.user.id,
-              username: res.data.user.username,
-              email: res.data.user.email,
-              role: res.data.user.role,
-              permissions: res.data.user.permissions,
-            },
-            isLoaded: true
-          });
-        }
-      } catch (err) {
-        console.warn('⚠️ Session verification failed', err);
-        // Clear invalid session
-        useAuthStore.setState({
-          auth: {
-            token: null,
-            id: null,
-            username: null,
-            email: null,
-            role: null,
-            permissions: [],
-          },
-          isLoaded: true
-        });
+        await initialize();
       } finally {
-        setLoaded();
+        if (!mounted) return;
       }
-    };
-
-    load();
-  }, []);
+    })();
+    return () => { mounted = false };
+  }, [initialize]);
 }
+

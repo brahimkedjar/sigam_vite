@@ -13,6 +13,7 @@ type RepresentantLegalData = {
   nin: string;
   taux_participation: string;
   id_pays: number | null;
+  id_nationalite?: number | null;
 };
 
 type Pays = {
@@ -52,7 +53,7 @@ export default function RepresentantLegal({
     const { name, value } = e.target;
     
     // Handle country selection - convert string value to number
-    if (name === 'id_pays') {
+    if (name === 'id_pays' || name === 'id_nationalite') {
       const newData = { 
         ...data, 
         [name]: value ? parseInt(value, 10) : null 
@@ -84,6 +85,26 @@ export default function RepresentantLegal({
         <option value="Président">Président</option>
       </select>
       
+      {/* Nationalité (séparée) */}
+      <div className={styles.formGroup}>
+        <label className={styles.inputLabel}>NationalitǸ *</label>
+        <select
+          name="id_nationalite"
+          className={`${styles.inputField} ${styles.selectField}`}
+          value={data.id_nationalite ?? ''}
+          onChange={handleChange}
+          required
+          disabled={disabled}
+        >
+          <option value="">SǸlectionnez</option>
+          {paysOptions.map(pays => (
+            <option key={pays.id_pays} value={pays.id_pays}>
+              {pays.nationalite}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {/* Country dropdown */}
       <div className={styles.formGroup}>
         <label className={styles.inputLabel}>Pays * </label>
@@ -98,7 +119,7 @@ export default function RepresentantLegal({
           <option value="">Sélectionnez un pays</option>
           {paysOptions.map(pays => (
             <option key={pays.id_pays} value={pays.id_pays}>
-              {pays.nom_pays} ({pays.nationalite})
+              {pays.nom_pays}
             </option>
           ))}
         </select>

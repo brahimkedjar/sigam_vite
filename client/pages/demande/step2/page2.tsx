@@ -1,4 +1,4 @@
-﻿'use client';
+﻿﻿'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import styles from './demande2.module.css';
@@ -48,7 +48,8 @@ type Actionnaire = {
   qualification: string;
   numero_carte: string;
   taux_participation: string;
-  id_pays: number | null
+  id_pays: number | null;
+  id_nationalite?: number | null;
 };
 
 type SocieteData = {
@@ -61,6 +62,7 @@ type SocieteData = {
     fax: string;
     adresse: string;
     id_pays: number | null;
+    id_nationalite?: number | null;
   };
   repLegal: {
     nom: string;
@@ -74,6 +76,7 @@ type SocieteData = {
     nin: string;
     taux_participation: string;
     id_pays: number | null;
+    id_nationalite?: number | null;
   };
   rcDetails: {
     numero_rc: string;
@@ -95,7 +98,8 @@ const initialData: SocieteData = {
     email: '',
     fax: '',
     adresse: '',
-    id_pays: 0
+    id_pays: 0,
+    id_nationalite: null
   },
   repLegal: {
     nom: '',
@@ -108,7 +112,8 @@ const initialData: SocieteData = {
     qualite: '',
     nin: '',
     taux_participation: '',
-    id_pays: 0
+    id_pays: 0,
+    id_nationalite: null
   },
   rcDetails: {
     numero_rc: '',
@@ -167,7 +172,7 @@ export default function Step2() {
   const [isSearching, setIsSearching] = useState(false);
   const [showDetenteurDropdown, setShowDetenteurDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [loadingMessage, setLoadingMessage] = useState('Chargement des données...');
+  const [loadingMessage, setLoadingMessage] = useState('Chargement des donn�es...');
   const [checkInterval, setCheckInterval] = useState<NodeJS.Timeout | null>(null);
   // Missing docs alert for first-phase reminder
   const [missingDocsAlert, setMissingDocsAlert] = useState<{ missing: string[]; deadline?: string | null } | null>(null);
@@ -179,7 +184,7 @@ export default function Step2() {
     const d = new Date(deadline).getTime();
     const now = Date.now();
     const diff = d - now;
-    if (diff <= 0) return 'Délai expiré';
+    if (diff <= 0) return 'D�lai expir�';
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     return `${days}j ${hours}h restants`;
@@ -250,18 +255,18 @@ export default function Step2() {
   useEffect(() => {
     const idProcStr = searchParams?.get('id');
     if (!idProcStr) {
-      setLoadingMessage("ID de procédure non trouvé dans les paramétres");
+      setLoadingMessage("ID de proc�dure non trouv� dans les param�tres");
       return;
     }
 
     const parsedId = parseInt(idProcStr, 10);
     if (isNaN(parsedId)) {
-      setLoadingMessage("ID de procédure invalide");
+      setLoadingMessage("ID de proc�dure invalide");
       return;
     }
 
     setIdProc(parsedId);
-    setLoadingMessage("Chargement des données de la procédure...");
+    setLoadingMessage("Chargement des donn�es de la proc�dure...");
   }, [searchParams]);
 
   // Fetch procedure data when idProc is available
@@ -282,10 +287,10 @@ export default function Step2() {
           setCurrentEtape({ id_etape: activeEtape.id_etape });
         }
         
-        setLoadingMessage("Données de procédure chargées, récupération de la demande...");
+        setLoadingMessage("Donn�es de proc�dure charg�es, r�cup�ration de la demande...");
       } catch (error) {
         console.error('Error fetching procedure data:', error);
-        setLoadingMessage("Erreur lors du chargement des données de procédure");
+        setLoadingMessage("Erreur lors du chargement des donn�es de proc�dure");
       }
     };
 
@@ -381,10 +386,10 @@ export default function Step2() {
           });
         }
         
-        setLoadingMessage("Données de demande chargées, chargement des options...");
+        setLoadingMessage("Donn�es de demande charg�es, chargement des options...");
       } catch (err) {
-        console.error("Erreur lors de la récupération de la demande par id_proc:", err);
-        setLoadingMessage("Erreur lors de la récupération de la demande");
+        console.error("Erreur lors de la r�cup�ration de la demande par id_proc:", err);
+        setLoadingMessage("Erreur lors de la r�cup�ration de la demande");
       }
     };
 
@@ -405,7 +410,7 @@ export default function Step2() {
         const statutsResponse = await axios.get<StatutJuridique[]>(`${apiURL}/api/statuts-juridiques`);
         setStatutsJuridiques(statutsResponse.data);
         
-        setLoadingMessage("Options chargées, vérification des données...");
+        setLoadingMessage("Options charg�es, v�rification des donn�es...");
       } catch (error) {
         console.error("Error fetching additional data:", error);
         setLoadingMessage("Erreur lors du chargement des options");
@@ -621,12 +626,12 @@ export default function Step2() {
       });
       
       setToastType('success');
-      setToastMessage('Détenteur sélectionné et associé avec succés');
+      setToastMessage('D�tenteur s�lectionn� et associ� avec succ�s');
       
     } catch (error) {
       console.error("Error loading detenteur data:", error);
       setToastType('error');
-      setToastMessage('Erreur lors du chargement des données du détenteur');
+      setToastMessage('Erreur lors du chargement des donn�es du d�tenteur');
     }
   };
 
@@ -645,7 +650,7 @@ export default function Step2() {
     if (idProc) {
       router.push(`/demande/step3/page3?id=${idProc}`)
     } else {
-      alert("ID procédure manquant.");
+      alert("ID proc�dure manquant.");
     }
   };
 
@@ -664,10 +669,10 @@ export default function Step2() {
 
     try {
       await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/2`);
-      setEtapeMessage("étape 2 enregistrée avec succés !");
+      setEtapeMessage("�tape 2 enregistr�e avec succ�s !");
     } catch (err) {
       console.error(err);
-      setEtapeMessage("Erreur lors de l'enregistrement de l'étape.");
+      setEtapeMessage("Erreur lors de l'enregistrement de l'�tape.");
     } finally {
       setSavingEtape(false);
     }
@@ -719,8 +724,8 @@ export default function Step2() {
           break;
 
         case 'repLegal':
-          if (!detenteurId) throw new Error("Détenteur non défini !");
-          if (!formData.repLegal.nin) throw new Error("NIN du représentant légal est requis");
+          if (!detenteurId) throw new Error("D�tenteur non d�fini !");
+          if (!formData.repLegal.nin) throw new Error("NIN du repr�sentant l�gal est requis");
 
           try {
             response = await axios.put(
@@ -746,7 +751,7 @@ export default function Step2() {
           break;
 
         case 'rcDetails':
-          if (!detenteurId) throw new Error("Détenteur non défini !");
+          if (!detenteurId) throw new Error("D�tenteur non d�fini !");
 
           try {
             response = await axios.put(
@@ -772,18 +777,18 @@ export default function Step2() {
           break;
 
         case 'actionnaires':
-          if (!detenteurId) throw new Error("Détenteur non défini !");
+          if (!detenteurId) throw new Error("D�tenteur non d�fini !");
           // Validate actionnaires before sending
           const invalidActionnaires = formData.actionnaires.filter(a => !a.id_pays);
           if (invalidActionnaires.length > 0) {
             console.error('Actionnaires missing country:', invalidActionnaires);
-            throw new Error("Tous les actionnaires doivent avoir un pays sélectionné");
+            throw new Error("Tous les actionnaires doivent avoir un pays s�lectionn�");
           }
 
           response = await axios.put(
             `${apiURL}/api/actionnaires/${detenteurId}`,
             {
-              actionnaires: formData.actionnaires,
+              actionnaires: formData.actionnaires.map(a => ({ nom: a.nom, prenom: a.prenom, qualification: a.qualification, numero_carte: a.numero_carte, taux_participation: a.taux_participation, lieu_naissance: a.lieu_naissance, id_pays: a.id_pays, nationalite: (paysOptions.find(p => p.id_pays === (a.id_nationalite ?? 0))?.nationalite || "" ) })),
               id_detenteur: detenteurId
             }
           );
@@ -791,7 +796,7 @@ export default function Step2() {
       }
 
       setToastType('success');
-      setToastMessage(`✅ Section "${section}" enregistrée avec succés.`);
+      setToastMessage(`? Section "${section}" enregistr�e avec succ�s.`);
       setDisabledSections(prev => ({ ...prev, [section]: true }));
       setIsModifying(prev => ({ ...prev, [section]: false }));
 
@@ -808,7 +813,7 @@ export default function Step2() {
       }
 
       setToastType('error');
-      setToastMessage(`❌ ${message}`);
+      setToastMessage(`? ${message}`);
     } finally {
       setIsSaving(prev => ({ ...prev, [section]: false }));
     }
@@ -826,7 +831,7 @@ export default function Step2() {
       await axios.delete(`${apiURL}/api/actionnaires/${detenteurId}`);
       setFormData(prev => ({ ...prev, actionnaires: [] }));
       setToastType('success');
-      setToastMessage('Actionnaires supprimés avec succés');
+      setToastMessage('Actionnaires supprim�s avec succ�s');
     } catch (error) {
       setToastType('error');
       setToastMessage('Erreur lors de la suppression des actionnaires');
@@ -835,10 +840,10 @@ export default function Step2() {
 
   // Accordion items
   const accordions: AccordionItem[] = [
-    { id: 'infos', title: "Informations générales de la société", color: 'blue' },
-    { id: 'repLegal', title: "Représentant légal de la société", color: 'orange' },
-    { id: 'rcDetails', title: "Détails du Registre de Commerce", color: 'green' },
-    { id: 'actionnaires', title: "Actionnaires de la société", color: 'purple' },
+    { id: 'infos', title: "Informations g�n�rales de la soci�t�", color: 'blue' },
+    { id: 'repLegal', title: "Repr�sentant l�gal de la soci�t�", color: 'orange' },
+    { id: 'rcDetails', title: "D�tails du Registre de Commerce", color: 'green' },
+    { id: 'actionnaires', title: "Actionnaires de la soci�t�", color: 'purple' },
   ];
 
   // Show loading state until all required data is available
@@ -847,9 +852,9 @@ export default function Step2() {
       <div className="loading-container">
         <div className="spinner"></div>
         <p>{loadingMessage}</p>
-        {!idProc && <p>En attente de l'ID de procédure...</p>}
-        {idProc && !procedureData && <p>Chargement des données de procédure...</p>}
-        {procedureData && !idDemande && <p>Chargement des données de demande...</p>}
+        {!idProc && <p>En attente de l'ID de proc�dure...</p>}
+        {idProc && !procedureData && <p>Chargement des donn�es de proc�dure...</p>}
+        {procedureData && !idDemande && <p>Chargement des donn�es de demande...</p>}
         {idDemande && (!paysOptions.length || !statutsJuridiques.length) && <p>Chargement des options...</p>}
       </div>
     );
@@ -874,7 +879,7 @@ export default function Step2() {
               Documents obligatoires manquants: {missingDocsAlert.missing.join(', ')}
               {missingDocsAlert.deadline && (
                 <span style={{ marginLeft: 8, fontWeight: 500 }}>
-                  — {computeRemaining(missingDocsAlert.deadline)}
+                  � {computeRemaining(missingDocsAlert.deadline)}
                 </span>
               )}
             </div>
@@ -898,11 +903,11 @@ export default function Step2() {
             )}
             <div className={styles.contentWrapper}>
               <h2 className={styles.pageTitle}>
-                <span className={styles.stepNumber}>étape 2</span>
-                Identification de la société
+                <span className={styles.stepNumber}>�tape 2</span>
+                Identification de la soci�t�
               </h2>
               <p className={styles.pageSubtitle}>
-                Informations légales complétes de l'entité morale demandant le permis minier
+                Informations l�gales compl�tes de l'entit� morale demandant le permis minier
               </p>
 
               {codeDemande && idDemande && (
@@ -927,13 +932,13 @@ export default function Step2() {
               )}
               
               <div className={styles.detenteurSearchSection}>
-                <h3 className={styles.searchTitle}>Sélectionner un détenteur existant</h3>
+                <h3 className={styles.searchTitle}>S�lectionner un d�tenteur existant</h3>
                 <div className={styles.searchContainer}>
                   <div className={styles.searchInputWrapper}>
                     <FiSearch className={styles.searchIcon} />
                     <input
                       type="text"
-                      placeholder="Rechercher un détenteur par nom..."
+                      placeholder="Rechercher un d�tenteur par nom..."
                       value={searchQuery}
                       onChange={(e) => {
                         setSearchQuery(e.target.value);
@@ -956,7 +961,7 @@ export default function Step2() {
                           <div className={styles.detenteurName}>{detenteur.nom_societeFR}</div>
                           <div className={styles.detenteurDetails}>
                             {detenteur.nom_societeAR && <span>{detenteur.nom_societeAR}</span>}
-                            {detenteur.telephone && <span>Tél: {detenteur.telephone}</span>}
+                            {detenteur.telephone && <span>T�l: {detenteur.telephone}</span>}
                             {detenteur.email && <span>Email: {detenteur.email}</span>}
                           </div>
                         </div>
@@ -966,7 +971,7 @@ export default function Step2() {
                   
                   {showDetenteurDropdown && searchQuery.length >= 2 && detenteurOptions.length === 0 && !isSearching && (
                     <div className={styles.dropdown}>
-                      <div className={styles.noResults}>Aucun détenteur trouvé</div>
+                      <div className={styles.noResults}>Aucun d�tenteur trouv�</div>
                     </div>
                   )}
                 </div>
@@ -987,7 +992,7 @@ export default function Step2() {
                     });
                   }}
                 >
-                  <FiX /> Effacer la sélection
+                  <FiX /> Effacer la s�lection
                 </button>
               )}
 
@@ -1001,7 +1006,7 @@ export default function Step2() {
                     onClick={() => toggle(id)}
                   >
                     <span>{title}</span>
-                    <span className={styles.accordionIcon}>{openSection === id ? '▲' : '▼'}</span>
+                    <span className={styles.accordionIcon}>{openSection === id ? '?' : '?'}</span>
                   </div>
 
                   {openSection === id && (
@@ -1177,7 +1182,7 @@ export default function Step2() {
 
               <div className={styles.stepButtons}>
                 <button className={styles.btnPrevious} onClick={handlePrevious}>
-                  <FiChevronLeft className={styles.btnIcon} /> Précédente
+                  <FiChevronLeft className={styles.btnIcon} /> Pr�c�dente
                 </button>
 
                 <button
@@ -1185,7 +1190,7 @@ export default function Step2() {
                   onClick={handleSaveEtape}
                   disabled={savingEtape || statutProc === 'TERMINEE' || !statutProc}
                 >
-                  <BsSave className={styles.btnIcon} /> {savingEtape ? "Sauvegarde en cours..." : "Sauvegarder l'étape"}
+                  <BsSave className={styles.btnIcon} /> {savingEtape ? "Sauvegarde en cours..." : "Sauvegarder l'�tape"}
                 </button>
                 <button className={styles.btnNext} onClick={handleNext}>
                   Suivante <FiChevronRight className={styles.btnIcon} />
@@ -1204,7 +1209,7 @@ export default function Step2() {
           {toastMessage && (
             <div className={`${styles.toast} ${toastType === 'success' ? styles.toastSuccess : styles.toastError}`}>
               {toastMessage}
-              <button onClick={() => setToastMessage(null)} className={styles.toastClose}>×</button>
+              <button onClick={() => setToastMessage(null)} className={styles.toastClose}>�</button>
             </div>
           )}
 
@@ -1221,3 +1226,6 @@ export default function Step2() {
     </div>
   );
 }
+
+
+

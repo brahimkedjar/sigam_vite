@@ -32,17 +32,34 @@ function RouteEventsBridge() {
 function GlobalRouteLoading() {
   // Safety net: keep the global spinner in sync with route events,
   // even if a page doesn't use useRouterWithLoading.
-  const { startLoading, stopLoading } = useLoading()
+  const { startLoading, stopLoading, resetLoading } = useLoading()
   useEffect(() => {
     const onStart = () => startLoading()
-    const onDone = () => stopLoading()
+    const onDone = () => {
+      // If there are no active tracked requests, force stop.
+      try {
+        const active = (window as any).__SIGAM_ACTIVE_REQUESTS__ ?? 0
+        if (active <= 0) {
+          resetLoading()
+        } else {
+          stopLoading()
+        }
+      } catch {
+        stopLoading()
+      }
+    }
     window.addEventListener('routeChangeStart', onStart)
     window.addEventListener('routeChangeComplete', onDone)
     window.addEventListener('routeChangeError', onDone)
+    // Also react to global data loading events from fetch/axios
+    window.addEventListener('globalLoadingStart', onStart)
+    window.addEventListener('globalLoadingStop', onDone)
     return () => {
       window.removeEventListener('routeChangeStart', onStart)
       window.removeEventListener('routeChangeComplete', onDone)
       window.removeEventListener('routeChangeError', onDone)
+      window.removeEventListener('globalLoadingStart', onStart)
+      window.removeEventListener('globalLoadingStop', onDone)
     }
   }, [startLoading, stopLoading])
   return null

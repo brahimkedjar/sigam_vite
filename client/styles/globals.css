@@ -10,3 +10,21 @@ body {
   font-size: 0.860rem; /* 14px */
   line-height: 1.2;
 }
+
+/* Global icon sizing for interactive elements
+   Many react-icons default to 1em. If parent font-size is compact,
+   icons become unreadably small. Normalize common interactive icons
+   to a comfortable size without changing text. */
+button svg,
+a svg,
+[class*="actions"] svg,
+[class*="actionButtons"] svg,
+.iconButton svg,
+.logoutBtn svg,
+.navIcon svg,
+.subIcon svg {
+  /* Use font-size so 1em-based icons scale predictably */
+  font-size: 18px;
+  /* Ensure stroke stays visible at this size */
+  stroke-width: 2;
+}
