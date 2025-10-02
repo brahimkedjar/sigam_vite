@@ -19,6 +19,56 @@ import '../../src/config/arcgis-config';
 // Configure ArcGIS Enterprise portal
 esriConfig.portalUrl = "https://sig.anam.dz/portal";
 
+// Strip app-level custom headers from ArcGIS/ANAM/CDN requests to avoid CORS issues
+if (typeof window !== 'undefined') {
+  try {
+    const corsServers = esriConfig.request.corsEnabledServers as string[];
+    const ensure = (h: string) => { if (!corsServers.includes(h)) corsServers.push(h); };
+    [
+      'sig.anam.dz',
+      'cdn.arcgis.com',
+      'js.arcgis.com',
+      'services.arcgisonline.com',
+      'server.arcgisonline.com',
+      'basemaps.arcgis.com',
+      'tiles.arcgis.com'
+    ].forEach(ensure);
+
+    const key = '__SIGAM_ARCGIS_INTERCEPTOR__';
+    const w = window as any;
+    if (!w[key]) {
+      esriConfig.request.interceptors.push({
+        urls: (url: string) => {
+          try {
+            const u = new URL(url, window.location.origin);
+            const h = u.hostname.toLowerCase();
+            return (
+              h === 'sig.anam.dz' ||
+              h.endsWith('.arcgis.com') ||
+              h.endsWith('arcgisonline.com') ||
+              h === 'cdn.arcgis.com'
+            );
+          } catch { return false; }
+        },
+        before: (params: any) => {
+          const headers = new Headers(params.requestOptions?.headers || {});
+          headers.delete('X-User-Id');
+          headers.delete('x-user-id');
+          headers.delete('X-User-Name');
+          headers.delete('x-user-name');
+          params.requestOptions = {
+            ...params.requestOptions,
+            headers,
+            credentials: 'omit'
+          };
+          return params;
+        }
+      });
+      w[key] = true;
+    }
+  } catch {}
+}
+
 export type CoordinateSystem = 'WGS84' | 'UTM' | 'LAMBERT' | 'MERCATOR';
 
 export type Coordinate = {
@@ -98,6 +148,9 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
     // Sample basemap (you might want to add your own basemaps later)
     sampleWorldCities: "https://sig.anam.dz/server/rest/services/SampleWorldCities/MapServer"
   };
+
+  // Use a safe, percent-encoded URL for the service name with accents
+  const perimetresPromotionUrl = "https://sig.anam.dz/server/rest/services/Hosted/p%C3%A9rim%C3%A8tres_de_promotion/FeatureServer/0";
 
   // Coordinate conversion functions (same as before)
   const convertToWGS84 = (point: Coordinate): [number, number] => {
@@ -341,7 +394,7 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
 
       // Add Promotion Perimeters Layer
       const perimetresLayer = new FeatureLayer({
-        url: enterpriseServices.perimetresPromotion,
+        url: perimetresPromotionUrl,
         title: "Périmètres de Promotion",
         outFields: ["*"],
         opacity: activeLayers.perimetres ? 0.5 : 0,
