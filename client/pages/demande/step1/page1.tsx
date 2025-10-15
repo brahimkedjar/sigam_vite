@@ -26,6 +26,7 @@ import { STEP_LABELS } from "../../../src/constants/steps";
 import { useViewNavigator } from "../../../src/hooks/useViewNavigator";
 import router from 'next/router';
 import { toast } from "react-toastify";
+import { useLoading } from '@/components/globalspinner/LoadingContext';
 import { Phase, Procedure, ProcedureEtape, ProcedurePhase, StatutProcedure } from "@/src/types/procedure";
 import { useActivateEtape } from "@/src/hooks/useActivateEtape";
 
@@ -75,6 +76,7 @@ type DocStatus = "present" | "manquant" | "attente";
 type DocumentWithStatus = Document & { statut: DocStatus };
 
 export default function Step5_Documents() {
+  const { resetLoading } = useLoading();
   const searchParams = useSearchParams();
   const [loadingState, setLoadingState] = useState<string>("Initializing...");
   const [idDemande, setIdDemande] = useState<string | null>(null);
@@ -113,6 +115,11 @@ export default function Step5_Documents() {
   const [showMissingDocsModal, setShowMissingDocsModal] = useState(false);
   const [letterPreview, setLetterPreview] = useState<{ type: string; content: string; deadline?: string | null; numero_recepisse?: string | null } | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Clear any stuck global spinner when landing here
+  useEffect(() => {
+    try { resetLoading(); } catch {}
+  }, [resetLoading]);
 
   // Vérifier si des documents obligatoires manquent et bloquent la navigation
   const hasBlockingMissingDocs = missingSummary && missingSummary.blocking.length > 0;
@@ -547,7 +554,7 @@ export default function Step5_Documents() {
             <div className={styles['modal-actions']}>
               <button 
                 className={`${styles['btn']} ${styles['btn-primary']}`}
-                onClick={() => setShowMissingDocsModal(false)}
+                onClick={handlecompris}
               >
                 Compris
               </button>
@@ -616,11 +623,11 @@ export default function Step5_Documents() {
                         });
                       }
                     } catch (e) {
-                      console.error('Erreur gnration lettre de rejet', e);
+                      console.error('Erreur génération lettre de rejet', e);
                     }
                   }}
                 >
-                  Prvisualiser le rejet
+                  Prévisualiser le rejet
                 </button>
               )}
             </div>
@@ -779,10 +786,6 @@ export default function Step5_Documents() {
 
   const handleNext = useCallback(
     debounce(async () => {
-      if (false && isNavigationBlocked) {
-        setShowMissingDocsModal(true);
-        return;
-      }
 
       if (isNavigating) return;
       setIsNavigating(true);
@@ -810,6 +813,9 @@ export default function Step5_Documents() {
     [isNavigationBlocked, attente, submitDossier, router, idProc, isNavigating]
   );
 
+  const handlecompris = async() => {
+      router.push(`/demande/step2/page2?id=${idProc}`)
+  }
   const handleBack =async () => {
       router.push(`/demande/step1_typepermis/page1_typepermis?id=${idProc}`)
   }

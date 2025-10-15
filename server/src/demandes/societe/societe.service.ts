@@ -37,6 +37,15 @@ export class SocieteService {
       throw new HttpException('Pays invalide', HttpStatus.BAD_REQUEST);
     }
   }
+  // Validate nationalite exists if provided
+  if (data.id_nationalite) {
+    const natExists = await this.prisma.nationalite.findUnique({
+      where: { id_nationalite: parseInt(data.id_nationalite, 10) }
+    })
+    if (!natExists) {
+      throw new HttpException('Nationalité invalide', HttpStatus.BAD_REQUEST)
+    }
+  }
 
   const existing = await this.prisma.detenteurMorale.findFirst({
     where: {
@@ -50,24 +59,25 @@ export class SocieteService {
     throw new HttpException('Le Detenteur Morale existe déjà.', HttpStatus.CONFLICT);
   }
 
-  // Remove the nationalite field from the data
-  const { nationalite, ...createData } = data;
-
   return this.prisma.detenteurMorale.create({
     data: {
-      nom_societeFR: createData.nom_fr,
-      nom_societeAR: createData.nom_ar,
-      telephone: createData.tel,
-      email: createData.email,
-      fax: createData.fax,
-      adresse_siege: createData.adresse,
-      // nationalite field removed since it doesn't exist in the model
+      nom_societeFR: data.nom_fr,
+      nom_societeAR: data.nom_ar,
+      telephone: data.tel,
+      email: data.email,
+      fax: data.fax,
+      adresse_siege: data.adresse,
       statutJuridique: {
-        connect: { id_statutJuridique: parseInt(createData.statut_id, 10) }
+        connect: { id_statutJuridique: parseInt(data.statut_id, 10) }
       },
-      ...(createData.id_pays && {
+      ...(data.id_pays && {
         pays: {
-          connect: { id_pays: parseInt(createData.id_pays, 10) }
+          connect: { id_pays: parseInt(data.id_pays, 10) }
+        }
+      }),
+      ...(data.id_nationalite && {
+        nationaliteRef: {
+          connect: { id_nationalite: parseInt(data.id_nationalite, 10) }
         }
       })
     },
@@ -84,15 +94,13 @@ async updateRepresentant(nin: string, data: any) {
     throw new HttpException('Personne non trouvée', HttpStatus.NOT_FOUND);
   }
 
-  // Get the country to determine nationality
+  // Resolve optional nationality label from id_nationalite for legacy string field
   let nationalite = '';
-  if (data.id_pays) {
-    const pays = await this.prisma.pays.findUnique({
-      where: { id_pays: parseInt(data.id_pays, 10) }
+  if (data.id_nationalite) {
+    const nat = await this.prisma.nationalite.findUnique({
+      where: { id_nationalite: parseInt(data.id_nationalite, 10) }
     });
-    if (pays) {
-      nationalite = pays.nationalite;
-    }
+    if (nat) nationalite = nat.libelle;
   }
 
   // Update person details
@@ -107,12 +115,17 @@ async updateRepresentant(nin: string, data: any) {
       email: data.email,
       fax: data.fax,
       qualification: data.qualite,
-      nationalite: nationalite, // Set nationality from country
+      nationalite: nationalite,
       lieu_naissance: data.lieu_naissance,
       // Add pays relation if id_pays is provided
       ...(data.id_pays && {
         pays: {
           connect: { id_pays: parseInt(data.id_pays, 10) }
+        }
+      }),
+      ...(data.id_nationalite && {
+        nationaliteRef: {
+          connect: { id_nationalite: parseInt(data.id_nationalite, 10) }
         }
       })
     }
@@ -231,15 +244,13 @@ async updateRepresentant(nin: string, data: any) {
     throw new HttpException('Cette Personne Physique existe déjà.', HttpStatus.CONFLICT);
   }
 
-  // Get the country to determine nationality
+  // Determine nationality label from selected nationalité
   let nationalite = '';
-  if (data.id_pays) {
-    const pays = await this.prisma.pays.findUnique({
-      where: { id_pays: parseInt(data.id_pays, 10) }
+  if (data.id_nationalite) {
+    const nat = await this.prisma.nationalite.findUnique({
+      where: { id_nationalite: parseInt(data.id_nationalite, 10) }
     });
-    if (pays) {
-      nationalite = pays.nationalite;
-    }
+    if (nat) nationalite = nat.libelle;
   }
 
   const createData: any = {
@@ -260,10 +271,15 @@ async updateRepresentant(nin: string, data: any) {
     ref_professionnelles: data.ref_professionnelles ?? '',
   };
 
-  // Add pays relation if id_pays is provided
+  // Add relations if provided
   if (data.id_pays) {
     createData.pays = {
       connect: { id_pays: parseInt(data.id_pays, 10) }
+    };
+  }
+  if (data.id_nationalite) {
+    createData.nationaliteRef = {
+      connect: { id_nationalite: parseInt(data.id_nationalite, 10) }
     };
   }
 
@@ -323,6 +339,11 @@ async updateActionnaires(
               connect: { id_pays: a.id_pays }
             }
           }),
+          ...(a.id_nationalite && {
+            nationaliteRef: {
+              connect: { id_nationalite: a.id_nationalite }
+            }
+          })
         }
       });
           } else {      
@@ -336,7 +357,6 @@ async updateActionnaires(
         email: '',
         fax: '',
         qualite: a.qualification,
-        nationalite: a.nationalite,
         nin: a.numero_carte,
         lieu_naissance: a.lieu_naissance,
       };
@@ -346,6 +366,10 @@ async updateActionnaires(
         personneData.id_pays = a.id_pays;
       } else {
         console.log('WARNING: No id_pays in actionnaire data');
+      }
+
+      if (a.id_nationalite) {
+        personneData.id_nationalite = a.id_nationalite;
       }
 
       personne = await this.createPersonne(personneData);
@@ -421,13 +445,20 @@ async updateDetenteur(id: number, data: any): Promise<DetenteurMorale> {
     data: {
       nom_societeFR: data.nom_fr,
       nom_societeAR: data.nom_ar,
-      id_statutJuridique: parseInt(data.statut_id, 10),
+      ...(data.statut_id && {
+        statutJuridique: { connect: { id_statutJuridique: parseInt(data.statut_id, 10) } }
+      }),
       telephone: data.tel,
       email: data.email,
       fax: data.fax,
       adresse_siege: data.adresse,
-      //nationalite: data.nationalite,
-      pays: data.pays
+      // connect relations if provided
+      ...(data.id_pays && {
+        pays: { connect: { id_pays: parseInt(data.id_pays, 10) } }
+      }),
+      ...(data.id_nationalite && {
+        nationaliteRef: { connect: { id_nationalite: parseInt(data.id_nationalite, 10) } }
+      })
     }
   });
 }
@@ -525,7 +556,7 @@ async deleteActionnaires(id_detenteur: number) {
         email: '',
         fax: '',
         qualite: a.qualification,
-        nationalite: a.nationalite,
+        nationalite: a.id_nationalite,
         nin: a.numero_carte,
          id_pays: a.id_pays,
         lieu_naissance: a.lieu_naissance,
@@ -583,7 +614,8 @@ async getDetenteurById(id: number): Promise<any> {
     where: { id_detenteur: id },
     include: {
       statutJuridique: true,
-      pays: true
+      pays: true,
+      nationaliteRef: true
     }
   });
 }
@@ -597,7 +629,8 @@ async getRepresentantLegal(id_detenteur: number): Promise<any> {
     include: {
       personne: {
         include: {
-          pays: true
+          pays: true,
+          nationaliteRef: true,
         }
       }
     }
@@ -619,7 +652,8 @@ async getActionnaires(id_detenteur: number): Promise<any[]> {
     include: {
       personne: {
         include: {
-          pays: true
+          pays: true,
+          nationaliteRef: true,
         }
       }
     }

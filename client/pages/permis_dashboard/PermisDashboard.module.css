@@ -606,6 +606,15 @@ display: flex;
   transition: var(--transition);
 }
 
+/* Ensure icons are visible and sized consistently inside action buttons */
+.viewButton svg,
+.editButton svg,
+.deleteButton svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+}
+
 .viewButton {
   background-color: rgba(59, 130, 246, 0.1);
   color: var(--primary);

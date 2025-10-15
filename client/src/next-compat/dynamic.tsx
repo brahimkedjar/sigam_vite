@@ -13,7 +13,6 @@ export default function dynamic<T extends React.ComponentType<any>>(loader: Load
   return function DynamicComponent(props: React.ComponentProps<T>) {
     return (
       <React.Suspense fallback={<Fallback />}> 
-        {/* @ts-expect-error JSX Component type */}
         <Lazy {...props} />
       </React.Suspense>
     )

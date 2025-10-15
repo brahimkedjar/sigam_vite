@@ -18,7 +18,6 @@ type RepresentantLegalData = {
 type Pays = {
   id_pays: number;
   nom_pays: string;
-  nationalite: string;
 };
 
 type RepresentantLegalProps = {
@@ -35,16 +34,6 @@ export default function RepresentantLegal({
   paysOptions = [] 
 }: RepresentantLegalProps) {
   const [displayNationalite, setDisplayNationalite] = useState('');
-
-  // Update displayed nationality when country changes
-  useEffect(() => {
-    if (data.id_pays) {
-      const selectedPays = paysOptions.find(p => p.id_pays === data.id_pays);
-      setDisplayNationalite(selectedPays ? selectedPays.nationalite : '');
-    } else {
-      setDisplayNationalite('');
-    }
-  }, [data.id_pays, paysOptions]);
 
   if (!data) return <p>Aucune donnée disponible pour le représentant légal.</p>;
 

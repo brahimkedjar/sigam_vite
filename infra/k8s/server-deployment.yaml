@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sigam-server
+  namespace: sigam
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sigam-server
+  template:
+    metadata:
+      labels:
+        app: sigam-server
+    spec:
+      containers:
+        - name: server
+          # Replace with your registry image
+          image: sigam/server:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3001
+          env:
+            - name: NODE_ENV
+              value: production
+            - name: PORT
+              value: "3001"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: DATABASE_URL
+            # TypeORM compatibility (reads PG* vars)
+            - name: PGHOST
+              value: postgres.sigam.svc.cluster.local
+            - name: PGPORT
+              value: "5432"
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_USER
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_PASSWORD
+            - name: PGDATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: POSTGRES_DB
+            # JWT secret example (change in your Secret if needed)
+            - name: JWT_SECRET
+              value: "CHANGE_ME_JWT_SECRET"
+          readinessProbe:
+            tcpSocket:
+              port: 3001
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 3001
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      initContainers:
+        - name: prisma-migrate
+          image: sigam/server:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: DATABASE_URL
+          workingDir: /app/server
+          command: ["npx", "prisma", "migrate", "deploy"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sigam-server
+  namespace: sigam
+spec:
+  selector:
+    app: sigam-server
+  ports:
+    - protocol: TCP
+      port: 3001
+      targetPort: 3001
+

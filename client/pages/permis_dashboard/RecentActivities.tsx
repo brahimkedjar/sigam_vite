@@ -89,7 +89,10 @@ export default function RecentActivities({ activities, loading = false, onRefres
       
       <div className={styles.activitiesList}>
         {activities.map((activity, index) => (
-          <div key={activity.id} className={styles.activityItem}>
+          <div
+            key={`${activity.type}-${activity.id}-${new Date(activity.timestamp).getTime()}`}
+            className={styles.activityItem}
+          >
             <div className={styles.activityIcon} style={{ color: getStatusColor(activity.status) }}>
               {getActivityIcon(activity.type)}
             </div>

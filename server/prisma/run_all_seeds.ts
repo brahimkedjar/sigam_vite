@@ -4,6 +4,7 @@ import * as wilayaSeed from './wilaya_seed';
 import * as dairaSeed from './daira_seed';
 import * as communeSeed from './commune_seed';
 import * as paysSeed from './pays_seed';
+import * as nationaliteSeed from './nationalite_seed';
 import * as expertSeed from './expert_seed';
 import * as statutJuridiqueSeed from './statutJuridique_seed';
 import * as detenteurSeed from './detenteur_seed';
@@ -22,6 +23,7 @@ async function main() {
     { name: 'daira_seed', run: dairaSeed.main },
     { name: 'commune_seed', run: communeSeed.main },
     { name: 'pays_seed', run: paysSeed.main },
+    { name: 'nationalite_seed', run: nationaliteSeed.main },
     { name: 'expert_seed', run: expertSeed.main },
     { name: 'statutJuridique_seed', run: statutJuridiqueSeed.main },
     { name: 'detenteur_seed', run: detenteurSeed.main },

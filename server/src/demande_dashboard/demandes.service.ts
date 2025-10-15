@@ -13,11 +13,10 @@ export class DemandesService {
     daira: { select: { id_daira: true, nom_dairaFR: true } },
     commune: { select: { id_commune: true, nom_communeFR: true } },
     procedure: { select: { id_proc: true, statut_proc: true, date_fin_proc: true } },
-    detenteur: { select: { id_detenteur: true, nom_societeFR: true, email: true } },
+    detenteur: { select: { id_detenteur: true, nom_societeFR: true, email: true, pays: { select: { id_pays: true, nom_pays: true } }, nationaliteRef: { select: { id_nationalite: true, libelle: true } } } },
     expertMinier: { select: { id_expert: true, nom_expert: true, num_agrement: true } },
     typePermis: { select: { id: true, code_type: true, lib_type: true } },
     typeProcedure: { select: { id: true, libelle: true } },
-    pays: { select: { id_pays: true, nom_pays: true } },
   } satisfies Prisma.DemandeInclude;
 
  async findMany(params: {
@@ -187,35 +186,30 @@ export class DemandesService {
     avgInstructionDays,
   };
 }
-async getDemandeById(id: number) {
-  return this.prisma.demande.findUnique({
-    where: { id_demande: id },
-    include: {
-      wilaya: true,
-      daira: true,
-      commune: true,
-      detenteur: true,
-      expertMinier: true,
-      typePermis: true,
-      typeProcedure: true,
-      pays: true, // Add this if you need country data
-      procedure: {
-        include: {
-          ProcedureEtape: {
-            include: {
-              etape: true,
-            },
-            orderBy: {
-              date_debut: 'asc',
+  async getDemandeById(id: number) {
+    return this.prisma.demande.findUnique({
+      where: { id_demande: id },
+      include: {
+        wilaya: true,
+        daira: true,
+        commune: true,
+        detenteur: { include: { pays: true, nationaliteRef: true } },
+        expertMinier: true,
+        typePermis: true,
+        typeProcedure: true,
+        procedure: {
+          include: {
+            ProcedureEtape: {
+              include: { etape: true },
+              orderBy: { date_debut: 'asc' },
             },
           },
         },
+        dossiersFournis: true,
+        CahierCharge: true,
       },
-      dossiersFournis: true,
-      CahierCharge: true,
-    },
-  });
-}
+    });
+  }
   async findOne(id: number) {
     return this.prisma.demande.findUnique({
       where: { id_demande: id },

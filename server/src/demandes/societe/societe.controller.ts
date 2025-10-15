@@ -42,8 +42,8 @@ async updateDetenteur(
     email: data.email || '',
     fax: data.fax || '',
     adresse: data.adresse || '',
-    nationalite: data.nationalite || '',
-    pay: data.pay || ''
+    id_pays: data.id_pays ? parseInt(data.id_pays, 10) : undefined,
+    id_nationalite: data.id_nationalite ? parseInt(data.id_nationalite, 10) : undefined,
   });
 }
 

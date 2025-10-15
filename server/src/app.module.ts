@@ -63,7 +63,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Expert } from './notifications/expertminier';
 import { Notification } from './notifications/notification.entity';
 import { ChatModule } from './chat/chat.module';
-import { ProceduretechniqueModule } from './fichetechnique/fichtechnique.module';
+// import { ProceduretechniqueModule } from './fichetechnique/fichtechnique.module';
 import { PortailModule } from './portail/portail.module';
 import { ArticleSetsModule } from './article_sets/article-sets.module';
 import { InscriptionProvisoireModule } from './demandes/inscription_provisoire/inscription-provisoire.module';
@@ -71,13 +71,14 @@ import { InscriptionProvisoireModule } from './demandes/inscription_provisoire/i
 
 @Module({
   imports: [TypeOrmModule.forRoot({
-      type: 'postgres',           // or mysql, mariadb, etc.
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: 'crb12345',
-      database: 'sigam',
+      type: 'postgres',
+      host: process.env.TYPEORM_HOST || process.env.PGHOST || 'localhost',
+      port: parseInt(process.env.TYPEORM_PORT || process.env.PGPORT || '5432', 10),
+      username: process.env.TYPEORM_USERNAME || process.env.PGUSER || 'postgres',
+      password: process.env.TYPEORM_PASSWORD || process.env.PGPASSWORD || 'crb12345',
+      database: process.env.TYPEORM_DATABASE || process.env.PGDATABASE || 'sigam',
       entities: [Notification, Expert],
+      synchronize: false,
     }),DemandesModule,PaymentModule,ConfigModule.forRoot({
       isGlobal: true,
     }),ProcedureRenouvellementModule,BaremProduitDroitModule,SuperficiaireBaremeModule,TypeProceduresconfModule,
@@ -88,7 +89,7 @@ import { InscriptionProvisoireModule } from './demandes/inscription_provisoire/i
     InteractionWaliModule,CapacitesModule,SubstancesModule,DocumentsModule,DemandeSummaryControllerModule,SubstancesconfModule,
     StatutsJuridiquesconfconfModule,WilayasconfModule,DairasconfModule,CommunesconfModule,AntennesconfModule,DetenteurMorale_confModule,
     TypePermis_confModule,StatutPermis_confModule,Permis_confModule,Antenne_confModule,DemandesDashboardModule,TransfertModule,
-    NotificationsModule,ChatModule,ProceduretechniqueModule,PortailModule,ArticleSetsModule,InscriptionProvisoireModule],
+    NotificationsModule,ChatModule,PortailModule,ArticleSetsModule,InscriptionProvisoireModule],
   controllers: [DemandesController],
   providers: [DemandeService,
     //{

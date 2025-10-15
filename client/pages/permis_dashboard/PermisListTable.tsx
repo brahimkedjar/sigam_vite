@@ -27,7 +27,8 @@ import { fr } from 'date-fns/locale';
 import styles from './PermisListTable.module.css';
 import { useAuthStore } from '@/src/store/useAuthStore';
 import { useAuthReady } from '@/src/hooks/useAuthReady';
-import { useViewNavigator } from '@/src/hooks/useViewNavigator';
+import { useViewNavigator } from '@/src/hooks/useViewNavigator';
+import { useLoading } from '@/components/globalspinner/LoadingContext';
 import axios from 'axios';
 import Navbar from '../navbar/Navbar';
 import Sidebar from '../sidebar/Sidebar';
@@ -89,7 +90,8 @@ interface PermisListTableProps {
 }
 
 export default function PermisListTable({ }: PermisListTableProps) {
-  const router = useRouter();
+  const router = useRouter();
+  const { resetLoading } = useLoading();
   const apiURL = process.env.NEXT_PUBLIC_API_URL;
   const { auth } = useAuthStore();
   const isAuthReady = useAuthReady();
@@ -118,7 +120,12 @@ export default function PermisListTable({ }: PermisListTableProps) {
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);
   const [loading, setLoading] = useState(true);
  const [isDataReady, setIsDataReady] = useState(false);
-  const isFetching = useRef(false);
+  const isFetching = useRef(false);
+
+  // On mount: ensure global route spinner is cleared when landing here
+  useEffect(() => {
+    try { resetLoading(); } catch {}
+  }, [resetLoading]);
 
   // Fetch data directly in this component
 const fetchPermisList = useCallback(async (page: number = 1) => {

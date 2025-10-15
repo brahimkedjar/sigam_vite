@@ -1,0 +1,38 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: sigam-ingress
+  namespace: sigam
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
+    # Uncomment and configure TLS as needed
+    # cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  rules:
+    - host: sigam.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sigam-client
+                port:
+                  number: 80
+    - host: api.sigam.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sigam-server
+                port:
+                  number: 3001
+  # tls:
+  #   - hosts:
+  #       - sigam.example.com
+  #       - api.sigam.example.com
+  #     secretName: sigam-ingress-tls
+

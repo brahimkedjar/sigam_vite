@@ -1,0 +1,53 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgres-backup
+  namespace: sigam
+spec:
+  schedule: "0 0 * * *"  # every day at 00:00
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: pgdump
+              image: postgres:16
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: POSTGRES_DB
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-credentials
+                      key: POSTGRES_DB
+                - name: POSTGRES_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-credentials
+                      key: POSTGRES_USER
+                - name: POSTGRES_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgres-credentials
+                      key: POSTGRES_PASSWORD
+              command:
+                - /bin/sh
+                - -c
+                - |
+                  set -eu
+                  TS=$(date +"%Y%m%d-%H%M%S")
+                  FILE="/backups/${POSTGRES_DB}-${TS}.dump"
+                  echo "Backing up to ${FILE}"
+                  pg_dump -h postgres.sigam.svc.cluster.local -U "$POSTGRES_USER" -F c -b -v -f "$FILE" "$POSTGRES_DB"
+                  # Retain last 7 days
+                  find /backups -type f -name "${POSTGRES_DB}-*.dump" -mtime +7 -print -delete || true
+              volumeMounts:
+                - name: backups
+                  mountPath: /backups
+          volumes:
+            - name: backups
+              persistentVolumeClaim:
+                claimName: postgres-backups
+

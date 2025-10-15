@@ -25,6 +25,13 @@ async getPays() {
   });
 }
 
+@Get('nationalites')
+async getNationalites() {
+  return this.prisma.nationalite.findMany({
+    orderBy: { libelle: 'asc' }
+  })
+}
+
   @Post()
   @ApiOperation({ summary: 'Create a new legal status' })
   @ApiResponse({ status: 201, description: 'Legal status created successfully' })

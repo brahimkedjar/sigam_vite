@@ -1,8 +1,13 @@
 // components/map/ArcGISMap.tsx
 'use client';
+// Configure ArcGIS before importing other @arcgis/core modules
+import '../../src/config/arcgis-config';
+import '@arcgis/core/assets/esri/themes/light/main.css';
 import { forwardRef, useRef, useEffect, useImperativeHandle, useState } from 'react';
 import Map from '@arcgis/core/Map';
 import MapView from '@arcgis/core/views/MapView';
+import Basemap from '@arcgis/core/Basemap';
+import WebTileLayer from '@arcgis/core/layers/WebTileLayer';
 import Graphic from '@arcgis/core/Graphic';
 import GraphicsLayer from '@arcgis/core/layers/GraphicsLayer';
 import FeatureLayer from '@arcgis/core/layers/FeatureLayer';
@@ -14,18 +19,20 @@ import SimpleFillSymbol from '@arcgis/core/symbols/SimpleFillSymbol';
 import * as geometryEngine from '@arcgis/core/geometry/geometryEngine';
 import * as proj4 from 'proj4';
 import esriConfig from '@arcgis/core/config';
-import '../../src/config/arcgis-config';
 
 // Configure ArcGIS Enterprise portal
-esriConfig.portalUrl = "https://sig.anam.dz/portal";
+try { esriConfig.portalUrl = "https://sig.anam.dz/portal"; } catch {}
 
 // Strip app-level custom headers from ArcGIS/ANAM/CDN requests to avoid CORS issues
 if (typeof window !== 'undefined') {
   try {
-    const corsServers = esriConfig.request.corsEnabledServers as string[];
+    const req = esriConfig.request as any;
+    req.corsEnabledServers = req.corsEnabledServers || [];
+    const corsServers = req.corsEnabledServers as string[];
     const ensure = (h: string) => { if (!corsServers.includes(h)) corsServers.push(h); };
     [
       'sig.anam.dz',
+      'sig.anam.dz:443',
       'cdn.arcgis.com',
       'js.arcgis.com',
       'services.arcgisonline.com',
@@ -37,30 +44,39 @@ if (typeof window !== 'undefined') {
     const key = '__SIGAM_ARCGIS_INTERCEPTOR__';
     const w = window as any;
     if (!w[key]) {
-      esriConfig.request.interceptors.push({
-        urls: (url: string) => {
+      esriConfig.request.interceptors!.push({
+        // Provide a types-compatible list of host patterns; do final hostname verification in `before`
+        urls: [
+          'sig.anam.dz',
+          /\.arcgis\.com$/,
+          /\.arcgisonline\.com$/,
+          'cdn.arcgis.com'
+        ],
+        before: (params: any) => {
           try {
-            const u = new URL(url, window.location.origin);
+            // Determine the request URL from available params locations
+            const urlStr = params.url || params.requestOptions?.url || '';
+            const u = new URL(urlStr, window.location.origin);
             const h = u.hostname.toLowerCase();
-            return (
+            // Only modify headers/credentials for the intended hosts
+            if (
               h === 'sig.anam.dz' ||
               h.endsWith('.arcgis.com') ||
               h.endsWith('arcgisonline.com') ||
               h === 'cdn.arcgis.com'
-            );
-          } catch { return false; }
-        },
-        before: (params: any) => {
-          const headers = new Headers(params.requestOptions?.headers || {});
-          headers.delete('X-User-Id');
-          headers.delete('x-user-id');
-          headers.delete('X-User-Name');
-          headers.delete('x-user-name');
-          params.requestOptions = {
-            ...params.requestOptions,
-            headers,
-            credentials: 'omit'
-          };
+            ) {
+              const headers = new Headers(params.requestOptions?.headers || {});
+              headers.delete('X-User-Id');
+              headers.delete('x-user-id');
+              headers.delete('X-User-Name');
+              headers.delete('x-user-name');
+              params.requestOptions = {
+                ...params.requestOptions,
+                headers,
+                credentials: 'omit'
+              };
+            }
+          } catch {}
           return params;
         }
       });
@@ -125,6 +141,8 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
     exploration: true,
     perimetres: true
   });
+  // Guard to avoid duplicate MapView initialization in React StrictMode (dev)
+  const initializedRef = useRef<boolean>(false);
 
   // YOUR ACTUAL ENTERPRISE SERVICE URLs
   const enterpriseServices = {
@@ -151,6 +169,10 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
 
   // Use a safe, percent-encoded URL for the service name with accents
   const perimetresPromotionUrl = "https://sig.anam.dz/server/rest/services/Hosted/p%C3%A9rim%C3%A8tres_de_promotion/FeatureServer/0";
+  
+  // Allow disabling enterprise layers entirely in local/dev via env
+  // Vite exposes env as import.meta.env; any string 'true' enables this toggle
+  const DISABLE_ENTERPRISE_LAYERS = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_ARCGIS_DISABLE_ENTERPRISE === 'true');
 
   // Coordinate conversion functions (same as before)
   const convertToWGS84 = (point: Coordinate): [number, number] => {
@@ -314,18 +336,11 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
   }));
 
   // Function to add Enterprise layers to the map
-  const addEnterpriseLayers = (map: Map) => {
+  const addEnterpriseLayers = async (map: Map) => {
     const layers = [];
 
     try {
-      // Add sample basemap (you can replace this with your own basemaps)
-      const baseLayer = new MapImageLayer({
-        url: enterpriseServices.sampleWorldCities,
-        title: "Carte de Base ANAM",
-        opacity: 0.8
-      });
-      map.add(baseLayer);
-      layers.push(baseLayer);
+      // Note: Do not add external MapImageLayer as a baselayer to avoid blocking map when ANAM DNS is unreachable.
 
       // Add Mining Titles Layer (YOUR MAIN SERVICE)
       const titresLayer = new FeatureLayer({
@@ -358,8 +373,13 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
           }
         } as any
       });
-      map.add(titresLayer);
-      layers.push(titresLayer);
+      try {
+        await titresLayer.load();
+        map.add(titresLayer);
+        layers.push(titresLayer);
+      } catch (e) {
+        console.warn('Skipped Titres Miniers layer: service unreachable.', e);
+      }
 
       // Add Exploration Layer
       const explorationLayer = new FeatureLayer({
@@ -389,8 +409,13 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
           }
         } as any
       });
-      map.add(explorationLayer);
-      layers.push(explorationLayer);
+      try {
+        await explorationLayer.load();
+        map.add(explorationLayer);
+        layers.push(explorationLayer);
+      } catch (e) {
+        console.warn("Skipped Exploration layer: service unreachable.", e);
+      }
 
       // Add Promotion Perimeters Layer
       const perimetresLayer = new FeatureLayer({
@@ -419,16 +444,26 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
           }
         } as any
       });
-      map.add(perimetresLayer);
-      layers.push(perimetresLayer);
+      // Normalize display strings for accented titles to avoid encoding artifacts in some editors
+      try {
+        (perimetresLayer as any).title = 'Périmètres de Promotion';
+        if ((perimetresLayer as any).popupTemplate) {
+          (perimetresLayer as any).popupTemplate.title = 'Périmètre de Promotion';
+        }
+      } catch {}
+      try {
+        await perimetresLayer.load();
+        map.add(perimetresLayer);
+        layers.push(perimetresLayer);
+      } catch (e) {
+        console.warn("Skipped Périmètres de Promotion layer: service unreachable.", e);
+      }
 
       setEnterpriseLayers(layers);
-      console.log("ANAM Enterprise layers loaded successfully");
+      console.log(`ANAM Enterprise layers loaded: ${layers.length}/3`);
 
     } catch (error) {
       console.error("Error loading ANAM enterprise layers:", error);
-      // Fallback to standard basemap
-      map.basemap = "topo-vector";
     }
   };
 
@@ -437,11 +472,31 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
     if (!mapRef.current) return;
 
     const initializeMap = async () => {
+      if (initializedRef.current) return;
+      initializedRef.current = true;
       try {
-        // Create map
-        const map = new Map({
-          basemap: "topo-vector" // Fallback basemap
-        });
+        // Prefer ArcGIS basemap for clear ArcGIS look & feel
+        // Fallbacks: Esri raster tiles -> OSM tiles
+        let map: Map;
+        try {
+          const esriVectorBasemap = Basemap.fromId('topo-vector');
+          await esriVectorBasemap!.load();
+          map = new Map({ basemap: esriVectorBasemap });
+        } catch (eVec) {
+          console.warn('ArcGIS vector basemap unavailable; trying Esri raster tiles.', eVec);
+          try {
+            const esriRasterTiles = new WebTileLayer({
+              urlTemplate: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'
+            });
+            const esriRasterBasemap = new Basemap({ baseLayers: [esriRasterTiles], title: 'Esri World Topo Map' });
+            map = new Map({ basemap: esriRasterBasemap });
+          } catch (eRas) {
+            console.warn('Esri raster tiles unavailable; falling back to OpenStreetMap.', eRas);
+            const osmLayer = new WebTileLayer({ urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png' });
+            const osmBasemap = new Basemap({ baseLayers: [osmLayer], title: 'OpenStreetMap' });
+            map = new Map({ basemap: osmBasemap });
+          }
+        }
 
         // Create map view centered on Algeria
         const view = new MapView({
@@ -454,9 +509,15 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
             maxZoom: 20
           }
         });
+        // Show ArcGIS UI components (Zoom, Attribution). Assets load from /assets
+        try { (view.ui as any).components = ['zoom', 'attribution']; } catch {}
 
-        // Add ANAM Enterprise layers
-        addEnterpriseLayers(map);
+        // Add ANAM Enterprise layers (non-blocking; skipped if unreachable)
+        if (!DISABLE_ENTERPRISE_LAYERS) {
+          await addEnterpriseLayers(map);
+        } else {
+          console.warn('Enterprise layers are disabled by VITE_ARCGIS_DISABLE_ENTERPRISE=true');
+        }
 
         // Create graphics layers for user drawings
         const mainGraphicsLayer = new GraphicsLayer();
@@ -520,6 +581,17 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
       } else if (layer.title === "Zones d'Exploration") {
         layer.opacity = activeLayers.exploration ? 0.6 : 0;
       } else if (layer.title === "Périmètres de Promotion") {
+        layer.opacity = activeLayers.perimetres ? 0.5 : 0;
+      }
+    });
+  }, [activeLayers, enterpriseLayers]);
+
+  // Ensure visibility is applied even if title encoding differs (e.g., accents)
+  useEffect(() => {
+    if (!enterpriseLayers.length) return;
+    enterpriseLayers.forEach((layer: any) => {
+      const url: string = String(layer?.url || '');
+      if (url.includes('/p%C3%A9rim%C3%A8tres_de_promotion/') || String(layer?.title || '') === 'Périmètres de Promotion') {
         layer.opacity = activeLayers.perimetres ? 0.5 : 0;
       }
     });
@@ -712,7 +784,7 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
         ref={mapRef} 
         className="arcgis-map"
         style={{ 
-          height: '100%', 
+          height: '50vh', 
           width: '100%',
           cursor: isDrawing ? 'crosshair' : 'grab'
         }}
@@ -752,7 +824,7 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
       <style jsx>{`
         .arcgis-enterprise-container {
           position: relative;
-          height: 100%;
+          height: 50vh;
           width: 100%;
         }
         .layer-control-panel {

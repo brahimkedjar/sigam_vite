@@ -6,7 +6,7 @@ type Actionnaire = {
   nom: string;
   prenom: string;
   lieu_naissance: string;
-//  nationalite: string;
+//  
   qualification: string;
   numero_carte: string;
   taux_participation: string;
@@ -16,7 +16,7 @@ type Actionnaire = {
 type Pays = {
   id_pays: number;
   nom_pays: string;
-  nationalite: string;
+  
 };
 
 type ActionnairesProps = {
@@ -40,11 +40,11 @@ export default function Actionnaires({
     if (field === 'id_pays' && value) {
       const selectedPays = paysOptions.find(p => p.id_pays === parseInt(value));
       if (selectedPays) {
-        // We'll handle nationality on the backend based on the country
+        // We'll handle Nationalité *on the backend based on the country
         updated[index] = { 
           ...updated[index], 
           [field]: parseInt(value),
-          // nationalite will be set automatically based on the country
+          // Nationalité *will be set automatically based on the country
         };
       } else {
         updated[index] = { ...updated[index], [field]: parseInt(value) };

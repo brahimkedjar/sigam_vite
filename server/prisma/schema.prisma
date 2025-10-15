@@ -611,7 +611,6 @@ model Demande {
     id_demande               Int            @id @default(autoincrement()) 
     id_proc                  Int?
     id_detenteur             Int?
-    id_pays                  Int?
     id_wilaya                Int?
     id_daira                 Int?
     id_commune               Int?
@@ -658,7 +657,6 @@ sources_financement  String?
     expertMinier    ExpertMinier?            @relation(fields: [id_expert], references: [id_expert])
     typePermis      TypePermis?               @relation(fields: [id_typePermis], references: [id])
     typeProcedure   TypeProcedure?            @relation(fields: [id_typeProc], references: [id])
-    pays            Pays?                     @relation(fields: [id_pays], references: [id_pays])
     dossiersFournis DossierFournis[]
     renouvellement  ProcedureRenouvellement?
     demFermeture    demFermeture?
@@ -871,6 +869,7 @@ model DetenteurMorale {
     id_detenteur       Int                     @id @default(autoincrement())
     id_statutJuridique Int?
     id_pays            Int?
+    id_nationalite     Int?
     nom_societeFR      String?
     nom_societeAR      String?
     adresse_siege     String?
@@ -880,6 +879,7 @@ model DetenteurMorale {
     site_web           String?
     statutJuridique    StatutJuridique?         @relation(fields: [id_statutJuridique], references: [id_statutJuridique])
     pays               Pays?                    @relation(fields: [id_pays], references: [id_pays])
+    nationaliteRef     Nationalite?             @relation(fields: [id_nationalite], references: [id_nationalite])
     fonctions          FonctionPersonneMoral[]
     demande            Demande[]
     registreCommerce   RegistreCommerce[]
@@ -893,13 +893,20 @@ model Pays {
     id_pays     Int    @id @default(autoincrement())
     code_pays   String  @unique
     nom_pays    String
-    nationalite String
-
-    demande          Demande[]
     detenteur        DetenteurMorale[]
     personnePhysique PersonnePhysique[]
 
     @@map("pays")
+}
+
+model Nationalite {
+    id_nationalite Int    @id @default(autoincrement())
+    libelle        String @unique
+
+    detenteurs        DetenteurMorale[]
+    personnesPhysiques PersonnePhysique[]
+
+    @@map("nationalite")
 }
 
 model RegistreCommerce {
@@ -920,6 +927,7 @@ model RegistreCommerce {
 model PersonnePhysique {
     id_personne          Int      @id @default(autoincrement())
     id_pays              Int
+    id_nationalite       Int?
     nomFR                String
     nomAR                String
     prenomFR             String
@@ -937,6 +945,7 @@ model PersonnePhysique {
     ref_professionnelles String
 
     pays            Pays                    @relation(fields: [id_pays], references: [id_pays])
+    nationaliteRef  Nationalite?            @relation(fields: [id_nationalite], references: [id_nationalite])
     fonctions       FonctionPersonneMoral[]
     cessionsAncien  demCession[]            @relation("AncienCessionnaire")
     cessionsNouveau demCession[]            @relation("NouveauCessionnaire")

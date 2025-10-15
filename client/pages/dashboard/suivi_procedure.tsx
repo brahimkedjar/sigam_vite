@@ -162,7 +162,12 @@ export default function SuiviDemandes() {
   });
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
+
+  // Clear any stuck global spinner when landing here
+  useEffect(() => {
+    try { resetLoading(); } catch {}
+  }, [resetLoading]);
+
   // Filters state
   const [filters, setFilters] = useState<FilterOptions>({
     procedureType: 'Tous les types',

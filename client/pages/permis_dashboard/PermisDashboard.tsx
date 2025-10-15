@@ -49,6 +49,7 @@ import { fr } from 'date-fns/locale';
 import { format as formatDate } from 'date-fns';
 import { fetchRecentActivities, generateActivitiesFromPermis } from '@/src/types/activityService';
 import RecentActivities from './RecentActivities';
+import { useLoading } from '@/components/globalspinner/LoadingContext';
 export interface RecentActivity {
   id: number;
   type: 'permis' | 'demande' | 'modification' | 'expiration' | 'renouvellement';
@@ -132,6 +133,8 @@ type Demande = {
 type ExportFormat = 'csv' | 'excel';
 
 export default function PermisDashboard() {
+  // Safety: ensure global route spinner is not stuck when landing here
+  const { resetLoading } = useLoading();
   const apiURL = process.env.NEXT_PUBLIC_API_URL;
   const { auth } = useAuthStore();
   const { currentView, navigateTo } = useViewNavigator('dashboard');
@@ -167,7 +170,12 @@ export default function PermisDashboard() {
   // Pagination states
   const [currentPage, setCurrentPage] = useState<number>(1);
   const itemsPerPage = 10;
-  
+
+  // On mount: hard-reset any pending global spinner
+  useEffect(() => {
+    try { resetLoading(); } catch {}
+  }, [resetLoading]);
+
   // Filter states
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -793,15 +801,16 @@ const getWilayaName = useCallback((permis: Permis): string => {
                         onClick={() => handleViewPermis(permis.id)}
                         title="Voir détails"
                       >
-                        <FiEye />
+                        <FiEye size={18} />
                       </button>
                       <button 
                         className={styles.editButton}
                         onClick={() => handleEditPermis(permis.id)}
                         title="Modifier"
                       >
-                        <FiEdit />
+                        <FiEdit size={18} />
                       </button>
+                      {/** delete action intentionally omitted on this view */}
                     </div>
                   </td>
                 </tr>

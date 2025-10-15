@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sigam-client
+  namespace: sigam
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sigam-client
+  template:
+    metadata:
+      labels:
+        app: sigam-client
+    spec:
+      containers:
+        - name: client
+          # Replace with your registry image
+          image: sigam/client:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sigam-client
+  namespace: sigam
+spec:
+  selector:
+    app: sigam-client
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+

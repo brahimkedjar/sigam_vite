@@ -26,7 +26,7 @@ export default function DetailsRC({ data, onChange, disabled = false }: DetailsR
   <input type="date" name="date_enregistrement" className={`${styles.inputField} ${styles.dateInput}`} value={data.date_enregistrement} onChange={handleChange} required disabled={disabled}/>
   <input type="number" min="0" name="capital_social" className={`${styles.inputField} ${styles.numberInput}`} placeholder="Capital social (DA)" value={data.capital_social} onChange={handleChange} required disabled={disabled}/>
   <input type="text" name="nis" className={styles.inputField} placeholder="Numéro NIS" value={data.nis} onChange={handleChange} required disabled={disabled}/>
-  <input type="text" name="adresse_legale" className={styles.inputField} placeholder="Adresse du siège" value={data.adresse_legale} onChange={handleChange} required disabled={disabled}/>
+  <input type="text" name="adresse_legale" className={styles.inputField} placeholder="Adresse du siege" value={data.adresse_legale} onChange={handleChange} required disabled={disabled}/>
   <input type="text" name="nif" className={styles.inputField} placeholder="Numéro NIF" value={data.nif} onChange={handleChange} required disabled={disabled}/>
 </div>
   );

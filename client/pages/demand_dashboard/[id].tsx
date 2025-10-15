@@ -9,17 +9,25 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
 export default function DemandeDetail() {
   const router = useRouter();
   const { id } = router.query as { id?: string };
+  // Fallback for React Router dynamic segment
+  const derivedId = (() => {
+    try {
+      const parts = (window.location.pathname || '').split('/').filter(Boolean);
+      return parts[parts.length - 1];
+    } catch { return undefined; }
+  })();
+  const effectiveId = id || derivedId;
   const [item, setItem] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id) return;
+    if (!effectiveId) return;
     
     setLoading(true);
     setError(null);
     
-    axios.get(`${API_BASE}/demandes_dashboard/${id}`)
+    axios.get(`${API_BASE}/demandes_dashboard/${effectiveId}`)
       .then(r => {
         console.log("Fetched item:", r.data);
         setItem(r.data);
@@ -30,7 +38,7 @@ export default function DemandeDetail() {
       })
       .finally(() => setLoading(false));
       console.log("Loading state:", item);
-  }, [id]);
+  }, [effectiveId]);
 
   if (loading) return (
     <div className={styles.detailPage}>

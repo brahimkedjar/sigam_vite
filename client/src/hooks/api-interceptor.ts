@@ -26,26 +26,15 @@ if (typeof window !== 'undefined' && !window.__SIGAM_API_PATCHED__) {
   };
   window.addEventListener('routeChangeStart', resetAbort);
 
-  // Global loading counter helpers
-  const onGlobalStart = () => {
-    try { window.dispatchEvent(new Event('globalLoadingStart')) } catch {}
-  };
-  const onGlobalStop = () => {
-    try { window.dispatchEvent(new Event('globalLoadingStop')) } catch {}
-  };
-  const reqStart = () => {
-    const n = (window.__SIGAM_ACTIVE_REQUESTS__ ?? 0) + 1;
-    window.__SIGAM_ACTIVE_REQUESTS__ = n;
-    if (n === 1) onGlobalStart();
-  };
-  const reqStop = () => {
-    const n = Math.max(0, (window.__SIGAM_ACTIVE_REQUESTS__ ?? 0) - 1);
-    window.__SIGAM_ACTIVE_REQUESTS__ = n;
-    if (n === 0) onGlobalStop();
-  };
+  // Note: We no longer drive the GlobalSpinner from backend requests.
+  // Any prior global loading counters are intentionally removed so that
+  // the spinner reflects only route transitions.
 
   // Resolve API base and helper to detect internal vs external requests
-  const API_BASE: string | undefined = (process.env as any)?.NEXT_PUBLIC_API_URL as any;
+  const VITE_API_BASE: string | undefined = (() => {
+    try { return (import.meta as any)?.env?.VITE_API_URL; } catch { return undefined; }
+  })();
+  const API_BASE: string | undefined = ((process.env as any)?.NEXT_PUBLIC_API_URL as any) || VITE_API_BASE;
   let INTERNAL_HOST: string | null = null;
   try { if (API_BASE) INTERNAL_HOST = new URL(API_BASE).host; } catch {}
   const isArcgisHost = (host: string) => {
@@ -85,6 +74,8 @@ if (typeof window !== 'undefined' && !window.__SIGAM_API_PATCHED__) {
       } catch {}
 
       const attachUserHeaders = isInternal(targetUrl);
+      let toArcgis = false;
+      try { if (targetUrl) toArcgis = isArcgisHost(new URL(targetUrl).host); } catch {}
       if (attachUserHeaders) {
         if (auth?.id) headers.set('X-User-Id', String(auth.id));
         if (auth?.username || auth?.email) headers.set('X-User-Name', String(auth.username || auth.email));
@@ -102,7 +93,7 @@ if (typeof window !== 'undefined' && !window.__SIGAM_API_PATCHED__) {
       }
       // Cache-bust GET requests to avoid stale caches after repeated navigations
       const method = (config.method ?? 'get').toString().toLowerCase();
-      if (method === 'get' && typeof config.url === 'string' && isInternal(targetUrl)) {
+      if (method === 'get' && typeof config.url === 'string' && isInternal(targetUrl) && !toArcgis) {
         try {
           const u = new URL(config.url, window.location.origin);
           u.searchParams.set('_ts', String(Date.now()));
@@ -111,10 +102,8 @@ if (typeof window !== 'undefined' && !window.__SIGAM_API_PATCHED__) {
           // ignore
         }
       }
-      // Count request start unless opt-out
-      const noLoad = (headers.get('x-no-global-loading') === '1') || (config as any).__noGlobalLoading === true;
-      (config as any).__gl_track__ = !noLoad;
-      if (!noLoad) reqStart();
+      // Do not trigger any global loading UI from requests
+      (config as any).__gl_track__ = false;
     } catch {
       // noop
     }
@@ -123,11 +112,9 @@ if (typeof window !== 'undefined' && !window.__SIGAM_API_PATCHED__) {
 
   axios.interceptors.response.use(
     (response) => {
-      try { if ((response?.config as any)?.__gl_track__) reqStop(); } catch {}
       return response;
     },
     (error) => {
-      try { if ((error?.config as any)?.__gl_track__) reqStop(); } catch {}
       return Promise.reject(error);
     }
   );
@@ -155,8 +142,14 @@ if (typeof window !== 'undefined' && !window.__SIGAM_API_PATCHED__) {
         const toArcgis = host ? isArcgisHost(host) : false;
         const toInternal = u ? isInternal(u.toString()) : true;
 
-        // Only attach user headers for internal API requests; never for ArcGIS/CDN
-        if (toInternal && !toArcgis) {
+        // Hard-bypass our wrapper for ArcGIS/ANAM/CDN requests to avoid
+        // stack traces pointing at this file and to keep behavior pristine.
+        if (toArcgis) {
+          return originalFetch(input as any, init);
+        }
+
+        // Only attach user headers for internal API requests
+        if (toInternal) {
           if (auth?.id) headers.set('X-User-Id', String(auth.id));
           if (auth?.username || auth?.email) headers.set('X-User-Name', String(auth.username || auth.email));
         } else {
@@ -182,13 +175,8 @@ if (typeof window !== 'undefined' && !window.__SIGAM_API_PATCHED__) {
         } catch {
           // ignore
         }
-        // Track request lifecycle unless opted-out
-        const noLoad = headers.get('x-no-global-loading') === '1' || (nextInit as any).__noGlobalLoading === true;
-        if (!noLoad) reqStart();
-        return originalFetch(nextInput, nextInit)
-          .finally(() => {
-            if (!noLoad) reqStop();
-          });
+        // Do not trigger any global loading UI from fetch requests
+        return originalFetch(nextInput, nextInit);
       } catch {
         return originalFetch(input, init);
       }

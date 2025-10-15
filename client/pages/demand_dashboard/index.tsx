@@ -21,7 +21,13 @@ type Demande = {
   wilaya?: { id_wilaya: number; nom_wilayaFR: string } | null;
   daira?: { id_daira: number; nom_dairaFR: string } | null;
   commune?: { id_commune: number; nom_communeFR: string } | null;
-  detenteur?: { id_detenteur: number; nom_societeFR: string | null; nif: string | null } | null;
+  detenteur?: {
+    id_detenteur: number;
+    nom_societeFR: string | null;
+    nif: string | null;
+    pays?: { id_pays: number; nom_pays: string } | null;
+    nationaliteRef?: { id_nationalite: number; libelle: string } | null;
+  } | null;
   expertMinier?: { id_expert: number; nom_expert: string | null; num_agrement: string | null } | null;
   typePermis?: { id: number; code: string | null; libelle: string | null } | null;
   typeProcedure?: { id: number; code: string | null; libelle: string | null } | null;

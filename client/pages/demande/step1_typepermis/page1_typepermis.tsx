@@ -13,6 +13,7 @@ import Sidebar from '../../sidebar/Sidebar';
 import { cleanLocalStorageForNewDemande } from '../../../utils/cleanLocalStorage';
 import { useViewNavigator } from '../../../src/hooks/useViewNavigator';
 import { useAuthReady } from '../../../src/hooks/useAuthReady';
+import { useLoading } from '@/components/globalspinner/LoadingContext';
 
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -34,6 +35,7 @@ export default function DemandeStart() {
   const router = useRouter();
   const isAuthReady = useAuthReady();
   const { currentView, navigateTo } = useViewNavigator('nouvelle-demande');
+  const { resetLoading } = useLoading();
 
   const [permisOptions, setPermisOptions] = useState<TypePermis[]>([]);
   const [optionsLoading, setOptionsLoading] = useState(false);
@@ -47,6 +49,11 @@ export default function DemandeStart() {
   const [heureDemarrage, setHeureDemarrage] = useState('');
   const [dateSoumission, setDateSoumission] = useState<Date | null>(new Date());
   const [submitting, setSubmitting] = useState(false);
+
+  // Ensure global route spinner is cleared when landing on this page
+  useEffect(() => {
+    try { resetLoading(); } catch {}
+  }, [resetLoading]);
 
   useEffect(() => {
     if (!isAuthReady) {
