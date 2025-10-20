@@ -16,6 +16,7 @@ import Polygon from '@arcgis/core/geometry/Polygon';
 import Point from '@arcgis/core/geometry/Point';
 import SimpleMarkerSymbol from '@arcgis/core/symbols/SimpleMarkerSymbol';
 import SimpleFillSymbol from '@arcgis/core/symbols/SimpleFillSymbol';
+import TextSymbol from '@arcgis/core/symbols/TextSymbol';
 import Sketch from '@arcgis/core/widgets/Sketch';
 import * as geometryEngine from '@arcgis/core/geometry/geometryEngine';
 import * as proj4 from 'proj4';
@@ -111,6 +112,7 @@ export interface ArcGISMapProps {
   utmZone?: number;
   utmHemisphere?: 'N';
   editable?: boolean;
+  labelText?: string;
 }
 
 export interface ArcGISMapRef {
@@ -121,20 +123,20 @@ export interface ArcGISMapRef {
   queryMiningTitles: (geometry?: any) => Promise<any[] | null>;
 }
 
-export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>((props, ref) => {
-  const {
-    points,
-    superficie,
-    isDrawing,
-    onMapClick,
-    onPolygonChange,
-    existingPolygons = [],
-    layerType = 'titres',
-    coordinateSystem = 'UTM',
-    utmZone = 31,
-    utmHemisphere = 'N',
-    editable = true
-  } = props as ArcGISMapProps;
+export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({ 
+  points,
+  superficie,
+  isDrawing,
+  onMapClick,
+  onPolygonChange,
+  existingPolygons = [],
+  layerType = 'titres',
+  coordinateSystem = 'UTM',
+  utmZone = 31,
+  utmHemisphere = 'N',
+  editable = true,
+  labelText
+}, ref) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<MapView | null>(null);
   const graphicsLayerRef = useRef<GraphicsLayer | null>(null);
@@ -163,7 +165,7 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>((props, ref) =
     explorationView: "https://sig.anam.dz/server/rest/services/Hosted/Exploration_view/FeatureServer/0",
     
     // Promotion perimeters
-    perimetresPromotion: "https://sig.anam.dz/server/rest/services/Hosted/pÃ©rimÃ¨tres_de_promotion/FeatureServer/0",
+    perimetresPromotion: "https://sig.anam.dz/server/rest/services/Hosted/périmètres_de_promotion/FeatureServer/0",
     
     // Survey data
     surveyResults: "https://sig.anam.dz/server/rest/services/Hosted/survey123_4997f19f3bdf42e9babef2713d3dce97_results/FeatureServer/0",
@@ -364,7 +366,7 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>((props, ref) =
               <p><strong>Type:</strong> {TYPE_TITRE}</p>
               <p><strong>Statut:</strong> {STATUT}</p>
               <p><strong>Superficie:</strong> {SUPERFICIE} ha</p>
-              <p><strong>Date DÃ©but:</strong> {DATE_DEBUT}</p>
+              <p><strong>Date Début:</strong> {DATE_DEBUT}</p>
               <p><strong>Date Fin:</strong> {DATE_FIN}</p>
               <p><strong>Titulaire:</strong> {TITULAIRE}</p>
             </div>
@@ -402,7 +404,7 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>((props, ref) =
             <div class="popup-content">
               <p><strong>Type:</strong> {TYPE_EXPLORATION}</p>
               <p><strong>Statut:</strong> {STATUT}</p>
-              <p><strong>SociÃ©tÃ©:</strong> {SOCIETE}</p>
+              <p><strong>Société:</strong> {SOCIETE}</p>
             </div>
           `
         },
@@ -429,11 +431,11 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>((props, ref) =
       // Add Promotion Perimeters Layer
       const perimetresLayer = new FeatureLayer({
         url: perimetresPromotionUrl,
-        title: "PÃ©rimÃ¨tres de Promotion",
+        title: "Périmètres de Promotion",
         outFields: ["*"],
         opacity: activeLayers.perimetres ? 0.5 : 0,
         popupTemplate: {
-          title: "PÃ©rimÃ¨tre de Promotion",
+          title: "Périmètre de Promotion",
           content: `
             <div class="popup-content">
               <p><strong>Type:</strong> {TYPE}</p>
@@ -455,9 +457,9 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>((props, ref) =
       });
       // Normalize display strings for accented titles to avoid encoding artifacts in some editors
       try {
-        (perimetresLayer as any).title = 'PÃ©rimÃ¨tres de Promotion';
+        (perimetresLayer as any).title = 'Périmètres de Promotion';
         if ((perimetresLayer as any).popupTemplate) {
-          (perimetresLayer as any).popupTemplate.title = 'PÃ©rimÃ¨tre de Promotion';
+          (perimetresLayer as any).popupTemplate.title = 'Périmètre de Promotion';
         }
       } catch {}
       try {
@@ -465,7 +467,7 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>((props, ref) =
         map.add(perimetresLayer);
         layers.push(perimetresLayer);
       } catch (e) {
-        console.warn("Skipped PÃ©rimÃ¨tres de Promotion layer: service unreachable.", e);
+        console.warn("Skipped Périmètres de Promotion layer: service unreachable.", e);
       }
 
       setEnterpriseLayers(layers);
@@ -634,7 +636,7 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>((props, ref) =
         layer.opacity = activeLayers.titres ? 0.7 : 0;
       } else if (layer.title === "Zones d'Exploration") {
         layer.opacity = activeLayers.exploration ? 0.6 : 0;
-      } else if (layer.title === "PÃ©rimÃ¨tres de Promotion") {
+      } else if (layer.title === "Périmètres de Promotion") {
         layer.opacity = activeLayers.perimetres ? 0.5 : 0;
       }
     });
@@ -645,7 +647,7 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>((props, ref) =
     if (!enterpriseLayers.length) return;
     enterpriseLayers.forEach((layer: any) => {
       const url: string = String(layer?.url || '');
-      if (url.includes('/p%C3%A9rim%C3%A8tres_de_promotion/') || String(layer?.title || '') === 'PÃ©rimÃ¨tres de Promotion') {
+      if (url.includes('/p%C3%A9rim%C3%A8tres_de_promotion/') || String(layer?.title || '') === 'Périmètres de Promotion') {
         layer.opacity = activeLayers.perimetres ? 0.5 : 0;
       }
     });
@@ -663,20 +665,6 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>((props, ref) =
       view.container!.style.cursor = 'grab';
     }
   }, [isDrawing]);
-  // Toggle editing behavior/visibility
-  useEffect(() => {
-    try {
-      const view = viewRef.current;
-      const sk = sketchRef.current as any;
-      if (!view || !sk) return;
-      sk.visible = !!editingEnabled && !!editable;
-      if (editingEnabled && editable && polygonGraphicRef.current) {
-        try { sk.update(polygonGraphicRef.current); } catch {}
-      } else {
-        try { sk.cancel(); } catch {}
-      }
-    } catch {}
-  }, [editingEnabled, editable, polygonGraphicRef.current]);
 
   // Update existing polygons
   useEffect(() => {
@@ -727,13 +715,12 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>((props, ref) =
             num_proc: num_proc
           },
           popupTemplate: {
-            title: "ProcÃ©dure Existante",
-            content: `NumÃ©ro de procÃ©dure: ${num_proc}`
+            title: "Procédure Existante",
+            content: `Numéro de procédure: ${num_proc}`
           }
         });
 
         layer.add(polygonGraphic);
-        
       } catch (error) {
         console.error('Failed to create existing polygon:', num_proc, error);
       }
@@ -744,9 +731,8 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>((props, ref) =
   useEffect(() => {
     if (!graphicsLayerRef.current || !isMapReady) return;
 
-    const polyLayer = graphicsLayerRef.current;
-    polyLayer.removeAll();
-    if (markersLayerRef.current) markersLayerRef.current.removeAll();
+    const layer = graphicsLayerRef.current;
+    layer.removeAll();
 
     try {
       const validPoints = points.filter(p => !isNaN(p.x) && !isNaN(p.y));
@@ -771,20 +757,41 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>((props, ref) =
           geometry: polygon,
           symbol: fillSymbol,
           popupTemplate: {
-            title: "Nouveau PÃ©rimÃ¨tre Minier",
+            title: "Nouveau Périmètre Minier",
             content: `
               <div class="popup-content">
                 <p><strong>Superficie:</strong> ${superficie.toLocaleString()} ha</p>
                 <p><strong>Nombre de points:</strong> ${points.length}</p>
-                <p><strong>SystÃ¨me de coordonnÃ©es:</strong> ${coordinateSystem}</p>
+                <p><strong>Système de coordonnées:</strong> ${coordinateSystem}</p>
                 ${utmZone ? `<p><strong>Zone UTM:</strong> ${utmZone}</p>` : ''}
               </div>
             `
           }
         });
 
-        polyLayer.add(polygonGraphic);
-        polygonGraphicRef.current = polygonGraphic;
+        layer.add(polygonGraphic);
+
+        // Add label inside polygon (demande code)
+        try {
+          const center = polygon.extent?.center;
+          if (center && labelText) {
+            const label = String(labelText || '').trim();
+            if (label.length > 0) {
+              const textSymbol = new TextSymbol({
+                text: label,
+                color: [0, 0, 0, 1],
+                haloColor: [255, 255, 255, 1],
+                haloSize: 2,
+                font: { size: 12, family: 'Arial', weight: 'bold' } as any
+              });
+              const textGraphic = new Graphic({
+                geometry: center,
+                symbol: textSymbol
+              });
+              layer.add(textGraphic);
+            }
+          }
+        } catch {}
 
         // Zoom to polygon
         if (viewRef.current && wgs84Points.length > 0) {
@@ -826,14 +833,14 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>((props, ref) =
                 <p><strong>ID:</strong> ${point.id}</p>
                 <p><strong>X:</strong> ${point.x.toFixed(2)}</p>
                 <p><strong>Y:</strong> ${point.y.toFixed(2)}</p>
-                <p><strong>SystÃ¨me:</strong> ${point.system}</p>
+                <p><strong>Système:</strong> ${point.system}</p>
                 ${point.zone ? `<p><strong>Zone:</strong> ${point.zone}</p>` : ''}
               </div>
             `
           }
         });
 
-        markersLayerRef.current?.add(markerGraphic);
+        layer.add(markerGraphic);
       });
 
     } catch (error) {
@@ -887,19 +894,8 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>((props, ref) =
               checked={activeLayers.perimetres}
               onChange={() => toggleLayer('perimetres')}
             />
-            <label>PÃ©rimÃ¨tres de Promotion</label>
+            <label>Périmètres de Promotion</label>
           </div>
-        <hr style={{ margin: '10px 0', borderColor: '#edf2f7' }} />
-        <h4>Actions</h4>
-        <div className="layer-item">
-          <input 
-            type="checkbox" 
-            checked={editingEnabled && editable}
-            onChange={() => setEditingEnabled(!editingEnabled)}
-            disabled={!editable}
-          />
-          <label>Modifier les coordonnées</label>
-        </div>
         </div>
       </div>
 
@@ -950,10 +946,3 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>((props, ref) =
 ArcGISMap.displayName = 'ArcGISMap';
 
 export default ArcGISMap;
-
-
-
-
-
-
-

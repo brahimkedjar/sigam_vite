@@ -1,4 +1,7 @@
 -- CreateEnum
+CREATE TYPE "MissingAction" AS ENUM ('BLOCK_NEXT', 'REJECT', 'WARNING');
+
+-- CreateEnum
 CREATE TYPE "StatutProcedure" AS ENUM ('EN_COURS', 'TERMINEE', 'EN_ATTENTE');
 
 -- CreateEnum
@@ -8,7 +11,7 @@ CREATE TYPE "StatutDemande" AS ENUM ('ACCEPTEE', 'EN_COURS', 'REJETEE');
 CREATE TYPE "EnumTypeDetenteur" AS ENUM ('ANCIEN', 'NOUVEAU');
 
 -- CreateEnum
-CREATE TYPE "EnumTypeFonction" AS ENUM ('Représentant', 'Actionnaire', 'Représentant_Actionnaire');
+CREATE TYPE "EnumTypeFonction" AS ENUM ('Representant', 'Actionnaire', 'Representant_Actionnaire');
 
 -- CreateEnum
 CREATE TYPE "EnumTypeInteraction" AS ENUM ('envoi', 'relance', 'reponse');
@@ -29,18 +32,7 @@ CREATE TYPE "EnumDecisionComite" AS ENUM ('favorable', 'defavorable', 'autre');
 CREATE TYPE "StatutCoord" AS ENUM ('DEMANDE_INITIALE', 'NOUVEAU', 'ANCIENNE');
 
 -- CreateEnum
-CREATE TYPE "EnumStatutPaiement" AS ENUM ('A_payer', 'Payé', 'En_retard', 'Annulé', 'Partiellement_payé');
-
--- CreateTable
-CREATE TABLE "Session" (
-    "id" SERIAL NOT NULL,
-    "token" VARCHAR(64) NOT NULL,
-    "userId" INTEGER NOT NULL,
-    "expiresAt" TIMESTAMP(3) NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
-);
+CREATE TYPE "EnumStatutPaiement" AS ENUM ('A_payer', 'Paye', 'En_retard', 'Annule', 'Partiellement_paye');
 
 -- CreateTable
 CREATE TABLE "AuditLog" (
@@ -61,6 +53,17 @@ CREATE TABLE "AuditLog" (
     "sessionId" TEXT,
 
     CONSTRAINT "AuditLog_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Session" (
+    "id" SERIAL NOT NULL,
+    "token" VARCHAR(64) NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "expiresAt" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Session_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -195,6 +198,9 @@ CREATE TABLE "Document" (
 CREATE TABLE "DossierDocument" (
     "id_dossier" INTEGER NOT NULL,
     "id_doc" INTEGER NOT NULL,
+    "is_obligatoire" BOOLEAN NOT NULL DEFAULT false,
+    "missing_action" "MissingAction" NOT NULL DEFAULT 'BLOCK_NEXT',
+    "reject_message" TEXT,
 
     CONSTRAINT "DossierDocument_pkey" PRIMARY KEY ("id_dossier","id_doc")
 );
@@ -207,8 +213,154 @@ CREATE TABLE "dossier_fournis" (
     "recevabilite_doss" BOOLEAN,
     "statut_dossier" TEXT NOT NULL,
     "remarques" TEXT,
+    "numero_accuse" TEXT,
+    "date_accuse" TIMESTAMP(3),
+    "numero_recepisse" TEXT,
+    "date_recepisse" TIMESTAMP(3),
+    "mise_en_demeure_envoyee" BOOLEAN NOT NULL DEFAULT false,
+    "date_mise_en_demeure" TIMESTAMP(3),
+    "pieces_manquantes" JSONB,
+    "verification_phase" TEXT,
+    "date_preannotation" TIMESTAMP(3),
 
     CONSTRAINT "dossier_fournis_pkey" PRIMARY KEY ("id_dossierFournis")
+);
+
+-- CreateTable
+CREATE TABLE "PortalPermitType" (
+    "id" SERIAL NOT NULL,
+    "code" TEXT NOT NULL,
+    "label" TEXT NOT NULL,
+    "description" TEXT,
+    "regime" TEXT,
+    "initialYears" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "PortalPermitType_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PortalDocumentDefinition" (
+    "id" SERIAL NOT NULL,
+    "code" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "format" TEXT,
+    "maxSizeMB" INTEGER,
+    "required" BOOLEAN NOT NULL DEFAULT true,
+    "missingAction" "MissingAction" NOT NULL DEFAULT 'BLOCK_NEXT',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "PortalDocumentDefinition_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PortalTypeDocument" (
+    "id" SERIAL NOT NULL,
+    "permitTypeId" INTEGER NOT NULL,
+    "documentId" INTEGER NOT NULL,
+    "order" INTEGER,
+    "notes" TEXT,
+
+    CONSTRAINT "PortalTypeDocument_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PortalCompany" (
+    "id" SERIAL NOT NULL,
+    "legalName" TEXT NOT NULL,
+    "legalForm" TEXT,
+    "rcNumber" TEXT,
+    "rcDate" TIMESTAMP(3),
+    "nif" TEXT,
+    "nis" TEXT,
+    "capital" DOUBLE PRECISION,
+    "address" TEXT,
+    "email" TEXT,
+    "phone" TEXT,
+    "website" TEXT,
+    "managerName" TEXT,
+    "registryFileUrl" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "PortalCompany_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PortalRepresentative" (
+    "id" SERIAL NOT NULL,
+    "companyId" INTEGER NOT NULL,
+    "fullName" TEXT NOT NULL,
+    "function" TEXT,
+    "nationalId" TEXT,
+    "email" TEXT,
+    "phone" TEXT,
+    "powerDocUrl" TEXT,
+
+    CONSTRAINT "PortalRepresentative_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PortalShareholder" (
+    "id" SERIAL NOT NULL,
+    "companyId" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "type" TEXT NOT NULL,
+    "nif" TEXT,
+    "sharePct" DOUBLE PRECISION NOT NULL,
+    "nationality" TEXT,
+
+    CONSTRAINT "PortalShareholder_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PortalApplication" (
+    "id" SERIAL NOT NULL,
+    "code" TEXT,
+    "status" TEXT NOT NULL,
+    "title" TEXT,
+    "permitTypeId" INTEGER NOT NULL,
+    "companyId" INTEGER,
+    "wilaya" TEXT,
+    "daira" TEXT,
+    "commune" TEXT,
+    "lieuDit" TEXT,
+    "polygonGeo" JSONB,
+    "applicantToken" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "PortalApplication_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PortalApplicationDocument" (
+    "id" SERIAL NOT NULL,
+    "applicationId" INTEGER NOT NULL,
+    "documentId" INTEGER NOT NULL,
+    "status" TEXT NOT NULL,
+    "fileUrl" TEXT,
+    "uploadedAt" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "PortalApplicationDocument_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PortalPayment" (
+    "id" SERIAL NOT NULL,
+    "applicationId" INTEGER NOT NULL,
+    "provider" TEXT NOT NULL,
+    "amount" INTEGER NOT NULL,
+    "currency" TEXT NOT NULL DEFAULT 'DZD',
+    "status" TEXT NOT NULL,
+    "intentId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "PortalPayment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -344,6 +496,7 @@ CREATE TABLE "phase" (
     "ordre" INTEGER NOT NULL,
     "description" TEXT,
     "dureeEstimee" INTEGER,
+    "typeProcedureId" INTEGER,
 
     CONSTRAINT "phase_pkey" PRIMARY KEY ("id_phase")
 );
@@ -371,7 +524,7 @@ CREATE TABLE "procedure_etape" (
 );
 
 -- CreateTable
-CREATE TABLE "Procedure" (
+CREATE TABLE "procedure" (
     "id_proc" SERIAL NOT NULL,
     "id_seance" INTEGER,
     "num_proc" TEXT NOT NULL,
@@ -382,7 +535,7 @@ CREATE TABLE "Procedure" (
     "observations" TEXT,
     "typeProcedureId" INTEGER,
 
-    CONSTRAINT "Procedure_pkey" PRIMARY KEY ("id_proc")
+    CONSTRAINT "procedure_pkey" PRIMARY KEY ("id_proc")
 );
 
 -- CreateTable
@@ -390,7 +543,6 @@ CREATE TABLE "demande" (
     "id_demande" SERIAL NOT NULL,
     "id_proc" INTEGER,
     "id_detenteur" INTEGER,
-    "id_pays" INTEGER,
     "id_wilaya" INTEGER,
     "id_daira" INTEGER,
     "id_commune" INTEGER,
@@ -565,6 +717,7 @@ CREATE TABLE "demandeVerificationGeo" (
     "superf_ok" BOOLEAN,
     "geom_ok" BOOLEAN,
     "verification_cadastrale_ok" BOOLEAN,
+    "superficie_cadastrale" DOUBLE PRECISION,
 
     CONSTRAINT "demandeVerificationGeo_pkey" PRIMARY KEY ("id_demVerif")
 );
@@ -624,6 +777,7 @@ CREATE TABLE "detenteurmorale" (
     "id_detenteur" SERIAL NOT NULL,
     "id_statutJuridique" INTEGER,
     "id_pays" INTEGER,
+    "id_nationalite" INTEGER,
     "nom_societeFR" TEXT,
     "nom_societeAR" TEXT,
     "adresse_siege" TEXT,
@@ -640,9 +794,16 @@ CREATE TABLE "pays" (
     "id_pays" SERIAL NOT NULL,
     "code_pays" TEXT NOT NULL,
     "nom_pays" TEXT NOT NULL,
-    "nationalite" TEXT NOT NULL,
 
     CONSTRAINT "pays_pkey" PRIMARY KEY ("id_pays")
+);
+
+-- CreateTable
+CREATE TABLE "nationalite" (
+    "id_nationalite" SERIAL NOT NULL,
+    "libelle" TEXT NOT NULL,
+
+    CONSTRAINT "nationalite_pkey" PRIMARY KEY ("id_nationalite")
 );
 
 -- CreateTable
@@ -663,13 +824,14 @@ CREATE TABLE "registrecommerce" (
 CREATE TABLE "personnephysique" (
     "id_personne" SERIAL NOT NULL,
     "id_pays" INTEGER NOT NULL,
+    "id_nationalite" INTEGER,
     "nomFR" TEXT NOT NULL,
     "nomAR" TEXT NOT NULL,
     "prenomFR" TEXT NOT NULL,
     "prenomAR" TEXT NOT NULL,
-    "date_naissance" TIMESTAMP(3) NOT NULL,
+    "date_naissance" TIMESTAMP(3),
     "lieu_naissance" TEXT NOT NULL,
-    "nationalité" TEXT NOT NULL,
+    "nationalite" TEXT NOT NULL,
     "adresse_domicile" TEXT NOT NULL,
     "telephone" TEXT NOT NULL,
     "fax" TEXT NOT NULL,
@@ -700,7 +862,7 @@ CREATE TABLE "InteractionWali" (
     "id_wilaya" INTEGER NOT NULL,
     "type_interaction" "EnumTypeInteraction",
     "avis_wali" "EnumAvisWali",
-    "date_envoi" TIMESTAMP(3) NOT NULL,
+    "date_envoi" TIMESTAMP(3),
     "date_reponse" TIMESTAMP(3),
     "delai_depasse" BOOLEAN,
     "nom_responsable_reception" TEXT,
@@ -813,15 +975,34 @@ CREATE TABLE "ProcedureCoord" (
 );
 
 -- CreateTable
-CREATE TABLE "Coordonnee" (
+CREATE TABLE "coordonnee" (
     "id_coordonnees" SERIAL NOT NULL,
     "id_zone_interdite" INTEGER,
-    "point" TEXT NOT NULL,
+    "point" TEXT,
     "x" DOUBLE PRECISION NOT NULL,
     "y" DOUBLE PRECISION NOT NULL,
     "z" DOUBLE PRECISION NOT NULL,
+    "system" TEXT DEFAULT 'WGS84',
+    "zone" INTEGER,
+    "hemisphere" TEXT,
 
-    CONSTRAINT "Coordonnee_pkey" PRIMARY KEY ("id_coordonnees")
+    CONSTRAINT "coordonnee_pkey" PRIMARY KEY ("id_coordonnees")
+);
+
+-- CreateTable
+CREATE TABLE "inscription_provisoire" (
+    "id" SERIAL NOT NULL,
+    "id_proc" INTEGER NOT NULL,
+    "id_demande" INTEGER NOT NULL,
+    "points" JSONB NOT NULL,
+    "system" TEXT,
+    "zone" INTEGER,
+    "hemisphere" TEXT,
+    "superficie_declaree" DOUBLE PRECISION,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "inscription_provisoire_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -906,7 +1087,7 @@ CREATE TABLE "paiement" (
 -- CreateTable
 CREATE TABLE "TsPaiement" (
     "id_tsPaiement" SERIAL NOT NULL,
-    "id_paiement" INTEGER,
+    "id_obligation" INTEGER NOT NULL,
     "datePerDebut" TIMESTAMP(3) NOT NULL,
     "datePerFin" TIMESTAMP(3) NOT NULL,
     "surfaceMin" DOUBLE PRECISION NOT NULL,
@@ -997,6 +1178,47 @@ CREATE TABLE "rapport_activite" (
 );
 
 -- CreateTable
+CREATE TABLE "notifications" (
+    "id" SERIAL NOT NULL,
+    "type" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "message" TEXT NOT NULL,
+    "isRead" BOOLEAN NOT NULL DEFAULT false,
+    "relatedEntityId" INTEGER,
+    "relatedEntityType" TEXT,
+    "expertId" INTEGER,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "priority" TEXT NOT NULL DEFAULT 'info',
+
+    CONSTRAINT "notifications_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Message" (
+    "id" SERIAL NOT NULL,
+    "content" TEXT NOT NULL,
+    "senderId" INTEGER NOT NULL,
+    "receiverId" INTEGER NOT NULL,
+    "conversationId" INTEGER,
+    "isRead" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Message_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Conversation" (
+    "id" SERIAL NOT NULL,
+    "user1Id" INTEGER NOT NULL,
+    "user2Id" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Conversation_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "_PermisProcedure" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL,
@@ -1011,18 +1233,6 @@ CREATE TABLE "_SeanceMembres" (
 
     CONSTRAINT "_SeanceMembres_AB_pkey" PRIMARY KEY ("A","B")
 );
-
--- CreateIndex
-CREATE UNIQUE INDEX "Session_token_key" ON "Session"("token");
-
--- CreateIndex
-CREATE INDEX "Session_token_idx" ON "Session"("token");
-
--- CreateIndex
-CREATE INDEX "Session_userId_idx" ON "Session"("userId");
-
--- CreateIndex
-CREATE INDEX "Session_expiresAt_idx" ON "Session"("expiresAt");
 
 -- CreateIndex
 CREATE INDEX "AuditLog_entityType_idx" ON "AuditLog"("entityType");
@@ -1041,6 +1251,18 @@ CREATE INDEX "AuditLog_contextId_idx" ON "AuditLog"("contextId");
 
 -- CreateIndex
 CREATE INDEX "AuditLog_sessionId_idx" ON "AuditLog"("sessionId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Session_token_key" ON "Session"("token");
+
+-- CreateIndex
+CREATE INDEX "Session_token_idx" ON "Session"("token");
+
+-- CreateIndex
+CREATE INDEX "Session_userId_idx" ON "Session"("userId");
+
+-- CreateIndex
+CREATE INDEX "Session_expiresAt_idx" ON "Session"("expiresAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
@@ -1064,6 +1286,21 @@ CREATE UNIQUE INDEX "Wilaya_code_wilaya_key" ON "Wilaya"("code_wilaya");
 CREATE UNIQUE INDEX "DossierAdministratif_id_typePermis_id_typeproc_key" ON "DossierAdministratif"("id_typePermis", "id_typeproc");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "PortalPermitType_code_key" ON "PortalPermitType"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PortalDocumentDefinition_code_key" ON "PortalDocumentDefinition"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PortalTypeDocument_permitTypeId_documentId_key" ON "PortalTypeDocument"("permitTypeId", "documentId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PortalApplication_code_key" ON "PortalApplication"("code");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PortalApplicationDocument_applicationId_documentId_key" ON "PortalApplicationDocument"("applicationId", "documentId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "StatutPermis_lib_statut_key" ON "StatutPermis"("lib_statut");
 
 -- CreateIndex
@@ -1079,7 +1316,7 @@ CREATE INDEX "permis_templates_typePermisId_idx" ON "permis_templates"("typePerm
 CREATE INDEX "permis_templates_permisId_idx" ON "permis_templates"("permisId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Procedure_num_proc_key" ON "Procedure"("num_proc");
+CREATE UNIQUE INDEX "procedure_num_proc_key" ON "procedure"("num_proc");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "demande_code_demande_key" ON "demande"("code_demande");
@@ -1130,6 +1367,9 @@ CREATE UNIQUE INDEX "statutjuridique_code_statut_key" ON "statutjuridique"("code
 CREATE UNIQUE INDEX "pays_code_pays_key" ON "pays"("code_pays");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "nationalite_libelle_key" ON "nationalite"("libelle");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "personnephysique_num_carte_identite_key" ON "personnephysique"("num_carte_identite");
 
 -- CreateIndex
@@ -1139,7 +1379,34 @@ CREATE UNIQUE INDEX "substance_associee_demande_id_proc_id_substance_key" ON "su
 CREATE UNIQUE INDEX "ProcedureCoord_id_proc_id_coordonnees_key" ON "ProcedureCoord"("id_proc", "id_coordonnees");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "inscription_provisoire_id_proc_key" ON "inscription_provisoire"("id_proc");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "inscription_provisoire_id_demande_key" ON "inscription_provisoire"("id_demande");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "typepaiement_libelle_key" ON "typepaiement"("libelle");
+
+-- CreateIndex
+CREATE INDEX "Message_senderId_idx" ON "Message"("senderId");
+
+-- CreateIndex
+CREATE INDEX "Message_receiverId_idx" ON "Message"("receiverId");
+
+-- CreateIndex
+CREATE INDEX "Message_conversationId_idx" ON "Message"("conversationId");
+
+-- CreateIndex
+CREATE INDEX "Message_createdAt_idx" ON "Message"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "Conversation_user1Id_idx" ON "Conversation"("user1Id");
+
+-- CreateIndex
+CREATE INDEX "Conversation_user2Id_idx" ON "Conversation"("user2Id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Conversation_user1Id_user2Id_key" ON "Conversation"("user1Id", "user2Id");
 
 -- CreateIndex
 CREATE INDEX "_PermisProcedure_B_index" ON "_PermisProcedure"("B");
@@ -1148,10 +1415,10 @@ CREATE INDEX "_PermisProcedure_B_index" ON "_PermisProcedure"("B");
 CREATE INDEX "_SeanceMembres_B_index" ON "_SeanceMembres"("B");
 
 -- AddForeignKey
-ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "AuditLog" ADD CONSTRAINT "AuditLog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Session" ADD CONSTRAINT "Session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "User" ADD CONSTRAINT "User_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -1199,6 +1466,33 @@ ALTER TABLE "DossierDocument" ADD CONSTRAINT "DossierDocument_id_dossier_fkey" F
 ALTER TABLE "dossier_fournis" ADD CONSTRAINT "dossier_fournis_id_demande_fkey" FOREIGN KEY ("id_demande") REFERENCES "demande"("id_demande") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "PortalTypeDocument" ADD CONSTRAINT "PortalTypeDocument_permitTypeId_fkey" FOREIGN KEY ("permitTypeId") REFERENCES "PortalPermitType"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PortalTypeDocument" ADD CONSTRAINT "PortalTypeDocument_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "PortalDocumentDefinition"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PortalRepresentative" ADD CONSTRAINT "PortalRepresentative_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "PortalCompany"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PortalShareholder" ADD CONSTRAINT "PortalShareholder_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "PortalCompany"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PortalApplication" ADD CONSTRAINT "PortalApplication_permitTypeId_fkey" FOREIGN KEY ("permitTypeId") REFERENCES "PortalPermitType"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PortalApplication" ADD CONSTRAINT "PortalApplication_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "PortalCompany"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PortalApplicationDocument" ADD CONSTRAINT "PortalApplicationDocument_applicationId_fkey" FOREIGN KEY ("applicationId") REFERENCES "PortalApplication"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PortalApplicationDocument" ADD CONSTRAINT "PortalApplicationDocument_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "PortalDocumentDefinition"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "PortalPayment" ADD CONSTRAINT "PortalPayment_applicationId_fkey" FOREIGN KEY ("applicationId") REFERENCES "PortalApplication"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "dossier_fournis_document" ADD CONSTRAINT "dossier_fournis_document_id_dossierFournis_fkey" FOREIGN KEY ("id_dossierFournis") REFERENCES "dossier_fournis"("id_dossierFournis") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -1235,19 +1529,22 @@ ALTER TABLE "codeAssimilation" ADD CONSTRAINT "codeAssimilation_id_permis_fkey" 
 ALTER TABLE "etape_proc" ADD CONSTRAINT "etape_proc_id_phase_fkey" FOREIGN KEY ("id_phase") REFERENCES "phase"("id_phase") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "procedure_phase" ADD CONSTRAINT "procedure_phase_id_proc_fkey" FOREIGN KEY ("id_proc") REFERENCES "Procedure"("id_proc") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "phase" ADD CONSTRAINT "phase_typeProcedureId_fkey" FOREIGN KEY ("typeProcedureId") REFERENCES "typeprocedure"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "procedure_phase" ADD CONSTRAINT "procedure_phase_id_proc_fkey" FOREIGN KEY ("id_proc") REFERENCES "procedure"("id_proc") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "procedure_phase" ADD CONSTRAINT "procedure_phase_id_phase_fkey" FOREIGN KEY ("id_phase") REFERENCES "phase"("id_phase") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "procedure_etape" ADD CONSTRAINT "procedure_etape_id_proc_fkey" FOREIGN KEY ("id_proc") REFERENCES "Procedure"("id_proc") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "procedure_etape" ADD CONSTRAINT "procedure_etape_id_proc_fkey" FOREIGN KEY ("id_proc") REFERENCES "procedure"("id_proc") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "procedure_etape" ADD CONSTRAINT "procedure_etape_id_etape_fkey" FOREIGN KEY ("id_etape") REFERENCES "etape_proc"("id_etape") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Procedure" ADD CONSTRAINT "Procedure_id_seance_fkey" FOREIGN KEY ("id_seance") REFERENCES "SeanceCDPrevue"("id_seance") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "procedure" ADD CONSTRAINT "procedure_id_seance_fkey" FOREIGN KEY ("id_seance") REFERENCES "SeanceCDPrevue"("id_seance") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "demande" ADD CONSTRAINT "demande_id_wilaya_fkey" FOREIGN KEY ("id_wilaya") REFERENCES "Wilaya"("id_wilaya") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -1259,7 +1556,7 @@ ALTER TABLE "demande" ADD CONSTRAINT "demande_id_daira_fkey" FOREIGN KEY ("id_da
 ALTER TABLE "demande" ADD CONSTRAINT "demande_id_commune_fkey" FOREIGN KEY ("id_commune") REFERENCES "Commune"("id_commune") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "demande" ADD CONSTRAINT "demande_id_proc_fkey" FOREIGN KEY ("id_proc") REFERENCES "Procedure"("id_proc") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "demande" ADD CONSTRAINT "demande_id_proc_fkey" FOREIGN KEY ("id_proc") REFERENCES "procedure"("id_proc") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "demande" ADD CONSTRAINT "demande_id_detenteur_fkey" FOREIGN KEY ("id_detenteur") REFERENCES "detenteurmorale"("id_detenteur") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -1272,9 +1569,6 @@ ALTER TABLE "demande" ADD CONSTRAINT "demande_id_typePermis_fkey" FOREIGN KEY ("
 
 -- AddForeignKey
 ALTER TABLE "demande" ADD CONSTRAINT "demande_id_typeProc_fkey" FOREIGN KEY ("id_typeProc") REFERENCES "typeprocedure"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "demande" ADD CONSTRAINT "demande_id_pays_fkey" FOREIGN KEY ("id_pays") REFERENCES "pays"("id_pays") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ProcedureRenouvellement" ADD CONSTRAINT "ProcedureRenouvellement_id_demande_fkey" FOREIGN KEY ("id_demande") REFERENCES "demande"("id_demande") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -1340,10 +1634,16 @@ ALTER TABLE "detenteurmorale" ADD CONSTRAINT "detenteurmorale_id_statutJuridique
 ALTER TABLE "detenteurmorale" ADD CONSTRAINT "detenteurmorale_id_pays_fkey" FOREIGN KEY ("id_pays") REFERENCES "pays"("id_pays") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "detenteurmorale" ADD CONSTRAINT "detenteurmorale_id_nationalite_fkey" FOREIGN KEY ("id_nationalite") REFERENCES "nationalite"("id_nationalite") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "registrecommerce" ADD CONSTRAINT "registrecommerce_id_detenteur_fkey" FOREIGN KEY ("id_detenteur") REFERENCES "detenteurmorale"("id_detenteur") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "personnephysique" ADD CONSTRAINT "personnephysique_id_pays_fkey" FOREIGN KEY ("id_pays") REFERENCES "pays"("id_pays") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "personnephysique" ADD CONSTRAINT "personnephysique_id_nationalite_fkey" FOREIGN KEY ("id_nationalite") REFERENCES "nationalite"("id_nationalite") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "fonctionpersonnemoral" ADD CONSTRAINT "fonctionpersonnemoral_id_detenteur_fkey" FOREIGN KEY ("id_detenteur") REFERENCES "detenteurmorale"("id_detenteur") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -1352,7 +1652,7 @@ ALTER TABLE "fonctionpersonnemoral" ADD CONSTRAINT "fonctionpersonnemoral_id_det
 ALTER TABLE "fonctionpersonnemoral" ADD CONSTRAINT "fonctionpersonnemoral_id_personne_fkey" FOREIGN KEY ("id_personne") REFERENCES "personnephysique"("id_personne") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "InteractionWali" ADD CONSTRAINT "InteractionWali_id_procedure_fkey" FOREIGN KEY ("id_procedure") REFERENCES "Procedure"("id_proc") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "InteractionWali" ADD CONSTRAINT "InteractionWali_id_procedure_fkey" FOREIGN KEY ("id_procedure") REFERENCES "procedure"("id_proc") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "InteractionWali" ADD CONSTRAINT "InteractionWali_id_wilaya_fkey" FOREIGN KEY ("id_wilaya") REFERENCES "Wilaya"("id_wilaya") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -1361,7 +1661,7 @@ ALTER TABLE "InteractionWali" ADD CONSTRAINT "InteractionWali_id_wilaya_fkey" FO
 ALTER TABLE "substances" ADD CONSTRAINT "substances_id_redevance_fkey" FOREIGN KEY ("id_redevance") REFERENCES "redevance_bareme"("id_redevance") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "substance_associee_demande" ADD CONSTRAINT "substance_associee_demande_id_proc_fkey" FOREIGN KEY ("id_proc") REFERENCES "Procedure"("id_proc") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "substance_associee_demande" ADD CONSTRAINT "substance_associee_demande_id_proc_fkey" FOREIGN KEY ("id_proc") REFERENCES "procedure"("id_proc") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "substance_associee_demande" ADD CONSTRAINT "substance_associee_demande_id_substance_fkey" FOREIGN KEY ("id_substance") REFERENCES "substances"("id_sub") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -1379,10 +1679,16 @@ ALTER TABLE "MembreSeance" ADD CONSTRAINT "MembreSeance_id_seance_fkey" FOREIGN 
 ALTER TABLE "MembreSeance" ADD CONSTRAINT "MembreSeance_id_membre_fkey" FOREIGN KEY ("id_membre") REFERENCES "MembresComite"("id_membre") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ProcedureCoord" ADD CONSTRAINT "ProcedureCoord_id_proc_fkey" FOREIGN KEY ("id_proc") REFERENCES "Procedure"("id_proc") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ProcedureCoord" ADD CONSTRAINT "ProcedureCoord_id_proc_fkey" FOREIGN KEY ("id_proc") REFERENCES "procedure"("id_proc") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ProcedureCoord" ADD CONSTRAINT "ProcedureCoord_id_coordonnees_fkey" FOREIGN KEY ("id_coordonnees") REFERENCES "Coordonnee"("id_coordonnees") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ProcedureCoord" ADD CONSTRAINT "ProcedureCoord_id_coordonnees_fkey" FOREIGN KEY ("id_coordonnees") REFERENCES "coordonnee"("id_coordonnees") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "inscription_provisoire" ADD CONSTRAINT "inscription_provisoire_id_proc_fkey" FOREIGN KEY ("id_proc") REFERENCES "procedure"("id_proc") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "inscription_provisoire" ADD CONSTRAINT "inscription_provisoire_id_demande_fkey" FOREIGN KEY ("id_demande") REFERENCES "demande"("id_demande") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "cahiercharge" ADD CONSTRAINT "cahiercharge_permisId_fkey" FOREIGN KEY ("permisId") REFERENCES "permis"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -1400,7 +1706,7 @@ ALTER TABLE "obligationfiscale" ADD CONSTRAINT "obligationfiscale_id_typePaiemen
 ALTER TABLE "paiement" ADD CONSTRAINT "paiement_id_obligation_fkey" FOREIGN KEY ("id_obligation") REFERENCES "obligationfiscale"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "TsPaiement" ADD CONSTRAINT "TsPaiement_id_paiement_fkey" FOREIGN KEY ("id_paiement") REFERENCES "paiement"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "TsPaiement" ADD CONSTRAINT "TsPaiement_id_obligation_fkey" FOREIGN KEY ("id_obligation") REFERENCES "obligationfiscale"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "barem_produit_droit" ADD CONSTRAINT "barem_produit_droit_typePermisId_fkey" FOREIGN KEY ("typePermisId") REFERENCES "typepermis"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -1412,10 +1718,28 @@ ALTER TABLE "barem_produit_droit" ADD CONSTRAINT "barem_produit_droit_typeProced
 ALTER TABLE "rapport_activite" ADD CONSTRAINT "rapport_activite_id_permis_fkey" FOREIGN KEY ("id_permis") REFERENCES "permis"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "notifications" ADD CONSTRAINT "notifications_expertId_fkey" FOREIGN KEY ("expertId") REFERENCES "expertminier"("id_expert") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Message" ADD CONSTRAINT "Message_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Message" ADD CONSTRAINT "Message_receiverId_fkey" FOREIGN KEY ("receiverId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Message" ADD CONSTRAINT "Message_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Conversation" ADD CONSTRAINT "Conversation_user1Id_fkey" FOREIGN KEY ("user1Id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Conversation" ADD CONSTRAINT "Conversation_user2Id_fkey" FOREIGN KEY ("user2Id") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "_PermisProcedure" ADD CONSTRAINT "_PermisProcedure_A_fkey" FOREIGN KEY ("A") REFERENCES "permis"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_PermisProcedure" ADD CONSTRAINT "_PermisProcedure_B_fkey" FOREIGN KEY ("B") REFERENCES "Procedure"("id_proc") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "_PermisProcedure" ADD CONSTRAINT "_PermisProcedure_B_fkey" FOREIGN KEY ("B") REFERENCES "procedure"("id_proc") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_SeanceMembres" ADD CONSTRAINT "_SeanceMembres_A_fkey" FOREIGN KEY ("A") REFERENCES "MembresComite"("id_membre") ON DELETE CASCADE ON UPDATE CASCADE;

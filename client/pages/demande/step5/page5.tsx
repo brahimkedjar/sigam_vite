@@ -1,6 +1,6 @@
 ﻿'use client';
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { FiPlus, FiTrash2, FiCheckCircle, FiAlertTriangle, FiMapPin, FiEdit2, FiRefreshCw, FiChevronLeft, FiSave, FiDownload, FiUpload, FiChevronRight, FiLayers } from 'react-icons/fi';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { FiPlus, FiTrash2, FiCheckCircle, FiAlertTriangle, FiMapPin, FiEdit2, FiRefreshCw, FiChevronLeft, FiSave, FiDownload, FiUpload, FiChevronRight, FiLayers, FiArrowUp, FiArrowDown } from 'react-icons/fi';
 import * as turf from '@turf/turf';
 import styles from './cadastre.module.css';
 import { useRouter } from 'next/router';
@@ -92,7 +92,48 @@ export default function CadastrePage() {
   const [utmZone, setUtmZone] = useState<number>(31);
   const [utmHemisphere, setUtmHemisphere] = useState<'N'>('N');
   const [activatedSteps, setActivatedSteps] = useState<Set<number>>(new Set());
+  const [editableRowId, setEditableRowId] = useState<number | null>(null);
+  // Source des coordonnées: inscription provisoire vs coordonnées validées
+  // Source des coordonnées: inscription provisoire vs coordonnées validées
+  const [coordSource, setCoordSource] = useState<'provisoire' | 'validees'>('provisoire');
+  const [provisionalPoints, setProvisionalPoints] = useState<Point[]>([]);
+  const [validatedPoints, setValidatedPoints] = useState<Point[]>([]);
+
+  // Helper: shallow-equality of arrays of points on key geometry/admin fields
+  const equalPoints = (a: Point[] = [], b: Point[] = []) => {
+    if (a === b) return true;
+    if (!a || !b || a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      const p = a[i], q = b[i];
+      if (!q) return false;
+      if (p.x !== q.x || p.y !== q.y || p.h !== q.h || p.idTitre !== q.idTitre) return false;
+    }
+    return true;
+  };
+
+  // Helper: apply selected dataset to UI in one pass (no reactive ping-pong)
+  const applySourceFromArrays = (
+    prov: Point[],
+    val: Point[],
+    source: 'provisoire' | 'validees'
+  ) => {
+    const data = source === 'provisoire' ? prov : val;
+    if (data && data.length > 0) {
+      if (!equalPoints(points, data)) setPoints(data);
+      const first = data[0];
+      if (first?.system) {
+        setCoordinateSystem(first.system);
+        if (first.zone) setUtmZone(first.zone);
+        if (first.hemisphere) setUtmHemisphere(first.hemisphere);
+      }
+    } else {
+      if (points.length) setPoints([]);
+    }
+  };
+
   const [showLayerPanel, setShowLayerPanel] = useState(false);
+  // Stable signature of current displayed points to avoid re-applying same dataset
+  
   const router = useRouter();
 
   const fetchProcedureData = async () => {
@@ -117,6 +158,64 @@ export default function CadastrePage() {
   useEffect(() => {
     fetchProcedureData();
   }, [idProc, refetchTrigger]);
+
+  // Charger les deux jeux de coordonnées (provisoires et validées)
+  useEffect(() => {
+  if (!idProc) return;
+  const load = async () => {
+    let provArr: Point[] = [];
+    let valArr: Point[] = [];
+    // Provisoires
+    try {
+      const provRes = await axios.get(`${apiURL}/inscription-provisoire/procedure/${idProc}`);
+      const rec = provRes.data;
+      const pts = Array.isArray(rec?.points) ? rec.points : [];
+      let baseId = generateId();
+      provArr = pts.map((p: any, i: number) => ({
+        id: baseId + i,
+        idTitre: 1007,
+        h: 32,
+        x: p.x,
+        y: p.y,
+        system: p.system || 'UTM',
+        zone: p.zone,
+        hemisphere: p.hemisphere,
+      }));
+      if (typeof rec?.superficie_declaree === 'number') setSuperficieDeclaree(rec.superficie_declaree);
+    } catch {}
+    setProvisionalPoints(provArr);
+
+    // Validées
+    try {
+      const res = await axios.get(`${apiURL}/coordinates/procedure/${idProc}`);
+      const coords = (res.data ?? []).filter((c: any) => c?.coordonnee?.x !== undefined && c?.coordonnee?.y !== undefined);
+      let baseId = generateId();
+      valArr = coords.map((c: any, i: number) => ({
+        id: c.coordonnee.id ?? (baseId + i),
+        idTitre: c.coordonnee.idTitre || 1007,
+        h: c.coordonnee.h || 32,
+        x: c.coordonnee.x,
+        y: c.coordonnee.y,
+        system: c.coordonnee.system || 'UTM',
+        zone: c.coordonnee.zone,
+        hemisphere: c.coordonnee.hemisphere,
+      }));
+    } catch {}
+    setValidatedPoints(valArr);
+
+    // Apply selection once from freshly loaded arrays
+    applySourceFromArrays(provArr, valArr, coordSource);
+  };
+  load();
+}, [idProc, apiURL, refetchTrigger]);
+
+  // Reflect selected source (provisoire/validées) into displayed points
+  useEffect(() => {
+    applySourceFromArrays(provisionalPoints, validatedPoints, coordSource);
+  }, [coordSource, provisionalPoints, validatedPoints]);
+
+  
+
 
   useActivateEtape({
     idProc,
@@ -161,7 +260,7 @@ export default function CadastrePage() {
         const res = await axios.get(`${apiURL}/api/demande/${idDemande}/summary`);
         setDemandeSummary(res.data);
       } catch (error) {
-        console.error("❌ Failed to fetch summary", error);
+        console.error("? Failed to fetch summary", error);
         setError('Failed to fetch demande summary');
         setTimeout(() => setError(null), 4000);
       }
@@ -179,6 +278,11 @@ export default function CadastrePage() {
         daira: demandeSummary.daira?.nom_dairaFR || '',
         commune: demandeSummary.commune?.nom_communeFR || ''
       });
+      // Try to fill declared surface from summary if available
+      try {
+        const sd = (demandeSummary.superficie_declaree ?? demandeSummary.superficieDeclaree ?? demandeSummary.superficie_declaree_ha ?? null);
+        if (typeof sd === 'number') setSuperficieDeclaree(sd);
+      } catch {}
     }
   }, [demandeSummary]);
 
@@ -201,8 +305,122 @@ export default function CadastrePage() {
     return newPoint;
   }, [points, coordinateSystem, utmZone, utmHemisphere]);
 
-  const [existingPolygons, setExistingPolygons] = useState<{idProc: number; num_proc: string; coordinates: [number, number][]}[]>([]);
+  const insertPointAfter = (index: number) => {
+    const base = points[index];
+    const newPoint: Point = {
+      id: generateId(),
+      idTitre: base?.idTitre ?? (points[0]?.idTitre ?? 1007),
+      h: base?.h ?? (points[0]?.h ?? 32),
+      x: base ? base.x : 0,
+      y: base ? base.y : 0,
+      system: coordinateSystem,
+      zone: coordinateSystem === 'UTM' ? (base?.zone ?? utmZone) : undefined,
+      hemisphere: coordinateSystem === 'UTM' ? (base?.hemisphere ?? utmHemisphere) : undefined,
+    };
+    const next = [...points];
+    next.splice(index + 1, 0, newPoint);
+    setPoints(next);
+  };
 
+  const movePointUp = (index: number) => {
+    if (index <= 0) return;
+    const next = [...points];
+    const [p] = next.splice(index, 1);
+    next.splice(index - 1, 0, p);
+    setPoints(next);
+  };
+
+  const movePointDown = (index: number) => {
+    if (index >= points.length - 1) return;
+    const next = [...points];
+    const [p] = next.splice(index, 1);
+    next.splice(index + 1, 0, p);
+    setPoints(next);
+  };
+
+  const [existingPolygons, setExistingPolygons] = useState<{idProc: number; num_proc: string; coordinates: [number, number][]}[]>([]);
+  const filteredExistingPolygons = useMemo(() => {
+    if (!idProc) return existingPolygons;
+    return existingPolygons.filter(p => p.idProc !== idProc);
+  }, [existingPolygons, idProc]);
+  const lastOverlapStatusRef = useRef<'none' | 'overlap' | 'unreachable' | null>(null);
+  const autoCheckTimerRef = useRef<number | null>(null);
+
+  // Load existing polygons from backend (for overlap checks)
+  useEffect(() => {
+    const fetchExisting = async () => {
+      try {
+        const res = await axios.get(`${apiURL}/coordinates/existing`);
+        const polygons = res.data.map((poly: any) => ({
+          idProc: poly.idProc,
+          num_proc: poly.num_proc,
+          coordinates: poly.coordinates.map((coord: [number, number]) => [coord[0], coord[1]])
+        }));
+        setExistingPolygons(polygons);
+      } catch (err) {
+        console.error('Failed to fetch polygons', err);
+        setExistingPolygons([]);
+        setError('Failed to fetch existing polygons');
+        setTimeout(() => setError(null), 4000);
+      }
+    };
+    fetchExisting();
+  }, [apiURL]);
+
+  // Load demande info (idDemande, statut) from procedure id
+  useEffect(() => {
+    if (!router.isReady) return;
+    const id_proc = router.query.id as string;
+    if (!id_proc) return;
+    const fetchDemande = async () => {
+      try {
+        const res = await axios.get(`${apiURL}/api/procedures/${id_proc}/demande`);
+        setIdDemande(res.data.id_demande);
+        setStatutProc(res.data.procedure.statut_proc);
+      } catch (error) {
+        console.error('Failed to fetch demande:', error);
+        // keep UI usable even if this fails
+      }
+    };
+    fetchDemande();
+  }, [router.isReady, router.query.id, apiURL]);
+
+  // Ensure re-fetch on repeated navigations even to same URL
+  useEffect(() => {
+    const id_proc = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('id') ?? '' : '';
+    if (!id_proc) return;
+    const fetchDemande = async () => {
+      try {
+        const res = await axios.get(`${apiURL}/api/procedures/${id_proc}/demande`);
+        setIdDemande(res.data.id_demande);
+        setStatutProc(res.data.procedure.statut_proc);
+      } catch (error) {
+        // swallow duplicate errors
+      }
+    };
+    fetchDemande();
+  }, [router.asPath, apiURL]);
+
+  // Removed legacy initial points loader to avoid ping-pong with source selection
+
+  // Load existing verification (cadastral) status for the demande
+  useEffect(() => {
+    if (!idDemande) return;
+    const fetchVerification = async () => {
+      try {
+        const res = await axios.get(`${apiURL}/verification-geo/demande/${idDemande}`);
+        const v = res.data || {};
+        if (typeof v.sit_geo_ok === 'boolean') setSitGeoOk(v.sit_geo_ok);
+        if (typeof v.empiet_ok === 'boolean') setEmpietOk(v.empiet_ok);
+        if (typeof v.geom_ok === 'boolean') setGeomOk(v.geom_ok);
+        if (typeof v.superf_ok === 'boolean') setSuperfOk(v.superf_ok);
+        if (typeof v.superficie_cadastrale === 'number') setSuperficieCadastrale(v.superficie_cadastrale);
+      } catch (e) {
+        // If not found yet, keep defaults; avoid noisy errors
+      }
+    };
+    fetchVerification();
+  }, [idDemande, apiURL]);
   // Add new function to check mining title overlaps
   const checkMiningTitleOverlaps = async () => {
     if (!mapRef.current || points.length < 3) {
@@ -213,17 +431,25 @@ export default function CadastrePage() {
 
     try {
       const overlappingTitles = await mapRef.current.queryMiningTitles();
+      if (overlappingTitles === null) {
+        if (lastOverlapStatusRef.current !== 'unreachable') {
+          lastOverlapStatusRef.current = 'unreachable';
+          setError('Vérification ANAM indisponible (couche SIG inaccessible)');
+          setTimeout(() => setError(null), 4000);
+        }
+        return;
+      }
       setMiningTitleOverlaps(overlappingTitles);
       
       if (overlappingTitles.length > 0) {
         setOverlapDetected(true);
         setOverlapPermits(overlappingTitles.map((title: { NOM: any; OBJECTID: any; }) => title.NOM || title.OBJECTID || 'Titre minier inconnu'));
-        setError(`Chevauchement détecté avec ${overlappingTitles.length} titre(s) minier(s) ANAM`);
-        setTimeout(() => setError(null), 5000);
+        if (lastOverlapStatusRef.current !== 'overlap') {
+          lastOverlapStatusRef.current = 'overlap'; setError(`Chevauchement détecté avec ${overlappingTitles.length} titre(s) minier(s) ANAM`); setTimeout(() => setError(null), 5000); }
       } else {
         setOverlapDetected(false);
-        setSuccess('Aucun chevauchement avec les titres miniers ANAM');
-        setTimeout(() => setSuccess(null), 3000);
+        if (lastOverlapStatusRef.current !== 'none') {
+          lastOverlapStatusRef.current = 'none'; setSuccess('Aucun chevauchement avec les titres miniers ANAM'); setTimeout(() => setSuccess(null), 2000); }
       }
     } catch (error) {
       console.error('Error checking mining title overlaps:', error);
@@ -241,7 +467,7 @@ export default function CadastrePage() {
     setSavingEtape(true);
     try {
       await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/5`);
-      setSuccess("étape 5 enregistrée avec succés !");
+      setSuccess("Étape 5 enregistrée avec succès !");
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
       console.error("Erreur étape", err);
@@ -261,6 +487,41 @@ export default function CadastrePage() {
     setPoints(points.map(p =>
       p.id === id ? { ...p, [key]: key === 'id' || key === 'idTitre' || key === 'h' ? parseInt(value) || 0 : parseFloat(value) || 0 } : p
     ));
+  };
+
+  const saveCoordinatesToBackend = async () => {
+    if (!idProc) {
+      setError("ID procédure manquant !");
+      setTimeout(() => setError(null), 4000);
+      return;
+    }
+    if (!points || points.length < 3) {
+      setError("Le polygone doit contenir au moins 3 points.");
+      setTimeout(() => setError(null), 4000);
+      return;
+    }
+    try {
+      const payloadPoints = points.map(p => ({
+        x: p.x.toString(),
+        y: p.y.toString(),
+        z: "0",
+        system: p.system,
+        zone: p.zone,
+        hemisphere: p.hemisphere,
+      }));
+      await axios.post(`${apiURL}/coordinates/update`, {
+        id_proc: idProc,
+        id_zone_interdite: null,
+        points: payloadPoints,
+        superficie
+      });
+      setSuccess("Coordonnées sauvegardées avec succès !");
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      console.error("Erreur lors de la sauvegarde des coordonnées:", err);
+      setError("Échec de la sauvegarde des coordonnées.");
+      setTimeout(() => setError(null), 4000);
+    }
   };
 
   const validateCoordinate = (point: Point): boolean => {
@@ -485,7 +746,7 @@ export default function CadastrePage() {
     }
     const newPoly = turf.polygon([coordinates]);
     const overlappingSites: string[] = [];
-    existingPolygons.forEach(({ num_proc, coordinates: existingCoords }) => {
+    filteredExistingPolygons.forEach(({ num_proc, coordinates: existingCoords }) => {
       try {
         if (!existingCoords || !Array.isArray(existingCoords)) {
           console.warn('Invalid existing coordinates for:', num_proc);
@@ -507,19 +768,30 @@ export default function CadastrePage() {
     const allOverlaps = [...overlappingSites, ...miningTitleOverlaps.map(title => title.NOM || 'Titre minier')];
     setOverlapDetected(allOverlaps.length > 0);
     setOverlapPermits(allOverlaps);
-  }, [points, existingPolygons, miningTitleOverlaps]);
+  }, [points, filteredExistingPolygons, miningTitleOverlaps]);
 
-  // Update useEffect to include mining title checks
+  // Update useEffect to include mining title checks (debounced)
   useEffect(() => {
     calculateArea();
     checkForOverlaps();
-    
+
+    if (autoCheckTimerRef.current) {
+      window.clearTimeout(autoCheckTimerRef.current);
+      autoCheckTimerRef.current = null;
+    }
     // Auto-check mining titles when polygon is complete
     if (points.length >= 3 && isPolygonValid) {
-      setTimeout(() => {
+      autoCheckTimerRef.current = window.setTimeout(() => {
         checkMiningTitleOverlaps();
-      }, 1000);
+      }, 800) as unknown as number;
     }
+
+    return () => {
+      if (autoCheckTimerRef.current) {
+        window.clearTimeout(autoCheckTimerRef.current);
+        autoCheckTimerRef.current = null;
+      }
+    };
   }, [points, calculateArea, checkForOverlaps, isPolygonValid]);
 
   // Add function to calculate area using ArcGIS
@@ -631,10 +903,8 @@ export default function CadastrePage() {
                       </div>
                     </div>
                   </div>
-                  
-                  {/* ArcGIS Map with Enterprise Services */}
-                  <div className={styles['map-wrapper']}>
                     <ArcGISMap
+                      key={`map-${coordSource}`}
                       ref={mapRef}
                       points={points}
                       superficie={superficie}
@@ -642,8 +912,9 @@ export default function CadastrePage() {
                       onMapClick={handleMapClick}
                       onPolygonChange={(polygon) => {
                         if (polygon && polygon.length >= 3) {
-                          setPoints(polygon.map((coord, index) => ({
-                            id: generateId(),
+                          const baseId = generateId();
+                          const next = polygon.map((coord, index) => ({
+                            id: baseId + index,
                             idTitre: points.length > 0 ? points[0].idTitre : 1007,
                             h: points.length > 0 ? points[0].h : 32,
                             x: coord[0],
@@ -651,15 +922,20 @@ export default function CadastrePage() {
                             system: coordinateSystem,
                             zone: coordinateSystem === "UTM" ? utmZone : undefined,
                             hemisphere: coordinateSystem === "UTM" ? utmHemisphere : undefined
-                          })));
+                          }));
+                          const sameLen = next.length === points.length;
+                          const sameGeom = sameLen && next.every((p, i) => p.x === points[i].x && p.y === points[i].y);
+                          if (!sameGeom) {
+                            setPoints(next);
+                          }
                         }
                       }}
-                      existingPolygons={existingPolygons}
+                      existingPolygons={filteredExistingPolygons}
                       coordinateSystem={coordinateSystem}
                       utmZone={utmZone}
                       utmHemisphere={utmHemisphere}
+                      labelText={permitData.code || (demandeSummary?.code_demande ?? '')}
                     />
-                  </div>
                   
                   <div className={styles['map-footer']}>
                     <div className={styles['area-display']}>
@@ -718,14 +994,27 @@ export default function CadastrePage() {
                     {activeTab === 'coordinates' && (
                       <>
                         <div className={styles['table-header']}>
-                          <h3>Points du périmétre</h3>
-                          {isCadastre && (
-                            <button className={styles['add-btn']} onClick={() => addPoint()} 
-                           // disabled={statutProc === 'TERMINEE' || !statutProc}
+                          <h3>Points du périmètre</h3>
+                          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                            <select
+                              value={coordSource}
+                              onChange={(e) => setCoordSource(e.target.value as 'provisoire' | 'validees')}
+                              className={styles['system-select']}
+                              title="Source des coordonnées"
                             >
+                              <option value="provisoire">Inscription provisoire</option>
+                              <option value="validees">Coordonnées validées</option>
+                            </select>
+                            <button className={styles['add-btn']} onClick={() => addPoint()}>
                               <FiPlus /> Ajouter
                             </button>
-                          )}
+                            <button className={styles['add-btn']} onClick={saveCoordinatesToBackend}>
+                              <FiSave /> Enregistrer les coordonnées
+                            </button>
+                            <button className={styles['add-btn']} onClick={() => setRefetchTrigger(prev => prev + 1)}>
+                              <FiRefreshCw /> Recharger
+                            </button>
+                          </div>
                         </div>
                         <div className={styles['coordinates-table']}>
                           <div className={`${styles['table-row']} ${styles['header']}`}>
@@ -744,7 +1033,7 @@ export default function CadastrePage() {
                                   type="number"
                                   value={point.idTitre}
                                   onChange={(e) => handleChange(point.id, 'idTitre', e.target.value)}
-                                 // disabled={!isCadastre}
+                                  disabled={editableRowId !== point.id}
                                 />
                               </div>
                               <div>
@@ -752,7 +1041,7 @@ export default function CadastrePage() {
                                   type="number"
                                   value={point.h}
                                   onChange={(e) => handleChange(point.id, 'h', e.target.value)}
-                                //  disabled={!isCadastre}
+                                  disabled={editableRowId !== point.id}
                                 />
                               </div>
                               <div>
@@ -760,7 +1049,7 @@ export default function CadastrePage() {
                                   type="number"
                                   value={point.x}
                                   onChange={(e) => handleChange(point.id, 'x', e.target.value)}
-                                 // disabled={!isCadastre}
+                                  disabled={editableRowId !== point.id}
                                 />
                               </div>
                               <div>
@@ -768,18 +1057,53 @@ export default function CadastrePage() {
                                   type="number"
                                   value={point.y}
                                   onChange={(e) => handleChange(point.id, 'y', e.target.value)}
-                                 // disabled={!isCadastre}
+                                  disabled={editableRowId !== point.id}
                                 />
                               </div>
                               <div>
-                                <button
-                                  className={styles['delete-btn']}
-                                  onClick={() => removePoint(point.id)}
-                                 disabled={points.length <= 3 }
-                                  title={!isCadastre ? "Non autorisé" : points.length <= 3 ? "Un polygone doit avoir au moins 3 points" : "Supprimer ce point"}
-                                >
-                                  <FiTrash2 />
-                                </button>
+                                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                  <button
+                                    className={styles['delete-btn']}
+                                    style={{ display: 'none' }}
+                                    onClick={() => movePointUp(index)}
+                                    disabled={index === 0}
+                                    title={index === 0 ? "Premier point" : "Monter"}
+                                  >
+                                    <FiArrowUp />
+                                  </button>
+                                  <button
+                                    className={styles['delete-btn']}
+                                    style={{ display: 'none' }}
+                                    onClick={() => movePointDown(index)}
+                                    disabled={index === points.length - 1}
+                                    title={index === points.length - 1 ? "Dernier point" : "Descendre"}
+                                  >
+                                    <FiArrowDown />
+                                  </button>
+                                  <button
+                                    className={styles['delete-btn']}
+                                    style={{ display: 'none' }}
+                                    onClick={() => insertPointAfter(index)}
+                                    title="Insérer après"
+                                  >
+                                    <FiPlus />
+                                  </button>
+                                  <button
+                                    className={styles['delete-btn']}
+                                    onClick={() => setEditableRowId(prev => prev === point.id ? null : point.id)}
+                                    title={editableRowId === point.id ? "Terminer la modification" : "Modifier"}
+                                  >
+                                    <FiEdit2 />
+                                  </button>
+                                  <button
+                                    className={styles['delete-btn']}
+                                    onClick={() => removePoint(point.id)}
+                                    disabled={points.length <= 3 }
+                                    title={points.length <= 3 ? "Un polygone doit avoir au moins 3 points" : "Supprimer ce point"}
+                                  >
+                                    <FiTrash2 />
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           ))}
@@ -797,7 +1121,7 @@ export default function CadastrePage() {
                           </div>
                           {overlapDetected ? (
                             <>
-                              <p>Empiétements détectés avec :</p>
+                              <p>Empiètements détectés avec :</p>
                               <ul>
                                 {overlapPermits.map((permit, idx) => (
                                   <li key={idx}>{permit}</li>
@@ -828,7 +1152,7 @@ export default function CadastrePage() {
                               />
                             </>
                           ) : (
-                            <p>Aucun empiétement détecté avec les titres miniers ANAM</p>
+                            <p>Aucun empiètement détecté avec les titres miniers ANAM</p>
                           )}
                           
                           <div className={styles['validation-actions']}>
@@ -837,7 +1161,7 @@ export default function CadastrePage() {
                               onClick={checkMiningTitleOverlaps}
                               disabled={points.length < 3}
                             >
-                              <FiRefreshCw /> Re-vérifier
+                          <FiRefreshCw /> Re-vérifier
                             </button>
                           </div>
                         </div>
@@ -864,7 +1188,7 @@ export default function CadastrePage() {
                               <input type="checkbox" checked={sitGeoOk} onChange={(e) => setSitGeoOk(e.target.checked)} />
                             </div>
                             <div>
-                              <label>Absence d'empiètements</label>
+                              <label>Absence d'empiétements</label>
                               <input type="checkbox" checked={empietOk} onChange={(e) => setEmpietOk(e.target.checked)} />
                             </div>
                             <div>
@@ -1107,3 +1431,20 @@ export default function CadastrePage() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

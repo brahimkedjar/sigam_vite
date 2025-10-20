@@ -110,7 +110,7 @@ export default function Actionnaires({ data, onChange, disabled = false, paysOpt
         </div>
       ))}
 
-      <button type="button" className={styles.addButton} onClick={addActionnaire} disabled={disabled}>
+      <button type="button" className={styles.addButton} onClick={addActionnaire} >
         + Ajouter un actionnaire
       </button>
     </div>
