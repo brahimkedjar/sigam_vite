@@ -21,6 +21,11 @@ import Sketch from '@arcgis/core/widgets/Sketch';
 import * as geometryEngine from '@arcgis/core/geometry/geometryEngine';
 import * as proj4 from 'proj4';
 import esriConfig from '@arcgis/core/config';
+import * as print from '@arcgis/core/rest/print';
+import PrintParameters from '@arcgis/core/rest/support/PrintParameters';
+import PrintTemplate from '@arcgis/core/rest/support/PrintTemplate';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 // Configure ArcGIS Enterprise portal
 try { esriConfig.portalUrl = "https://sig.anam.dz/portal"; } catch {}
@@ -113,6 +118,22 @@ export interface ArcGISMapProps {
   utmHemisphere?: 'N';
   editable?: boolean;
   labelText?: string;
+  // Optional: administrative info for reports
+  adminInfo?: {
+    codePermis?: string;
+    typePermis?: string;
+    titulaire?: string;
+    wilaya?: string;
+    daira?: string;
+    commune?: string;
+  };
+  declaredAreaHa?: number; // Superficie déclarée
+  validationSummary?: { // Validation flags to display in PDF
+    sitGeoOk?: boolean;
+    empietOk?: boolean;
+    geomOk?: boolean;
+    superfOk?: boolean;
+  };
 }
 
 export interface ArcGISMapRef {
@@ -135,13 +156,17 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
   utmZone = 31,
   utmHemisphere = 'N',
   editable = true,
-  labelText
+  labelText,
+  adminInfo,
+  declaredAreaHa,
+  validationSummary
 }, ref) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<MapView | null>(null);
   const graphicsLayerRef = useRef<GraphicsLayer | null>(null);
   const markersLayerRef = useRef<GraphicsLayer | null>(null);
   const existingPolygonsLayerRef = useRef<GraphicsLayer | null>(null);
+  const titresLayerRef = useRef<FeatureLayer | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
   const [enterpriseLayers, setEnterpriseLayers] = useState<any[]>([]);
   const [activeLayers, setActiveLayers] = useState<{[key: string]: boolean}>({
@@ -149,6 +174,9 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
     exploration: true,
     perimetres: true
   });
+  const [isLayerPanelOpen, setIsLayerPanelOpen] = useState(true);
+  const [selectedTitreAttributes, setSelectedTitreAttributes] = useState<any | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
   // Guard to avoid duplicate MapView initialization in React StrictMode (dev)
   const initializedRef = useRef<boolean>(false);
   const polygonGraphicRef = useRef<Graphic | null>(null);
@@ -291,7 +319,10 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
       };
 
       const result = await queryLayer.queryFeatures(query);
-      return result.features.map(feature => feature.attributes);
+      const attributes = result.features.map(feature => feature.attributes);
+      // Log all attributes received for debugging/inspection
+      try { console.log('Titres miniers - attributs reçus (query):', attributes); } catch {}
+      return attributes;
       
     } catch (error) {
       console.error('Error querying mining titles:', error);
@@ -360,17 +391,30 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
         outFields: ["*"],
         opacity: activeLayers.titres ? 0.7 : 0,
         popupTemplate: {
-          title: "Titre Minier: {NOM}",
-          content: `
-            <div class="popup-content">
-              <p><strong>Type:</strong> {TYPE_TITRE}</p>
-              <p><strong>Statut:</strong> {STATUT}</p>
-              <p><strong>Superficie:</strong> {SUPERFICIE} ha</p>
-              <p><strong>Date Début:</strong> {DATE_DEBUT}</p>
-              <p><strong>Date Fin:</strong> {DATE_FIN}</p>
-              <p><strong>Titulaire:</strong> {TITULAIRE}</p>
-            </div>
-          `
+          title: "{typetitre} — {tnom}",
+          content: [
+            {
+              type: 'fields',
+              fieldInfos: [
+                { fieldName: 'typetitre', label: 'Type' },
+                { fieldName: 'codetype', label: 'Code Type' },
+                { fieldName: 'code', label: 'Code' },
+                { fieldName: 'idtitre', label: 'ID Titre' },
+                { fieldName: 'tnom', label: 'Titulaire' },
+                { fieldName: 'tprenom', label: 'Prénom titulaire' },
+                { fieldName: 'substance1', label: 'Substance' },
+                { fieldName: 'sig_area', label: 'Superficie (ha)' },
+                { fieldName: 'wilaya', label: 'Wilaya' },
+                { fieldName: 'daira', label: 'Daira' },
+                { fieldName: 'commune', label: 'Commune' },
+                { fieldName: 'carte', label: 'Carte' },
+                { fieldName: 'lieudit', label: 'Lieu-dit' },
+                { fieldName: 'dateoctroi', label: "Date d'octroi", format: { dateFormat: 'short-date' } as any },
+                { fieldName: 'dateexpiration', label: 'Date d\'expiration', format: { dateFormat: 'short-date' } as any },
+                { fieldName: 'objectid', label: 'OBJECTID' }
+              ]
+            }
+          ] as any
         },
         renderer: {
           type: "simple",
@@ -388,6 +432,9 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
         await titresLayer.load();
         map.add(titresLayer);
         layers.push(titresLayer);
+        // Keep a ref for hitTest logging
+        titresLayerRef.current = titresLayer;
+        try { console.log('Titres miniers - champs disponibles:', (titresLayer.fields || []).map((f: any) => f.name)); } catch {}
       } catch (e) {
         console.warn('Skipped Titres Miniers layer: service unreachable.', e);
       }
@@ -544,7 +591,7 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
         existingPolygonsLayerRef.current = existingGraphicsLayer;
         viewRef.current = view;
 
-        // Set up click event
+  // Set up click event
         view.on("click", (event) => {
   if (isDrawing && onMapClick) {
     const point = event.mapPoint;
@@ -564,6 +611,22 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
 
     onMapClick(converted[0], converted[1]);
   }
+  // Additionally, log attributes of any Titres Miniers feature clicked
+  try {
+    if (titresLayerRef.current) {
+      (view as any).hitTest(event).then((response: any) => {
+        const results: any[] = (response?.results || []);
+        const filtered = results.filter((r: any) => {
+          const lyr: any = r?.graphic?.layer;
+          return !!lyr && (lyr.id === titresLayerRef.current?.id || lyr.title === 'Titres Miniers ANAM');
+        });
+        filtered.forEach((r: any) => {
+          try { console.log('Titres miniers - attributs (click):', r.graphic?.attributes); } catch {}
+          try { setSelectedTitreAttributes(r.graphic?.attributes || null); } catch {}
+        });
+      }).catch(() => {});
+    }
+  } catch {}
 });
 
         await view.when();
@@ -856,19 +919,306 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
     }));
   };
 
+  // Export current map view to PNG
+  const exportPNG = async () => {
+    if (!viewRef.current) return;
+    try {
+      setIsExporting(true);
+      const shot: any = await (viewRef.current as any).takeScreenshot({ format: 'png', quality: 1 });
+      const a = document.createElement('a');
+      const ts = new Date().toISOString().replace(/[:.]/g, '-');
+      a.href = shot?.dataUrl || shot?.dataUrl; // ArcGIS returns dataUrl
+      const code = selectedTitreAttributes?.code || selectedTitreAttributes?.idtitre || 'site-minier';
+      a.download = `capture-${code}-${ts}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } catch (e) {
+      console.error('Erreur export PNG:', e);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Export PDF via ArcGIS Printing Service
+  const exportPDF = async () => {
+    if (!viewRef.current) return;
+    try {
+      setIsExporting(true);
+      const taskUrl = `${enterpriseServices.printingService}/Export%20Web%20Map%20Task`;
+      // Compose a title from selected attributes when possible
+      const typ = selectedTitreAttributes?.typetitre || selectedTitreAttributes?.codetype || 'Titre minier';
+      const code = selectedTitreAttributes?.code ?? selectedTitreAttributes?.idtitre ?? selectedTitreAttributes?.objectid ?? '';
+      const titulaire = [selectedTitreAttributes?.tnom, selectedTitreAttributes?.tprenom].filter(Boolean).join(' ').trim();
+      const titleText = `${typ} ${selectedTitreAttributes?.codetype || ''} ${code}`.replace(/\s+/g, ' ').trim();
+
+      // Pre-compute overlaps for inclusion in print layout (if supported)
+      let overlapsForPrint: any[] | null = null;
+      try { overlapsForPrint = await queryMiningTitles(); } catch {}
+      const overlapCount = overlapsForPrint?.length || 0;
+      const overlapList = (overlapsForPrint || []).slice(0, 8).map((t: any, i: number) => {
+        const ttyp = t.typetitre || t.codetype || 'Titre';
+        const tcode = t.code ?? t.idtitre ?? t.objectid ?? '';
+        const ttit = [t.tnom, t.tprenom].filter(Boolean).join(' ').trim();
+        const tloc = [t.wilaya, t.daira, t.commune].filter(Boolean).join(' / ');
+        return `${i+1}. ${ttyp} ${t.codetype || ''} ${tcode}${ttit ? ' — ' + ttit : ''}${tloc ? ' — ' + tloc : ''}`.replace(/\s+/g,' ').trim();
+      }).join('\n');
+
+      const template = new PrintTemplate({
+        format: 'pdf',
+        layout: 'a4-portrait',
+        layoutOptions: {
+          titleText: titleText || 'Carte des titres miniers',
+          authorText: titulaire || 'ANAM',
+          // Custom text elements are used when the server layout supports them; safe to include
+          customTextElements: [
+            { label: 'Code permis', value: (adminInfo as any)?.codePermis ?? (labelText || '') },
+            { label: 'Type permis', value: (adminInfo as any)?.typePermis ?? (selectedTitreAttributes?.typetitre || '') },
+            { label: 'Titulaire', value: (adminInfo as any)?.titulaire ?? titulaire },
+            { label: 'Wilaya', value: (adminInfo as any)?.wilaya ?? selectedTitreAttributes?.wilaya ?? '' },
+            { label: 'Daira', value: (adminInfo as any)?.daira ?? selectedTitreAttributes?.daira ?? '' },
+            { label: 'Commune', value: (adminInfo as any)?.commune ?? selectedTitreAttributes?.commune ?? '' },
+            { label: 'Substance', value: selectedTitreAttributes?.substance1 || selectedTitreAttributes?.substances || '' },
+            { label: 'Superficie (ha)', value: selectedTitreAttributes?.sig_area || superficie || '' },
+            { label: 'Chevauchements (compte)', value: String(overlapCount) },
+            { label: 'Chevauchements (liste)', value: overlapList }
+          ] as any
+        } as any
+      });
+
+      const params = new PrintParameters({
+        view: viewRef.current!,
+        template
+      } as any);
+
+      const result: any = await (print as any).execute(taskUrl, params as any);
+      if (result?.url) {
+        const a = document.createElement('a');
+        a.href = result.url;
+        const ts = new Date().toISOString().substring(0,19).replace(/[:T]/g, '-');
+        const codePart = code ? `-${code}` : '';
+        a.download = `rapport-titre${codePart}-${ts}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        console.warn('Aucune URL de PDF retournée par le service de cartographie.');
+      }
+    } catch (e) {
+      console.error('Erreur export PDF:', e);
+      // Fallback to client-side PDF composition when server print fails
+      try {
+        await exportClientPDF();
+      } catch (e2) {
+        console.error('Erreur export PDF (fallback):', e2);
+      }
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Client-side PDF composition fallback (screenshot + attributes)
+  const exportClientPDF = async () => {
+    if (!viewRef.current) return;
+    const view = viewRef.current as any;
+
+    const shot: any = await view.takeScreenshot({ format: 'png', quality: 1 });
+    const dataUrl: string = shot?.dataUrl || '';
+
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 10;
+
+    // Header
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text('Agence Nationale des Activités Minières', pageWidth / 2, margin, { align: 'center' });
+    doc.setFontSize(12);
+    const typ = selectedTitreAttributes?.typetitre || selectedTitreAttributes?.codetype || 'Titre minier';
+    const code = selectedTitreAttributes?.code ?? selectedTitreAttributes?.idtitre ?? selectedTitreAttributes?.objectid ?? '';
+    const titleLine = `${typ}${selectedTitreAttributes?.codetype ? ' ' + selectedTitreAttributes.codetype : ''}${code ? ' — ' + code : ''}`.replace(/\s+/g, ' ').trim();
+    doc.text(titleLine || 'Rapport du Titre Minier', pageWidth / 2, margin + 7, { align: 'center' });
+
+    // Map image
+    let y = margin + 14;
+    try {
+      if (dataUrl) {
+        const imgW = pageWidth - margin * 2;
+        // Estimate height using screenshot aspect ratio when available
+        const sW = shot?.width || 1600;
+        const sH = shot?.height || 900;
+        const imgH = Math.min((imgW * sH) / sW, pageHeight * 0.45);
+        doc.addImage(dataUrl, 'PNG', margin, y, imgW, imgH, undefined, 'FAST');
+        y += imgH + 6;
+      }
+    } catch {}
+
+    // Helpers
+    const fmtNum = (n: any, fractionDigits = 1) => {
+      const v = Number(n);
+      if (!isFinite(v)) return '';
+      try { return new Intl.NumberFormat('fr-DZ', { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits }).format(v); } catch { return String(v); }
+    };
+    const yesNo = (b: any) => (b ? 'Oui' : 'Non');
+    const stripUnsupported = (s: any) => {
+      if (typeof s !== 'string') return s ?? '';
+      try { return s.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').replace(/[\u0000-\u001F]/g, ' ').replace(/[^\x20-\x7E\u00A0-\u00FF]/g, ''); } catch { return s; }
+    };
+
+    // Attributes table (site minier)
+    const titulaire = [selectedTitreAttributes?.tnom, selectedTitreAttributes?.tprenom].filter(Boolean).join(' ').trim();
+    const location = [selectedTitreAttributes?.wilaya, selectedTitreAttributes?.daira, selectedTitreAttributes?.commune].filter(Boolean).join(' / ');
+    const admin = {
+      codePermis: (adminInfo as any)?.codePermis ?? (labelText || ''),
+      typePermis: (adminInfo as any)?.typePermis ?? '',
+      titulaire: (adminInfo as any)?.titulaire ?? titulaire,
+      wilaya: (adminInfo as any)?.wilaya ?? selectedTitreAttributes?.wilaya ?? '',
+      daira: (adminInfo as any)?.daira ?? selectedTitreAttributes?.daira ?? '',
+      commune: (adminInfo as any)?.commune ?? selectedTitreAttributes?.commune ?? ''
+    };
+    const formatDate = (v: any) => {
+      try { const d = new Date(v); if (!isNaN(d.getTime())) return d.toLocaleDateString('fr-DZ'); } catch {}
+      return '';
+    };
+    const rowsAdmin: Array<[string, string]> = [
+      ['Code permis', stripUnsupported(admin.codePermis)],
+      ['Type permis', stripUnsupported(admin.typePermis || (selectedTitreAttributes?.typetitre || ''))],
+      ['Titulaire', stripUnsupported(admin.titulaire)],
+      ['Wilaya', stripUnsupported(admin.wilaya)],
+      ['Daira', stripUnsupported(admin.daira)],
+      ['Commune', stripUnsupported(admin.commune)]
+    ];
+    const rowsTech: Array<[string, string]> = [
+      ['Nombre de points', String((points || []).length)],
+      ['Superficie (ha)', fmtNum(selectedTitreAttributes?.sig_area || superficie, 1)],
+      ['Superficie déclarée (ha)', (typeof (declaredAreaHa) !== 'undefined' ? fmtNum(declaredAreaHa, 1) : '')],
+      ['Situation géographique OK', yesNo((validationSummary as any)?.sitGeoOk)],
+      ['Absence d\'empiétements', yesNo((validationSummary as any)?.empietOk)],
+      ['Géométrie correcte', yesNo((validationSummary as any)?.geomOk)],
+      ['Superficie conforme', yesNo((validationSummary as any)?.superfOk)]
+    ];
+
+    // Build administrative table
+    try {
+      (autoTable as any)(doc, {
+        head: [[{ content: 'Informations administratives', colSpan: 2, styles: { halign: 'center' } }]],
+        body: rowsAdmin.map(([k, v]) => [k, v]),
+        startY: y,
+        theme: 'grid',
+        styles: { font: 'helvetica', fontSize: 9 },
+        headStyles: { fillColor: [31, 41, 55], textColor: 255 },
+        alternateRowStyles: { fillColor: [245, 247, 250] },
+        columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 'auto' } }
+      });
+    } catch {
+      // graceful degrade: write key-values as simple text
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      let yy = y + 6;
+      rowsAdmin.forEach(([k, v]) => { doc.text(`${k}: ${v}`, margin, yy); yy += 5; });
+    }
+
+    // Caractéristiques techniques
+    let nextY = (doc as any)?.lastAutoTable?.finalY ? (doc as any).lastAutoTable.finalY + 10 : (y + 20);
+    try {
+      (autoTable as any)(doc, {
+        head: [[{ content: 'Caractéristiques techniques', colSpan: 2, styles: { halign: 'center' } }]],
+        body: rowsTech.map(([k, v]) => [k, v]),
+        startY: nextY,
+        theme: 'grid',
+        styles: { font: 'helvetica', fontSize: 9 },
+        headStyles: { fillColor: [31, 41, 55], textColor: 255 },
+        alternateRowStyles: { fillColor: [245, 247, 250] },
+        columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 'auto' } }
+      });
+    } catch {
+      // ignore if autotable unavailable
+    }
+
+    // Chevauchements avec Titres Miniers ANAM
+    nextY = (doc as any)?.lastAutoTable?.finalY ? (doc as any).lastAutoTable.finalY + 10 : (nextY + 20);
+    try {
+      const overlaps = await queryMiningTitles();
+      if (overlaps && overlaps.length) {
+        const overlapRows = overlaps.map((t: any, idx: number) => {
+          const ttyp = t.typetitre || t.codetype || 'Titre';
+          const tcode = t.code ?? t.idtitre ?? t.objectid ?? '';
+          const ttit = [t.tnom, t.tprenom].filter(Boolean).join(' ').trim();
+          const tloc = [t.wilaya, t.daira, t.commune].filter(Boolean).join(' / ');
+          return [String(idx + 1), stripUnsupported(`${ttyp} ${t.codetype || ''}`.replace(/\s+/g,' ').trim()), String(tcode), stripUnsupported(ttit || ''), stripUnsupported(tloc || '')];
+        });
+        (autoTable as any)(doc, {
+          head: [[{ content: `Chevauchements détectés (${overlaps.length})`, colSpan: 5, styles: { halign: 'center' } }], ['#', 'Type', 'Code', 'Titulaire', 'Localisation']],
+          body: overlapRows,
+          startY: nextY,
+          theme: 'grid',
+          styles: { font: 'helvetica', fontSize: 9 },
+          headStyles: { fillColor: [31, 41, 55], textColor: 255 },
+          alternateRowStyles: { fillColor: [245, 247, 250] },
+          columnStyles: { 0: { cellWidth: 8 }, 1: { cellWidth: 40 }, 2: { cellWidth: 25 }, 3: { cellWidth: 55 }, 4: { cellWidth: 'auto' } }
+        });
+      } else {
+        doc.setFont('helvetica', 'bold');
+        doc.text('Chevauchements détectés (0)', margin, nextY);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.text('Aucun empiètement détecté avec les titres miniers ANAM.', margin, nextY + 6);
+      }
+    } catch (e) {
+      // If the service is unreachable, add a note
+      doc.setFont('helvetica', 'bold');
+      doc.text('Chevauchements — Information indisponible', margin, nextY);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.text(`La vérification des chevauchements n'a pas pu être effectuée.`, margin, nextY + 6);
+    }
+
+    // Footer
+    try {
+      doc.setFontSize(8);
+      const ts = new Date().toLocaleString('fr-DZ');
+      doc.text(`Généré le ${ts}`, margin, pageHeight - 6);
+    } catch {}
+
+    const tsFile = new Date().toISOString().substring(0,19).replace(/[:T]/g, '-');
+    const codePart = code ? `-${code}` : '';
+    doc.save(`rapport-titre${codePart}-${tsFile}.pdf`);
+  };
+
   return (
     <div className="arcgis-enterprise-container">
       <div 
         ref={mapRef} 
         className="arcgis-map"
         style={{ 
-          height: '80vh', 
+          height: '50vh', 
           width: '100%',
           cursor: isDrawing ? 'crosshair' : 'grab'
         }}
       />
       
+      {/* Layer toggle button */}
+      <button
+        className="layer-toggle-btn"
+        onClick={() => setIsLayerPanelOpen(v => !v)}
+        aria-label={isLayerPanelOpen ? 'Masquer les couches' : 'Afficher les couches'}
+      >
+        {isLayerPanelOpen ? 'Masquer les couches' : 'Afficher les couches'}
+      </button>
+
+      {/* Export controls */}
+      <div className="export-controls">
+        <button className="export-btn" onClick={exportPNG} disabled={isExporting}>
+          {isExporting ? 'Export…' : 'Exporter PNG'}
+        </button>
+        <button className="export-btn" onClick={exportPDF} disabled={isExporting}>
+          {isExporting ? 'Export…' : 'Télécharger PDF'}
+        </button>
+      </div>
+
       {/* Layer control panel */}
+      {isLayerPanelOpen && (
       <div className="layer-control-panel">
         <h4>Couches ANAM</h4>
         <div className="layer-list">
@@ -898,6 +1248,7 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
           </div>
         </div>
       </div>
+      )}
 
       <style jsx>{`
         .arcgis-enterprise-container {
@@ -905,9 +1256,23 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
           height: 50vh;
           width: 100%;
         }
-        .layer-control-panel {
+        .layer-toggle-btn {
           position: absolute;
           top: 10px;
+          right: 10px;
+          z-index: 1001;
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 6px;
+          padding: 6px 10px;
+          font-size: 12px;
+          color: #2d3748;
+          cursor: pointer;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+        .layer-control-panel {
+          position: fixed;
+          top: 48px; /* leave space for toggle btn */
           right: 10px;
           background: white;
           padding: 15px;
@@ -937,6 +1302,28 @@ export const ArcGISMap = forwardRef<ArcGISMapRef, ArcGISMapProps>(({
         }
         .layer-item input[type="checkbox"] {
           cursor: pointer;
+        }
+        .export-controls {
+          position: absolute;
+          bottom: 10px;
+          right: 10px;
+          z-index: 1001;
+          display: flex;
+          gap: 8px;
+        }
+        .export-btn {
+          background: #1f2937;
+          color: #fff;
+          border: none;
+          border-radius: 6px;
+          padding: 8px 10px;
+          font-size: 12px;
+          cursor: pointer;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+        .export-btn[disabled] {
+          opacity: 0.6;
+          cursor: default;
         }
       `}</style>
     </div>

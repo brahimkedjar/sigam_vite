@@ -11,7 +11,7 @@ try {
 
   // Now run custom seeders if not handled automatically by migrate reset
   run('npx ts-node prisma/seed_paiment.ts');
-  run('npx ts-node prisma/seed.ts');
+ run('npx ts-node prisma/seed.ts');
   run('npx ts-node prisma/seed_documents.ts');
   //run('npx ts-node prisma/seed_communs.ts');
   run('npx ts-node prisma/seed_substances.ts');

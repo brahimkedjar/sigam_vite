@@ -838,12 +838,12 @@ useActivateEtape({
                                   <li key={idx}>{permit}</li>
                                 ))}
                               </ul>
-                              <textarea
+                              {/* <textarea
                                 placeholder="Ajouter une remarque sur cet empiétement..."
                                 value={comment}
                                 onChange={(e) => setComment(e.target.value)}
                                // disabled={!isCadastre}
-                              />
+                              /> */}
                             </>
                           ) : (
                             <p>Aucun empiétement détecté</p>

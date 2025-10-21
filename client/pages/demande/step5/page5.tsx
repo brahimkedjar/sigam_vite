@@ -443,7 +443,15 @@ export default function CadastrePage() {
       
       if (overlappingTitles.length > 0) {
         setOverlapDetected(true);
-        setOverlapPermits(overlappingTitles.map((title: { NOM: any; OBJECTID: any; }) => title.NOM || title.OBJECTID || 'Titre minier inconnu'));
+        setOverlapPermits(overlappingTitles.map((title: any) => {
+          const typ = title.typetitre || title.codetype || 'Titre';
+          const code = title.code ?? title.idtitre ?? title.objectid ?? '';
+          const titulaire = [title.tnom, title.tprenom].filter(Boolean).join(' ').trim();
+          const locationParts = [title.wilaya, title.daira, title.commune].filter(Boolean);
+          const location = locationParts.length ? ` — ${locationParts.join(' / ')}` : '';
+          const holder = titulaire ? ` — ${titulaire}` : '';
+          return `${typ} ${title.codetype || ''} ${code}${holder}${location}`.replace(/\s+/g, ' ').trim();
+        }));
         if (lastOverlapStatusRef.current !== 'overlap') {
           lastOverlapStatusRef.current = 'overlap'; setError(`Chevauchement détecté avec ${overlappingTitles.length} titre(s) minier(s) ANAM`); setTimeout(() => setError(null), 5000); }
       } else {
@@ -765,7 +773,15 @@ export default function CadastrePage() {
     });
     
     // Include mining title overlaps
-    const allOverlaps = [...overlappingSites, ...miningTitleOverlaps.map(title => title.NOM || 'Titre minier')];
+    const allOverlaps = [
+      ...overlappingSites,
+      ...miningTitleOverlaps.map((title: any) => {
+        const typ = title.typetitre || title.codetype || 'Titre';
+        const code = title.code ?? title.idtitre ?? title.objectid ?? '';
+        const titulaire = [title.tnom, title.tprenom].filter(Boolean).join(' ').trim();
+        return `${typ} ${title.codetype || ''} ${code}${titulaire ? ' — ' + titulaire : ''}`.replace(/\s+/g,' ').trim();
+      })
+    ];
     setOverlapDetected(allOverlaps.length > 0);
     setOverlapPermits(allOverlaps);
   }, [points, filteredExistingPolygons, miningTitleOverlaps]);
@@ -935,6 +951,21 @@ export default function CadastrePage() {
                       utmZone={utmZone}
                       utmHemisphere={utmHemisphere}
                       labelText={permitData.code || (demandeSummary?.code_demande ?? '')}
+                      adminInfo={{
+                        codePermis: permitData.code || (demandeSummary?.code_demande ?? ''),
+                        typePermis: permitData.type,
+                        titulaire: permitData.holder,
+                        wilaya: permitData.wilaya,
+                        daira: permitData.daira,
+                        commune: permitData.commune
+                      }}
+                      declaredAreaHa={typeof superficieDeclaree === 'number' ? superficieDeclaree : undefined}
+                      validationSummary={{
+                        sitGeoOk,
+                        empietOk,
+                        geomOk,
+                        superfOk
+                      }}
                     />
                   
                   <div className={styles['map-footer']}>
@@ -1131,16 +1162,31 @@ export default function CadastrePage() {
                               {miningTitleOverlaps.length > 0 && (
                                 <div className={styles['mining-overlaps']}>
                                   <h4>Détails des titres miniers chevauchants :</h4>
-                                  {miningTitleOverlaps.map((title, idx) => (
-                                    <div key={idx} className={styles['mining-title-detail']}>
-                                      <strong>{title.NOM || `Titre ${title.OBJECTID}`}</strong>
-                                      <div className={styles['title-details']}>
-                                        {title.TYPE_TITRE && <span>Type: {title.TYPE_TITRE}</span>}
-                                        {title.STATUT && <span>Statut: {title.STATUT}</span>}
-                                        {title.TITULAIRE && <span>Titulaire: {title.TITULAIRE}</span>}
+                                  {miningTitleOverlaps.map((title: any, idx: number) => {
+                                    const typ = title.typetitre || title.codetype || 'Titre minier';
+                                    const code = title.code ?? title.idtitre ?? title.objectid ?? '';
+                                    const titulaire = [title.tnom, title.tprenom].filter(Boolean).join(' ').trim();
+                                    const locationParts = [title.wilaya, title.daira, title.commune].filter(Boolean);
+                                    const location = locationParts.join(' / ');
+                                    const formatDate = (v: any) => {
+                                      if (!v && v !== 0) return null;
+                                      try { const d = new Date(v); if (!isNaN(d.getTime())) return d.toLocaleDateString('fr-DZ'); } catch {}
+                                      return null;
+                                    };
+                                    const dOctroi = formatDate(title.dateoctroi);
+                                    const dExp = formatDate(title.dateexpiration);
+                                    return (
+                                      <div key={idx} className={styles['mining-title-detail']}>
+                                        <strong>{`${typ} ${title.codetype || ''} ${code}`.replace(/\s+/g,' ').trim()} {titulaire ? `— ${titulaire}` : ''}</strong>
+                                        <div className={styles['title-details']}>
+                                          {location && <span>Localisation: {location}</span>}
+                                          {(dOctroi || dExp) && <span>Dates: {dOctroi ? `Octroi ${dOctroi}` : ''}{dOctroi && dExp ? ' — ' : ''}{dExp ? `Expiration ${dExp}` : ''}</span>}
+                                          {(title.substance1 || title.substances) && <span>Substance: {title.substance1 || title.substances}</span>}
+                                          {title.sig_area && <span>Superficie: {title.sig_area} ha</span>}
+                                        </div>
                                       </div>
-                                    </div>
-                                  ))}
+                                    );
+                                  })}
                                 </div>
                               )}
                               
