@@ -14,6 +14,8 @@ export interface PermisElement {
   text?: string;
   fontSize?: number;
   fontFamily?: string;
+  fontStyle?: string; // e.g., 'bold', 'italic'
+  textDecoration?: string; // e.g., 'underline', 'line-through'
   color?: string;
   draggable?: boolean;
   rotation?: number;

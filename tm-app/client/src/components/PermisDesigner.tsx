@@ -124,13 +124,13 @@ const PermisDesigner: React.FC<PermisDesignerProps> = ({
 
   function createPermisDetailsPage(data: any): PermisElement[] {
     const borderElements = createPageBorder(DEFAULT_CANVAS.width, DEFAULT_CANVAS.height);
-    const contentElements = createGeneralPageNew(data);
+    const contentElements = createGeneralPageModel(data);
     return [...borderElements, ...contentElements];
   }
 
   function createCoordinatesPage(data: any): PermisElement[] {
     const borderElements = createPageBorder(DEFAULT_CANVAS.width, DEFAULT_CANVAS.height);
-    const contentElements = createCoordsPageNew(data);
+    const contentElements = createCoordsPageModel(data);
     return [...borderElements, ...contentElements];
   }
 
@@ -639,7 +639,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     // Algerian Republic - Arabic (top center)
     {
       id: uuidv4(), type: 'text', x: 200, y: 40, width: 400,
-      text: 'ط§ظ„ط¬ظ…ظ‡ظˆط±ظٹط© ط§ظ„ط¬ط²ط§ط¦ط±ظٹط© ط§ظ„ط¯ظٹظ…ظ‚ط±ط§ط·ظٹط© ط§ظ„ط´ط¹ط¨ظٹط©',
+      text: '?§?„?¬?…?‡?ˆ?±???© ?§?„?¬?²?§?¦?±???© ?§?„?¯???…?‚?±?§?·???© ?§?„?´?¹?¨???©',
       language: 'ar', direction: 'rtl',
       fontSize: 20, fontFamily: ARABIC_FONTS[0], color: '#000000', draggable: true,
       textAlign: 'center', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2
@@ -680,7 +680,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     // Ministry - Arabic (right side)
     {
       id: uuidv4(), type: 'text', x: 450, y: 160, width: 300,
-      text: 'ظˆط²ط§ط±ط© ط§ظ„طµظ†ط§ط¹ط© ظˆ ط§ظ„ظ…ظ†ط§ط¬ظ…',
+      text: '?ˆ?²?§?±?© ?§?„?µ?†?§?¹?© ?ˆ ?§?„?…?†?§?¬?…',
       language: 'ar', direction: 'rtl',
       fontSize: 22, fontFamily: ARABIC_FONTS[0], color: '#000000', draggable: true,
       textAlign: 'right', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2
@@ -695,14 +695,14 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     // Agency - French (left side)
     {
       id: uuidv4(), type: 'text', x: 50, y: 230, width: 300,
-      text: 'Agence Nationale des Activitأ©s',
+      text: 'Agence Nationale des Activit?©s',
       language: 'fr', direction: 'ltr',
       fontSize: 16, fontFamily: FONT_FAMILIES[0], color: '#000000', draggable: true,
       textAlign: 'left', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2
     },
     {
       id: uuidv4(), type: 'text', x: 120, y: 255, width: 300,
-      text: 'Miniأ¨res',
+      text: 'Mini?¨res',
       language: 'fr', direction: 'ltr',
       fontSize: 16, fontFamily: FONT_FAMILIES[0], color: '#000000', draggable: true,
       textAlign: 'left', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2
@@ -711,7 +711,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     // Agency - Arabic (right side)
     {
       id: uuidv4(), type: 'text', x: 450, y: 235, width: 300,
-      text: 'ط§ظ„ظˆظƒط§ظ„ط© ط§ظ„ظˆط·ظ†ظٹط© ظ„ظ„ظ†ط´ط§ط·ط§طھ ط§ظ„ظ…ظ†ط¬ظ…ظٹط©',
+      text: '?§?„?ˆ?ƒ?§?„?© ?§?„?ˆ?·?†???© ?„?„?†?´?§?·?§?? ?§?„?…?†?¬?…???©',
       language: 'ar', direction: 'rtl',
       fontSize: 22, fontFamily: ARABIC_FONTS[0], color: '#000000', draggable: true,
       textAlign: 'right', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2
@@ -726,7 +726,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     // Permit Type (centered, larger text) - Moved down to fill space
     {
       id: uuidv4(), type: 'text', x: 200, y: 320, width: 400,
-      text: `${data?.typePermis?.lib_type ?? 'ط§ظ„طھظ€ط±ط®ظٹطµ ظ„ط§ط³طھط؛ظ„ط§ظ„ ظ…ظ‚ظ„ط¹'}`,
+      text: `${data?.typePermis?.lib_type ?? '?§?„???€?±?®???µ ?„?§?³?????„?§?„ ?…?‚?„?¹'}`,
       language: 'ar', direction: 'rtl',
       fontSize: 28, fontFamily: ARABIC_FONTS[0], color: '#1a5276', draggable: true,
       textAlign: 'center', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2,
@@ -753,7 +753,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     },
     {
       id: uuidv4(), type: 'text', x: 300, y: 480, width: 200,
-      text: 'ط®طھظ… ط±ط³ظ…ظٹ',
+      text: '?®???… ?±?³?…??',
       language: 'ar', direction: 'rtl',
       fontSize: 18, fontFamily: ARABIC_FONTS[0], color: '#1a5276', draggable: true,
       textAlign: 'center', opacity: 0.8, rotation: 0, wrap: 'word', lineHeight: 1.2
@@ -779,7 +779,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       x: 250,
       y: 700,
       width: 300,
-      text: 'طھط±ط®ظٹطµ ظ…ظ†ط¬ظ…ظٹ ط±ظ‚ظ… :',
+      text: '???±?®???µ ?…?†?¬?…?? ?±?‚?… :',
       fontSize: 22,
       fontFamily: ARABIC_FONTS[0],
       color: '#000000',
@@ -818,7 +818,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     // Date and location (bottom left)
     {
       id: uuidv4(), type: 'text', x: 50, y: 780, width: 300, 
-      text: `Fait أ  Alger, le ${new Date().toLocaleDateString('fr-FR')}`, 
+      text: `Fait ?  Alger, le ${new Date().toLocaleDateString('fr-FR')}`, 
       fontSize: 16, fontFamily: FONT_FAMILIES[0], color: '#000000', 
       draggable: true, opacity: 1, rotation: 0, textAlign: 'left'
     },
@@ -886,6 +886,195 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     };
   };
 
+  // New general page layout modeled after official ANAM models
+  function createGeneralPageModel(data: any): PermisElement[] {
+    const typeCode = data?.typePermis?.code || '';
+    const code = data?.code_demande || data?.codeDemande || '';
+    const superficie = data?.superficie ? `${data.superficie}` : '';
+    const localisation = data?.localisation || '';
+    const detenteur = (data?.detenteur && (data.detenteur.nom_societeFR || data.detenteur.nom_societe || data.detenteur.nom)) || (data?.detenteur || '');
+
+    const els: PermisElement[] = [];
+
+    // Logo (ANAM) on the top-left
+    els.push({ id: uuidv4(), type: 'image', x: 38, y: 24, width: 110, height: 90, draggable: false, src: '/logo.png' } as any);
+
+    // Bilingual header (centered)
+    els.push({ id: uuidv4(), type: 'text', x: 160, y: 28, width: 480, text: 'الجمهورية الجزائرية الديمقراطية الشعبية', language: 'ar', direction: 'rtl', fontSize: 18, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: false, textAlign: 'center', opacity: 1 });
+    els.push({ id: uuidv4(), type: 'text', x: 160, y: 52, width: 480, text: "People's Democratic Republic of Algeria", fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: false, textAlign: 'center', opacity: 1 });
+    els.push({ id: uuidv4(), type: 'text', x: 160, y: 78, width: 480, text: 'وزارة الطاقة والمناجم', language: 'ar', direction: 'rtl', fontSize: 20, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: false, textAlign: 'center' });
+    els.push({ id: uuidv4(), type: 'text', x: 160, y: 104, width: 480, text: 'الوكالة الوطنية للنشاطات المنجمية', language: 'ar', direction: 'rtl', fontSize: 18, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: false, textAlign: 'center' });
+    // Thin rule
+    els.push({ id: uuidv4(), type: 'line', x: 60, y: 134, width: 680, height: 0, stroke: '#000', strokeWidth: 1, draggable: false });
+
+    // Main Arabic title (inside a framed box like the model)
+    const permitTitle = (data?.typePermis?.lib_type_ar) || (data?.typePermis?.lib_type) || 'رخصة منجمية';
+    // Framed box
+    const boxX = 110; const boxY = 146; const boxW = 580; const boxH = 99;
+    els.push({ id: uuidv4(), type: 'line', x: boxX, y: boxY, width: boxW, height: 0, stroke: '#000', strokeWidth: 2 } as any);
+    els.push({ id: uuidv4(), type: 'line', x: boxX, y: boxY + boxH, width: boxW, height: 0, stroke: '#000', strokeWidth: 2 } as any);
+    els.push({ id: uuidv4(), type: 'line', x: boxX, y: boxY, width: boxH, height: 0, stroke: '#000', strokeWidth: 2, rotation: 90 } as any);
+    els.push({ id: uuidv4(), type: 'line', x: boxX + boxW, y: boxY, width: boxH, height: 0, stroke: '#000', strokeWidth: 2, rotation: 90 } as any);
+    // Place a QR code inside the right part of the rectangle
+    const qrSize = 90;
+    const qrX = boxX + boxW - 6 - qrSize;
+    const qrY = boxY + Math.max(3, Math.floor((boxH - qrSize) / 2));
+    els.push({ id: uuidv4(), type: 'qrcode', x: qrX, y: qrY, width: qrSize, height: qrSize, qrData: generateQRCodeData(data), draggable: false, opacity: 1, rotation: 0, scaleX: 1, scaleY: 1 } as any);
+    // Title text restricted to left side of the box so it doesn't overlap the QR
+    const titleLeftX = boxX + 10;
+    const titleAvailW = boxW - (qrSize + 18); // leave margin near QR
+    els.push({ id: uuidv4(), type: 'text', x: titleLeftX, y: 160, width: titleAvailW, text: permitTitle, language: 'ar', direction: 'rtl', fontSize: 28, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: false, textAlign: 'center', fontWeight: 'bold' });
+
+    // Number line centered
+    const numberLine = `رقم: ${code} ${typeCode}`.trim();
+    els.push({ id: uuidv4(), type: 'text', x: titleLeftX, y: 216, width: titleAvailW, text: numberLine, language: 'ar', direction: 'rtl', fontSize: 22, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center' });
+
+    // Details block (RTL on the right side of the page)
+    const labelW = 200; const valueW = 420; const gap = 10; const marginRight = 40; const detailsBlockW = labelW + gap + valueW; let y = 262; const lineH = 30;
+    // startX anchors the whole block to the right margin
+    const startX = DEFAULT_CANVAS.width - marginRight - detailsBlockW;
+    const addRow = (labelAr: string, value: string) => {
+      // Value box (RTL, right-aligned)
+      els.push({ id: uuidv4(), type: 'text', x: startX, y, width: valueW, text: value || '....................', language: 'ar', direction: 'rtl', fontSize: 18, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'right', wrap: 'word', lineHeight: 1.35 });
+      // Label box (to the right of the value)
+      els.push({ id: uuidv4(), type: 'text', x: startX + valueW + gap, y, width: labelW, text: labelAr, language: 'ar', direction: 'rtl', fontSize: 20, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'right', wrap: 'word', lineHeight: 1.35 });
+      y += Math.max(30, Math.ceil(((value || '').length/Math.max(1,Math.floor(valueW/(18*0.55))))*18*1.35)) + 6;
+    };
+    // Inline row: label and value as one contiguous text (no gap after ':')
+    const addInlineRow = (labelAr: string, value: string) => {
+      const full = `${labelAr} ${value || '....................'}`.trim();
+      els.push({ id: uuidv4(), type: 'text', x: startX, y, width: detailsBlockW, text: full, language: 'ar', direction: 'rtl', fontSize: 18, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'right', wrap: 'word', lineHeight: 1.35 });
+      // estimate height similar to addRow using detailsBlockW
+      const avgChars = Math.max(1, Math.floor(detailsBlockW/(18*0.55)));
+      const lines = Math.ceil(full.length/avgChars);
+      y += Math.max(30, Math.ceil(lines*18*1.35)) + 6;
+    };
+    // Beneficiary: first the legal form, then the actual holder on a separate line
+    addRow('يمنح إلى: الشركة ذات المسؤولية المحدودة' , detenteur);
+    addInlineRow('الموقع:', localisation);
+    addInlineRow('المساحة:', superficie ? `${superficie} هكتار` : '');
+
+    // Section title for coordinates table (Arabic + Fuseau)
+    els.push({ id: uuidv4(), type: 'text', x: 80, y: y + 42, width: 600, text: 'Fuseau 32', fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: false, textAlign: 'center' });
+
+    // Multi-column coordinates table (colors/separators like the model)
+    let tableX = 40;
+    const colPtW = 60, colXW = 90, colYW = 90;
+    const blockW = colPtW + colXW + colYW; // 240
+    const MIN_ROWS = 10;
+    const coords: any[] = Array.isArray(data?.coordinates) ? data.coordinates : [];
+    // Compute columns: add a new column every 10 rows, cap to 3 to fit width
+    const desiredCols = Math.max(1, Math.ceil(Math.max(coords.length, MIN_ROWS) / MIN_ROWS));
+    const blockCols = Math.min(3, desiredCols);
+    const tableW = blockW * blockCols;
+    tableX = (DEFAULT_CANVAS.width - tableW) / 2;
+    const headerH = 28;
+    const headerY = y + 40;
+    els.push({ id: uuidv4(), type: 'rectangle', x: tableX, y: headerY, width: tableW, height: headerH, stroke: '#000', strokeWidth: 1.2, fill: '#f5f5f5' } as any);
+    els.push({ id: uuidv4(), type: 'text', x: tableX + 6, y: headerY + 4, width: tableW - 12, text: 'إحـداثيات قمم المحيط المنجمي حسب نظام UTM شمال الصحراء  Fuseau 32', language: 'ar', direction: 'rtl', fontSize: 20, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center' } as any);
+
+    // Multi-column coordinates table (colors/separators like the model)
+    const tableStartY = headerY + headerH;
+    const rowH = 24;
+    const rowsPerCol = Math.max(MIN_ROWS, Math.min(16, Math.ceil((coords.length || MIN_ROWS) / blockCols)));
+
+    // Draw outer border for each block and header background; alternate row shading
+    for (let b = 0; b < blockCols; b++) {
+      const bx = tableX + b * blockW;
+      // Header background
+      els.push({ id: uuidv4(), type: 'rectangle', x: bx, y: tableStartY, width: blockW, height: rowH, stroke: '#000', strokeWidth: 1.2, fill: '#eeeeee', meta: { nonInteractive: true, isGrid: true } } as any);
+      // Internal vertical separators (use rotation=90 because our Line renderer ignores height)
+      const vHeight = rowH * (rowsPerCol + 1);
+      els.push({ id: uuidv4(), type: 'line', x: bx + colPtW, y: tableStartY, width: vHeight, height: 0, rotation: 90, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
+      els.push({ id: uuidv4(), type: 'line', x: bx + colPtW + colXW, y: tableStartY, width: vHeight, height: 0, rotation: 90, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
+      // Column headers
+      els.push({ id: uuidv4(), type: 'text', x: bx + 8, y: tableStartY + 4, width: colPtW - 16, text: 'Zone', fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+      els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + 8, y: tableStartY + 4, width: colXW - 16, text: 'X', fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+      els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + colXW + 8, y: tableStartY + 4, width: colYW - 16, text: 'Y', fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+
+      // Rows
+      for (let r = 0; r < rowsPerCol; r++) {
+        const idx = b * rowsPerCol + r;
+        const ry = tableStartY + rowH * (r + 1);
+        // Alternate background
+        const fill = r % 2 === 0 ? '#f8f8f8' : '#ffffff';
+        els.push({ id: uuidv4(), type: 'rectangle', x: bx, y: ry, width: blockW, height: rowH, stroke: '#cccccc', strokeWidth: 0.5, fill, meta: { nonInteractive: true, isGrid: true } } as any);
+        if (idx < coords.length) {
+          const item = coords[idx];
+          const vPoint = String(item.order ?? idx + 1);
+          const vX = String(item.x ?? '');
+          const vY = String(item.y ?? '');
+          els.push({ id: uuidv4(), type: 'text', x: bx + 8, y: ry + 4, width: colPtW - 16, text: vPoint, fontSize: 12, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+          els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + 8, y: ry + 4, width: colXW - 16, text: vX, fontSize: 12, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+          els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + colXW + 8, y: ry + 4, width: colYW - 16, text: vY, fontSize: 12, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+        }
+        // Horizontal subtle grid line
+        els.push({ id: uuidv4(), type: 'line', x: bx, y: ry, width: blockW, height: 0, stroke: '#d0d0d0', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
+      }
+      // Outer border box
+      els.push({ id: uuidv4(), type: 'rectangle', x: bx, y: tableStartY, width: blockW, height: rowH * (rowsPerCol + 1), stroke: '#000', strokeWidth: 1.2, fill: 'transparent', meta: { nonInteractive: true, isGrid: true } } as any);
+    }
+    
+    // Compute bottom of table and optionally add a 45° line if space remains
+    const tableBottom = tableStartY + rowH * (rowsPerCol + 1);
+    const remainingBelow = DEFAULT_CANVAS.height - tableBottom - 70;
+    let diagY: number | null = null;
+    if (remainingBelow > 80) {
+      const diagLen = Math.min(DEFAULT_CANVAS.width - 160, remainingBelow + 40);
+      diagY = tableBottom + 30;
+      els.push({ id: uuidv4(), type: 'line', x: DEFAULT_CANVAS.width - 80, y: diagY, width: diagLen, height: 0, rotation: 135, stroke: '#999999', strokeWidth: 2, opacity: 0.8, draggable: true } as any);
+    }
+
+    // QR is already placed inside the title box above
+    // Footer notice placed above the diagonal line if present
+    const bottomNotice = `سند منجمي مسجل في السجل المنجمي تحت رقم : ${code} ${typeCode}`;
+    const noticeY = diagY !== null ? Math.max(20, diagY - 18) : (DEFAULT_CANVAS.height - 55);
+    els.push({ id: uuidv4(), type: 'text', x: (DEFAULT_CANVAS.width- 300) / 2, y: noticeY, width: 700, text: bottomNotice, language: 'ar', direction: 'rtl', fontSize: 20, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: false, textAlign: 'center' } as any);
+
+    return els;
+  }
+
+  // Coordinates-only page following the model table style
+  function createCoordsPageModel(data: any): PermisElement[] {
+    const borderElements = createPageBorder(DEFAULT_CANVAS.width, DEFAULT_CANVAS.height);
+    const content: PermisElement[] = [];
+    content.push({ id: uuidv4(), type: 'line', x: 80, y: 72, width: 640, height: 2, stroke: '#1a5276', strokeWidth: 2 } as any);
+    const coords: any[] = Array.isArray(data?.coordinates) ? data.coordinates : [];
+  
+    const tableY = 100; const cols = [{ title: 'Zone', w: 80 }, { title: 'X', w: 260 }, { title: 'Y', w: 260 }];
+    const tableW = cols.reduce((s,c)=>s+c.w,0); const rowH = 26;
+    const tableX = (DEFAULT_CANVAS.width - tableW) / 2; // center horizontally
+    content.push({ id: uuidv4(), type: 'rectangle', x: tableX, y: tableY, width: tableW, height: rowH, stroke: '#000', strokeWidth: 1.2, fill: '#eeeeee', meta: { nonInteractive: true, isGrid: true } } as any);
+    let cx = tableX; cols.forEach((c, idx) => {
+      content.push({ id: uuidv4(), type: 'text', x: cx + 6, y: tableY + 4, width: c.w - 12, text: c.title, fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+      // vertical separators between columns (cover header + rows)
+      if (idx > 0) {
+        const vHeight = rowH + (coords.length * rowH);
+        content.push({ id: uuidv4(), type: 'line', x: cx, y: tableY, width: vHeight, height: 0, rotation: 90, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
+      }
+      cx += c.w;
+    });
+    for (let i = 0; i < coords.length; i++) {
+      const ry = tableY + rowH * (i + 1);
+      content.push({ id: uuidv4(), type: 'rectangle', x: tableX, y: ry, width: tableW, height: rowH, stroke: '#e0e0e0', strokeWidth: 0.5, fill: (i % 2 === 0) ? '#f9f9f9' : '#ffffff' } as any);
+      const row = coords[i];
+      let rx = tableX; const values = [String(row.order ?? i + 1), String(row.x ?? ''), String(row.y ?? '')];
+      for (let j = 0; j < cols.length; j++) {
+        content.push({ id: uuidv4(), type: 'text', x: rx + 6, y: ry + 4, width: cols[j].w - 12, text: values[j], fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+        rx += cols[j].w;
+      }
+    }
+    const tableBottomY1 = tableY + rowH * (coords.length + 1);
+    content.push({ id: uuidv4(), type: 'line', x: tableX, y: tableBottomY1, width: tableW, height: 0, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
+    // If bottom space remains, add a 45° line
+    const remaining1 = DEFAULT_CANVAS.height - tableBottomY1 - 70;
+    if (remaining1 > 80) {
+      const diagLen = Math.min(DEFAULT_CANVAS.width - 160, remaining1 + 40);
+      content.push({ id: uuidv4(), type: 'line', x: DEFAULT_CANVAS.width - 80, y: tableBottomY1 + 30, width: diagLen, height: 0, rotation: 135, stroke: '#999999', strokeWidth: 2, opacity: 0.8, draggable: true } as any);
+    }
+    return [...borderElements, ...content];
+  }
+
   // New general page layout modeled after Word template
   function createGeneralPageNew(data: any): PermisElement[] {
     const typeCode = data?.typePermis?.code || '';
@@ -897,14 +1086,14 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     const els: PermisElement[] = []
     // Logo and bilingual header\n    els.push({ id: uuidv4(), type: 'image', x: 60, y: 20, width: 80, height: 80, draggable: true, src: '/logo.png' } as any);;
     // Top bilingual header
-    els.push({ id: uuidv4(), type: 'text', x: 120, y: 28, width: 520, text: 'ط§ظ„ط¬ظ…ظ‡ظˆط±ظٹط© ط§ظ„ط¬ط²ط§ط¦ط±ظٹط© ط§ظ„ط¯ظٹظ…ظ‚ط±ط§ط·ظٹط© ط§ظ„ط´ط¹ط¨ظٹط©', language: 'ar', direction: 'rtl', fontSize: 18, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center', opacity: 1 });
+    els.push({ id: uuidv4(), type: 'text', x: 120, y: 28, width: 520, text: '?§?„?¬?…?‡?ˆ?±???© ?§?„?¬?²?§?¦?±???© ?§?„?¯???…?‚?±?§?·???© ?§?„?´?¹?¨???©', language: 'ar', direction: 'rtl', fontSize: 18, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center', opacity: 1 });
     els.push({ id: uuidv4(), type: 'text', x: 120, y: 56, width: 520, text: "People's Democratic Republic of Algeria", fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'center', opacity: 1 });
     // Rule
     els.push({ id: uuidv4(), type: 'line', x: 80, y: 86, width: 600, height: 2, stroke: '#000', strokeWidth: 1, draggable: true, opacity: 1, rotation: 0 });
 
     // Arabic big title + number line
-    els.push({ id: uuidv4(), type: 'text', x: 80, y: 112, width: 600, text: 'طھظˆط³ظٹط¹ ظ…ط¬ط§ظ„ ظ…ط­ظٹط· ط§ظ„ط±ط®طµط©', language: 'ar', direction: 'rtl', fontSize: 28, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center', opacity: 1 });
-    const numberLine = `ط±ظ‚ظ…: ${code} ${typeCode}`.trim();
+    els.push({ id: uuidv4(), type: 'text', x: 80, y: 112, width: 600, text: '???ˆ?³???¹ ?…?¬?§?„ ?…?­???· ?§?„?±?®?µ?©', language: 'ar', direction: 'rtl', fontSize: 28, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center', opacity: 1 });
+    const numberLine = `رقم: ${code} ${typeCode}`.trim();
     els.push({ id: uuidv4(), type: 'text', x: 80, y: 152, width: 600, text: numberLine, language: 'ar', direction: 'rtl', fontSize: 22, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center', opacity: 1 });
 
     // Details block (beneficiary, location, area)
@@ -912,40 +1101,43 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     const addRow = (labelAr: string, value: string) => {
       els.push({ id: uuidv4(), type: 'text', x: leftX, y, width: labelW, text: labelAr, language: 'ar', direction: 'rtl', fontSize: 18, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'right' });
       els.push({ id: uuidv4(), type: 'text', x: leftX + labelW + 10, y, width: valueW, text: value || 'â€”', fontSize: 16, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' });
-      y += lineH;
+      y += Math.max(30, Math.ceil(((value || '').length/Math.max(1,Math.floor(valueW/(18*0.55))))*18*1.35)) + 6;
     };
-    addRow('ظٹظڈظ…ظ†ط­ ط¥ظ„ظ‰:', detenteur);
-    addRow('ط§ظ„ظ…ظˆظ‚ط¹:', localisation);
-    addRow('ط§ظ„ظ…ط³ط§ط­ط©:', superficie ? `${superficie} ظ‡ظƒطھط§ط±` : '');
+    addRow('?????…?†?­ ?¥?„?‰:', detenteur);
+    addRow('?§?„?…?ˆ?‚?¹:', localisation);
+    addRow('?§?„?…?³?§?­?©:', superficie ? `${superficie} ?‡?ƒ???§?±` : '');
 
     // Horizontal rule before coordinates table
     els.push({ id: uuidv4(), type: 'line', x: 80, y: y + 8, width: 600, height: 1, stroke: '#000', strokeWidth: 1, draggable: true, opacity: 1, rotation: 0 });
 
     // Coordinates table header label
-    els.push({ id: uuidv4(), type: 'text', x: 80, y: y + 24, width: 600, text: 'ط¥ط­ط¯ط§ط«ظٹط§طھ ظ‚ظگظ…ظ… ط§ظ„ظ…ط­ظٹط· ط§ظ„ظ…ظ†ط¬ظ…ظٹ (Fuseau 32)', language: 'ar', direction: 'rtl', fontSize: 16, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center' });
+    els.push({ id: uuidv4(), type: 'text', x: 80, y: y + 24, width: 600, text: '?¥?­?¯?§?«???§?? ?‚???…?… ?§?„?…?­???· ?§?„?…?†?¬?…?? (Fuseau 32)', language: 'ar', direction: 'rtl', fontSize: 16, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center' });
 
         // Multi-column coordinates table (matches official layout)
     const tableStartY = y + 60;
-    const tableX = 80;
-    const blockCols = 3; // three blocks: [Point X Y] × 3
     const rowH = 24;
     const colPtW = 50, colXW = 75, colYW = 75;
     const blockW = colPtW + colXW + colYW; // 200
-    const tableW = blockW * blockCols; // 600
+    const MIN_ROWS = 10;
     const coords: any[] = Array.isArray(data?.coordinates) ? data.coordinates : [];
-    const rowsPerCol = Math.ceil(coords.length / blockCols) || 1;
+    const desiredCols = Math.max(1, Math.ceil(Math.max(coords.length, MIN_ROWS) / MIN_ROWS));
+    const blockCols = Math.min(3, desiredCols); // three blocks max across the page
+    const tableW = blockW * blockCols; // 600
+    const tableX = (DEFAULT_CANVAS.width - tableW) / 2; // center horizontally
+    const rowsPerCol = Math.max(MIN_ROWS, Math.min(16, Math.ceil((coords.length || MIN_ROWS) / blockCols)));
     // Draw block headers and verticals
     for (let b = 0; b < blockCols; b++) {
       const bx = tableX + b * blockW;
       // header background
       els.push({ id: uuidv4(), type: 'rectangle', x: bx, y: tableStartY, width: blockW, height: rowH, stroke: '#000', strokeWidth: 1, fill: '#f5f5f5' } as any);
-      // internal verticals
-      els.push({ id: uuidv4(), type: 'line', x: bx + colPtW, y: tableStartY, width: 0, height: rowH * (rowsPerCol + 1), stroke: '#000', strokeWidth: 1 } as any);
-      els.push({ id: uuidv4(), type: 'line', x: bx + colPtW + colXW, y: tableStartY, width: 0, height: rowH * (rowsPerCol + 1), stroke: '#000', strokeWidth: 1 } as any);
+      // internal verticals (rotate to draw vertical lines)
+      const vHeight2 = rowH * (rowsPerCol + 1);
+      els.push({ id: uuidv4(), type: 'line', x: bx + colPtW, y: tableStartY, width: vHeight2, height: 0, rotation: 90, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
+      els.push({ id: uuidv4(), type: 'line', x: bx + colPtW + colXW, y: tableStartY, width: vHeight2, height: 0, rotation: 90, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
       // headers
-      els.push({ id: uuidv4(), type: 'text', x: bx + 6, y: tableStartY + 4, width: colPtW - 12, text: 'Point', fontSize: 13, fontFamily: 'Arial', color: '#000', textAlign: 'left' } as any);
-      els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + 6, y: tableStartY + 4, width: colXW - 12, text: 'X', fontSize: 13, fontFamily: 'Arial', color: '#000', textAlign: 'left' } as any);
-      els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + colXW + 6, y: tableStartY + 4, width: colYW - 12, text: 'Y', fontSize: 13, fontFamily: 'Arial', color: '#000', textAlign: 'left' } as any);
+      els.push({ id: uuidv4(), type: 'text', x: bx + 6, y: tableStartY + 4, width: colPtW - 12, text: 'Zone', fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+      els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + 6, y: tableStartY + 4, width: colXW - 12, text: 'X', fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+      els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + colXW + 6, y: tableStartY + 4, width: colYW - 12, text: 'Y', fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
       // rows
       for (let r = 0; r < rowsPerCol; r++) {
         const idx = b * rowsPerCol + r;
@@ -957,12 +1149,12 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
         const vPoint = String(item.order ?? idx + 1);
         const vX = String(item.x ?? '');
         const vY = String(item.y ?? '');
-        els.push({ id: uuidv4(), type: 'text', x: bx + 6, y: ry + 4, width: colPtW - 12, text: vPoint, fontSize: 13, fontFamily: 'Arial', color: '#000', textAlign: 'left' } as any);
-        els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + 6, y: ry + 4, width: colXW - 12, text: vX, fontSize: 13, fontFamily: 'Arial', color: '#000', textAlign: 'left' } as any);
-        els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + colXW + 6, y: ry + 4, width: colYW - 12, text: vY, fontSize: 13, fontFamily: 'Arial', color: '#000', textAlign: 'left' } as any);
+        els.push({ id: uuidv4(), type: 'text', x: bx + 6, y: ry + 4, width: colPtW - 12, text: vPoint, fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+        els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + 6, y: ry + 4, width: colXW - 12, text: vX, fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+        els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + colXW + 6, y: ry + 4, width: colYW - 12, text: vY, fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
       }
       // footer line of this block
-      els.push({ id: uuidv4(), type: 'line', x: bx, y: tableStartY + rowH * (rowsPerCol + 1), width: blockW, height: 0, stroke: '#000', strokeWidth: 1 } as any);
+      els.push({ id: uuidv4(), type: 'line', x: bx, y: tableStartY + rowH * (rowsPerCol + 1), width: blockW, height: 0, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
     }// QR placeholder & code
     els.push(createQRCodeElement(data, 560, 680));
     els.push({ id: uuidv4(), type: 'text', x: 80, y: 820, width: 600, text: `${code} ${typeCode}`, fontSize: 12, fontFamily: 'Arial', color: '#666', draggable: true, textAlign: 'center', opacity: 0.8 });
@@ -973,19 +1165,23 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
   function createCoordsPageNew(data: any): PermisElement[] {
     const borderElements = createPageBorder(DEFAULT_CANVAS.width, DEFAULT_CANVAS.height);
     const content: PermisElement[] = [];
-    content.push({ id: uuidv4(), type: 'text', x: 80, y: 34, width: 640, text: 'إحداثيات قمم المحيط المنجمي (Fuseau 32)', language: 'ar', direction: 'rtl', fontSize: 22, fontFamily: ARABIC_FONTS[0], color: '#1a5276', draggable: true, textAlign: 'center' });
     content.push({ id: uuidv4(), type: 'line', x: 80, y: 72, width: 640, height: 2, stroke: '#1a5276', strokeWidth: 2 } as any);
     const coords: any[] = Array.isArray(data?.coordinates) ? data.coordinates : [];
     if (!coords.length) {
-      content.push({ id: uuidv4(), type: 'text', x: 80, y: 110, width: 640, text: 'ظ„ط§ طھظˆط¬ط¯ ط¥ط­ط¯ط§ط«ظٹط§طھ ظ…طھط§ط­ط©.', language: 'ar', direction: 'rtl', fontSize: 16, fontFamily: ARABIC_FONTS[0], color: '#000', textAlign: 'center' } as any);
+      content.push({ id: uuidv4(), type: 'text', x: 80, y: 110, width: 640, text: '?„?§ ???ˆ?¬?¯ ?¥?­?¯?§?«???§?? ?…???§?­?©.', language: 'ar', direction: 'rtl', fontSize: 16, fontFamily: ARABIC_FONTS[0], color: '#000', textAlign: 'center' } as any);
       return [...borderElements, ...content];
     }
-    const tableX = 80; const tableY = 100; const cols = [{ title: 'Point', w: 80 }, { title: 'X', w: 260 }, { title: 'Y', w: 260 }];
+    const tableY = 100; const cols = [{ title: 'Point', w: 80 }, { title: 'X', w: 260 }, { title: 'Y', w: 260 }];
     const tableW = cols.reduce((s,c)=>s+c.w,0); const rowH = 26;
+    const tableX = (DEFAULT_CANVAS.width - tableW) / 2; // center horizontally
     content.push({ id: uuidv4(), type: 'rectangle', x: tableX, y: tableY, width: tableW, height: rowH, stroke: '#000', strokeWidth: 1, fill: '#f5f5f5' } as any);
     let cx = tableX; cols.forEach((c, idx) => {
-      content.push({ id: uuidv4(), type: 'text', x: cx + 6, y: tableY + 4, width: c.w - 12, text: c.title, fontSize: 14, fontFamily: 'Arial', color: '#000', textAlign: 'left' } as any);
-      if (idx > 0) content.push({ id: uuidv4(), type: 'line', x: cx, y: tableY, width: 0, height: rowH + (coords.length * rowH), stroke: '#000', strokeWidth: 1 } as any);
+      content.push({ id: uuidv4(), type: 'text', x: cx + 6, y: tableY + 4, width: c.w - 12, text: c.title, fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+      // vertical separators between columns (cover header + rows)
+      if (idx > 0) {
+        const vHeight = rowH + (coords.length * rowH);
+        content.push({ id: uuidv4(), type: 'line', x: cx, y: tableY, width: vHeight, height: 0, rotation: 90, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
+      }
       cx += c.w;
     });
     for (let i = 0; i < coords.length; i++) {
@@ -994,11 +1190,18 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       const row = coords[i];
       let rx = tableX; const values = [String(row.order ?? i + 1), String(row.x ?? ''), String(row.y ?? '')];
       for (let j = 0; j < cols.length; j++) {
-        content.push({ id: uuidv4(), type: 'text', x: rx + 6, y: ry + 4, width: cols[j].w - 12, text: values[j], fontSize: 14, fontFamily: 'Arial', color: '#000', textAlign: 'left' } as any);
+        content.push({ id: uuidv4(), type: 'text', x: rx + 6, y: ry + 4, width: cols[j].w - 12, text: values[j], fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
         rx += cols[j].w;
       }
     }
-    content.push({ id: uuidv4(), type: 'line', x: tableX, y: tableY + rowH * (coords.length + 1), width: tableW, height: 0, stroke: '#000', strokeWidth: 1 } as any);
+    const tableBottomY2 = tableY + rowH * (coords.length + 1);
+    content.push({ id: uuidv4(), type: 'line', x: tableX, y: tableBottomY2, width: tableW, height: 0, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
+    // If bottom space remains, add a 45° line
+    const remaining2 = DEFAULT_CANVAS.height - tableBottomY2 - 70;
+    if (remaining2 > 80) {
+      const diagLen2 = Math.min(DEFAULT_CANVAS.width - 160, remaining2 + 40);
+      content.push({ id: uuidv4(), type: 'line', x: DEFAULT_CANVAS.width - 80, y: tableBottomY2 + 30, width: diagLen2, height: 0, rotation: 135, stroke: '#999999', strokeWidth: 2, opacity: 0.8, draggable: true } as any);
+    }
     return [...borderElements, ...content];
   }
 
@@ -1011,7 +1214,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
         x: 80,
         y: 40,
         width: 640,
-        text: 'ط¥ط­ط¯ط§ط«ظٹط§طھ ط­ط¯ظˆط¯ ط§ظ„ط±ط®طµط©',
+        text: '?¥?­?¯?§?«???§?? ?­?¯?ˆ?¯ ?§?„?±?®?µ?©',
         language: 'ar',
         direction: 'rtl',
         fontSize: 24,
@@ -1047,7 +1250,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
         x: 80,
         y,
         width: 640,
-        text: 'ظ„ط§ طھظˆط¬ط¯ ط¥ط­ط¯ط§ط«ظٹط§طھ ظ…طھط§ط­ط©.',
+        text: '?„?§ ???ˆ?¬?¯ ?¥?­?¯?§?«???§?? ?…???§?­?©.',
         language: 'ar',
         direction: 'rtl',
         fontSize: 16,
@@ -1072,7 +1275,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       fontSize: 16,
       fontFamily: ARABIC_FONTS[0],
       color: '#000',
-      draggable: false,
+      draggable: true,
       textAlign: 'left'
     });
     contentElements.push({
@@ -1192,7 +1395,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
         x: width / 2 - 250,
         y: 30,
         width: 500,
-        text: 'ط§ظ„ظ…ظˆط§ط¯ ط§ظ„ظ‚ط§ظ†ظˆظ†ظٹط© ط§ظ„ظ…ط±ظپظ‚ط© ط¨ط§ظ„ط±ط®طµط©',
+        text: '?§?„?…?ˆ?§?¯ ?§?„?‚?§?†?ˆ?†???© ?§?„?…?±???‚?© ?¨?§?„?±?®?µ?©',
         language: 'ar',
         direction: 'rtl',
         fontSize: 24,
@@ -1225,7 +1428,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
         x: width - 100,
         y: height - 50,
         width: 80,
-        text: 'ط§ظ„طµظپط­ط© 3',
+        text: '?§?„?µ???­?© 3',
         language: 'ar',
         direction: 'rtl',
         fontSize: 12,
@@ -1301,16 +1504,52 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
         const id = node.getAttr('id');
         const i = updated.findIndex(el => el.id === id);
         if (i >= 0) {
-          updated[i] = {
-            ...updated[i],
-            x: node.x(),
-            y: node.y(),
-            width: node.width() * node.scaleX(),
-            height: node.height() * node.scaleY(),
-            scaleX: 1,
-            scaleY: 1,
-            rotation: node.rotation(),
-          } as PermisElement;
+          const className = node.getClassName ? node.getClassName() : '';
+          if (className === 'Line') {
+            try {
+              // compute new length for lines in world space then map back to element width
+              const pts = node.points ? node.points() : [0, 0, node.width() || 0, 0];
+              const x1 = pts[0] || 0, y1 = pts[1] || 0, x2 = pts[2] || 0, y2 = pts[3] || 0;
+              const t = node.getAbsoluteTransform ? node.getAbsoluteTransform() : null;
+              let newLen = (node.width() || 0) * (node.scaleX() || 1);
+              if (t && t.point) {
+                const p1 = t.point({ x: x1, y: y1 });
+                const p2 = t.point({ x: x2, y: y2 });
+                newLen = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+              }
+              updated[i] = {
+                ...updated[i],
+                x: node.x(),
+                y: node.y(),
+                width: newLen,
+                // preserve existing height for lines (stroke thickness is controlled via strokeWidth)
+                scaleX: 1,
+                scaleY: 1,
+                rotation: node.rotation(),
+              } as PermisElement;
+            } catch {
+              updated[i] = {
+                ...updated[i],
+                x: node.x(),
+                y: node.y(),
+                width: (node.width() || 0) * (node.scaleX() || 1),
+                scaleX: 1,
+                scaleY: 1,
+                rotation: node.rotation(),
+              } as PermisElement;
+            }
+          } else {
+            updated[i] = {
+              ...updated[i],
+              x: node.x(),
+              y: node.y(),
+              width: node.width() * node.scaleX(),
+              height: node.height() * node.scaleY(),
+              scaleX: 1,
+              scaleY: 1,
+              rotation: node.rotation(),
+            } as PermisElement;
+          }
         }
         node.scaleX(1);
         node.scaleY(1);
@@ -1332,7 +1571,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       y: 100 / zoom,
       width: type === 'text' ? 240 : type === 'line' ? 150 : 120,
       height: type === 'text' ? 36 : type === 'line' ? 2 : 60,
-      text: type === 'text' ? (currentPage === PAGES.ARTICLES ? 'ظ†طµ ظ…ط§ط¯ط©' : 'ظ†طµ ط¬ط¯ظٹط¯') : undefined,
+      text: type === 'text' ? (currentPage === PAGES.ARTICLES ? '?†?µ ?…?§?¯?©' : '?†?µ ?¬?¯???¯') : undefined,
       language: type === 'text' ? (currentPage === PAGES.ARTICLES ? 'ar' : 'fr') : undefined,
       direction: type === 'text' ? (currentPage === PAGES.ARTICLES ? 'rtl' : 'ltr') : undefined,
       fontSize: 20,
@@ -1355,7 +1594,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
 
   const handleDeleteSelected = useCallback(() => {
     setElementsForCurrent(prev => prev.filter(el => !selectedIds.includes(el.id)));
-    if (selectedIds.length > 0) toast.success('أ‰lأ©ments supprimأ©s');
+    if (selectedIds.length > 0) toast.success('?‰l?©ments supprim?©s');
     setSelectedIds([]);
   }, [selectedIds, setElementsForCurrent]);
 
@@ -1363,7 +1602,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     if (selectedIds.length === 0) return;
     const selectedElements = elements.filter(el => selectedIds.includes(el.id));
     localStorage.setItem('copiedElements', JSON.stringify(selectedElements));
-    toast.success('أ‰lأ©ments copiأ©s');
+    toast.success('?‰l?©ments copi?©s');
   }, [selectedIds, elements]);
 
   const handlePasteSelected = useCallback(() => {
@@ -1374,7 +1613,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       const newElements = parsed.map(el => ({ ...el, id: uuidv4(), x: (el.x + 20) / zoom, y: (el.y + 20) / zoom }));
       setElementsForCurrent(prev => [...prev, ...newElements]);
       setSelectedIds(newElements.map(el => el.id));
-      toast.success('أ‰lأ©ments collأ©s');
+      toast.success('?‰l?©ments coll?©s');
     } catch (err) {
       console.error('Failed to paste elements', err);
     }
@@ -1418,7 +1657,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       toast.success('Permis saved successfully');
     } catch (error) {
       console.error('Failed to save permis', error);
-      toast.error("أ‰chec de l'enregistrement du permis");
+      toast.error("?‰chec de l'enregistrement du permis");
     } finally {
       setSavingPermis(false);
     }
@@ -1466,7 +1705,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       toast.success('Template saved successfully');
     } catch (error) {
       console.error('Failed to save template', error);
-      toast.error("أ‰chec de l'enregistrement du template");
+      toast.error("?‰chec de l'enregistrement du template");
     } finally {
       setSavingTemplate(false);
     }
@@ -1488,7 +1727,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
         templateId: activeTemplate,
         name
       });
-      toast.success('Design sauvegardأ© avec succأ¨s');
+      toast.success('Design sauvegard?© avec succ?¨s');
       try {
         if (savedPermisId) {
           const templatesResponse = await axios.get(`${apiURL}/api/permis/${savedPermisId}/templates`);
@@ -1502,7 +1741,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       }
     } catch (error) {
       console.error('Failed to save design', error);
-      toast.error('أ‰chec de la sauvegarde du design');
+      toast.error('?‰chec de la sauvegarde du design');
     } finally {
       setIsLoading(false);
     }
@@ -1594,10 +1833,10 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
         pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
       }
       pdf.save(`permis-${initialData.code_demande}.pdf`);
-      toast.success("PDF gأ©nأ©rأ© avec succأ¨s");
+      toast.success("PDF g?©n?©r?© avec succ?¨s");
     } catch (error) {
       console.error("Failed to generate PDF", error);
-      toast.error("أ‰chec de la gأ©nأ©ration du PDF");
+      toast.error("?‰chec de la g?©n?©ration du PDF");
     } finally {
       setIsLoading(false);
     }
@@ -1612,7 +1851,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       toast.success('Permis and template saved successfully');
     } catch (error) {
       console.error('Failed to save permis', error);
-      toast.error("أ‰chec de l'enregistrement du permis");
+      toast.error("?‰chec de l'enregistrement du permis");
     } finally {
       setIsLoading(false);
     }
@@ -2200,6 +2439,9 @@ const pageLabel = (idx: number) => {
 };
 
 export default PermisDesigner;
+
+
+
 
 
 
