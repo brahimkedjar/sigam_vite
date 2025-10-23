@@ -25,7 +25,7 @@ export const ARABIC_FONTS = [
 
 export const DEFAULT_CANVAS = {
   width: 800,
-  height: 1000
+  height: 1080
 };
 
 export const PAGE_MARGINS = {

@@ -1,11 +1,15 @@
-Ôªøimport { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import fs from 'fs';
+import path from 'path';
+import crypto from 'crypto';
 import { AccessService } from './access.service';
 
 // Adjust these defaults to match your Access schema
 const DEFAULT_TABLES = {
   permis: process.env.ACCESS_TABLE_PERMIS || 'Titres',
   coordinates: process.env.ACCESS_TABLE_COORDINATES || 'coordonees',
-  types: process.env.ACCESS_TABLE_TYPES || 'TypesTitres'
+  types: process.env.ACCESS_TABLE_TYPES || 'TypesTitres',
+  detenteur: process.env.ACCESS_TABLE_DETENTEUR || 'Detenteur'
 };
 
 // Map Access column names to API fields expected by the client
@@ -18,13 +22,18 @@ const DEFAULT_COLUMNS = {
     superficie: process.env.ACCESS_COL_SUPERFICIE || 'Superficie',
     duree: process.env.ACCESS_COL_DUREE || '',
     localisation: process.env.ACCESS_COL_LOCALISATION || 'LieuDit',
-    dateCreation: process.env.ACCESS_COL_DATE || 'DateDemande'
+    dateCreation: process.env.ACCESS_COL_DATE || 'DateDemande',
+    // Added for duration calculation
+    dateDebut: process.env.ACCESS_COL_DATE_DEBUT || 'DateOctroi',
+    dateFin: process.env.ACCESS_COL_DATE_FIN || 'DateExpiration'
   },
   coordinates: {
     permisId: process.env.ACCESS_COL_COORD_PERMIS_ID || 'idTitre',
+    id: process.env.ACCESS_COL_COORD_ID || 'id',
     x: process.env.ACCESS_COL_COORD_X || 'x',
     y: process.env.ACCESS_COL_COORD_Y || 'y',
-    order: process.env.ACCESS_COL_COORD_ORDER || 'h'
+    zone: process.env.ACCESS_COL_COORD_ZONE || 'h',
+    order: process.env.ACCESS_COL_COORD_ORDER || ''
   },
   types: {
     id: process.env.ACCESS_COL_TYPES_ID || 'id',
@@ -56,6 +65,50 @@ export class PermisService {
     // fetch type details from TypesTitres
     const typeId = r[c.typePermis];
     const typeData = await this.getTypeById(typeId).catch(() => null);
+    // fetch detenteur details for Arabic name
+    const detId = r[c.detenteur];
+    const detData = await this.getDetenteurById(detId).catch(() => null);
+
+    // helpers for dates
+    const parseAccessDate = (v: any): Date | null => {
+      if (!v && v !== 0) return null;
+      if (v instanceof Date) return isNaN(+v) ? null : v;
+      const s = String(v).trim();
+      // dd/MM/yyyy
+      const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (m) {
+        const d = new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+        return isNaN(+d) ? null : d;
+      }
+      const d2 = new Date(s);
+      return isNaN(+d2) ? null : d2;
+    };
+    const fmtFr = (d: Date | null) => d ? `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}` : '';
+    const diffYears = (a: Date, b: Date) => {
+      let years = b.getFullYear() - a.getFullYear();
+      const m = b.getMonth() - a.getMonth();
+      if (m < 0 || (m === 0 && b.getDate() < a.getDate())) years -= 1;
+      return years < 0 ? 0 : years;
+    };
+
+    const dDebut = parseAccessDate((r as any)[(DEFAULT_COLUMNS.permis as any).dateDebut]);
+    const dFin = parseAccessDate((r as any)[(DEFAULT_COLUMNS.permis as any).dateFin]);
+    let dureeDisplayAr = '';
+    if (dDebut && dFin && dFin.getFullYear() > 1900) {
+      const y = diffYears(dDebut, dFin);
+      const y2 = String(y).padStart(2, '0');
+      const words: Record<number, string> = { 1: '”‰…', 2: '”‰ «‰', 3: 'À·«À', 4: '√—»⁄', 5: 'Œ„”', 6: '” ', 7: '”»⁄', 8: 'À„«‰', 9: ' ”⁄', 10: '⁄‘—' };
+      const word = words[y] ? (y <= 2 ? words[y] : `${words[y]} (${y2}) ”‰Ê« `) : `(${y2}) ”‰Ê« `;
+      // Compose full text with tatweel in „ˆ‰/≈·Ï as per example
+      // Example: («·„‹‹œ…: √—»⁄… (04) ”‰Ê«  („‹‹‰ 18/12/2025 ≈·‹‹Ï 18/12/2029))
+      if (y <= 2) {
+        // normalize singular/dual
+        const noun = y === 1 ? '”‰…' : '”‰ «‰';
+        dureeDisplayAr = `${word} („‹‹‰ ${fmtFr(dDebut)} ≈·‹‹Ï ${fmtFr(dFin)})`;
+      } else {
+        dureeDisplayAr = `${word} („‹‹‰ ${fmtFr(dDebut)} ≈·‹‹Ï ${fmtFr(dFin)})`;
+      }
+    }
 
     const val: any = {
       id: r[c.id],
@@ -66,7 +119,9 @@ export class PermisService {
       duree: c.duree ? toStr(r[c.duree]) : '',
       localisation: toStr(r[c.localisation]),
       dateCreation: r[c.dateCreation] ? new Date(r[c.dateCreation]).toISOString() : null,
-      coordinates: await this.getCoordinatesByPermisId(String(r[c.id])).catch(() => [])
+      coordinates: await this.getCoordinatesByPermisId(String(r[c.id])).catch(() => []),
+      duree_display_ar: dureeDisplayAr,
+      detenteur_ar: detData?.NomArab || detData?.nom_ar || ''
     };
     // Add compatibility fields expected by designer
     val.code_demande = val.codeDemande;
@@ -82,9 +137,11 @@ export class PermisService {
 
   async getCoordinatesByPermisId(id: string) {
     const t = DEFAULT_TABLES.coordinates;
-    const c = DEFAULT_COLUMNS.coordinates;
+    const c: any = DEFAULT_COLUMNS.coordinates;
     const isNumericId = /^\d+$/.test(id);
-    const sql = `SELECT ${c.x} AS x, ${c.y} AS y, ${c.order} AS pt_order FROM ${t} WHERE ${c.permisId} = ${isNumericId ? id : this.access.escapeValue(id)} ORDER BY ${c.order}`;
+    const idCol = c.id || 'id';
+    const zoneCol = c.zone || 'h';
+    const sql = `SELECT ${c.x} AS cx, ${c.y} AS cy, ${zoneCol} AS zone, ${idCol} AS coord_id FROM ${t} WHERE ${c.permisId} = ${isNumericId ? id : this.access.escapeValue(id)} ORDER BY ${idCol}`;
     let rows: any[] = [];
     try {
       rows = await this.access.query(sql);
@@ -97,7 +154,7 @@ export class PermisService {
       const n = parseFloat(s);
       return isNaN(n) ? 0 : n;
     };
-    return rows.map((r: any) => ({ x: parseFr(r.x), y: parseFr(r.y), order: Number(r.pt_order || 0) }));
+    return rows.map((r: any) => ({ x: parseFr(r.cx ?? r[c.x] ?? r.x), y: parseFr(r.cy ?? r[c.y] ?? r.y), order: Number(r.coord_id || r[c.id] || 0), zone: r.zone }));
   }
 
   async runRaw(sql: string) {
@@ -109,11 +166,11 @@ export class PermisService {
     const t = DEFAULT_TABLES.permis;
     const c = DEFAULT_COLUMNS.permis;
     const isNumericId = /^\d+$/.test(procedureId);
-    const sql = `SELECT ${c.id} as id, ${c.codeDemande} as code FROM ${t} WHERE ${c.id} = ${isNumericId ? procedureId : this.access.escapeValue(procedureId)}`;
+    const sql = `SELECT ${c.id} as perm_id, ${c.codeDemande} as code FROM ${t} WHERE ${c.id} = ${isNumericId ? procedureId : this.access.escapeValue(procedureId)}`;
     const rows = await this.access.query(sql);
     if (!rows.length) return { exists: false };
     const r = rows[0] as any;
-    return { exists: true, permisId: Number(r.id), permisCode: String(r.code) };
+    return { exists: true, permisId: Number(r.perm_id), permisCode: String(r.code) };
   }
 
   private async getTypeById(typeId: any) {
@@ -137,5 +194,79 @@ export class PermisService {
       surfaceMaximale: r[c.surfaceMaximale]
     };
   }
+
+  private async getDetenteurById(detId: any) {
+    if (detId == null || detId === '') return null;
+    const t = DEFAULT_TABLES.detenteur;
+    const isNumeric = /^\d+$/.test(String(detId));
+    const sql = `SELECT * FROM ${t} WHERE id = ${isNumeric ? detId : this.access.escapeValue(String(detId))}`;
+    const rows = await this.access.query(sql);
+    if (!rows.length) return null;
+    return rows[0] as any;
+  }
+
+  private async ensureQrColumns() {
+    const t = (DEFAULT_TABLES as any).permis;
+    const tryAlter = async (sql: string) => { try { await this.access.query(sql); } catch {} };
+    await tryAlter(`ALTER TABLE ${t} ADD COLUMN DateHeureSysteme TEXT(50)`);
+    await tryAlter(`ALTER TABLE ${t} ADD COLUMN QrCode TEXT(50)`);
+    await tryAlter(`ALTER TABLE ${t} ADD COLUMN code_wilaya TEXT(5)`);
+  }
+
+  private loadWilayaCodeMap(): Record<string, string> {
+    try {
+      const csvPath = path.resolve(process.cwd(), 'tm-app/df_wilaya.csv');
+      const content = fs.readFileSync(csvPath, 'utf8');
+      const lines = content.split(/\r?\n/).filter(Boolean);
+      const map: Record<string, string> = {};
+      for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].split(';');
+        if (parts.length < 3) continue;
+        const idWil = String(parts[0] || '').trim();
+        const codeWil = String(parts[2] || '').trim();
+        if (idWil) map[idWil] = codeWil;
+      }
+      return map;
+    } catch { return {}; }
+  }
+
+  private generateUniqueQr(codePermis: string, typeCode: string, dateDemandeRaw: any, codeWilaya: string, nomSociete: string) {
+    const date_systeme = new Date();
+    const date_heure_systeme = date_systeme.toISOString();
+    const horodatage_hash = date_heure_systeme.replace(/[-:TZ.]/g, '');
+    const date_demande = String(dateDemandeRaw || '').replace(/[^0-9]/g, '');
+    const combined = `${codePermis}${typeCode}${date_demande}${codeWilaya}${nomSociete}${horodatage_hash}`;
+    const hash = crypto.createHash('sha256').update(combined).digest('hex').toUpperCase();
+    const base = hash.substring(0, 20);
+    const code_unique = (base.match(/.{1,5}/g) || [base]).join('-');
+    return { code_unique, date_heure_systeme };
+  }
+
+  async generateAndSaveQrCode(id: string) {
+    await this.ensureQrColumns();
+    const t: any = (DEFAULT_TABLES as any).permis;
+    const c: any = (DEFAULT_COLUMNS as any).permis;
+    const isNumericId = /^\d+$/.test(String(id));
+    const sql = `SELECT TOP 1 * FROM ${t} WHERE ${c.id} = ${isNumericId ? id : this.access.escapeValue(String(id))}`;
+    const rows = await this.access.query(sql);
+    if (!rows.length) return { ok: false, message: 'Permis not found' };
+    const r: any = rows[0];
+    const typeId = r[c.typePermis];
+    const type = await this.getTypeById(typeId).catch(() => null);
+    const detId = r[c.detenteur];
+    const det = await this.getDetenteurById(detId).catch(() => null);
+    const wilayaId = r.idWilaya || r.id_wilaya || r.idwilaya || r.Wilaya || r.wilaya;
+    const map = this.loadWilayaCodeMap();
+    const codeWilaya = (map[String(wilayaId)] || String(wilayaId || '')).toString().padStart(2, '0');
+    const codePermis = String(r[c.codeDemande] || '').padStart(5, '0');
+    const typeCode = String((type as any)?.code || (type as any)?.Code || '').trim();
+    const nomSociete = String((det as any)?.Nom || (det as any)?.nom || '').trim();
+    const { code_unique, date_heure_systeme } = this.generateUniqueQr(codePermis, typeCode, r[c.dateCreation], codeWilaya, nomSociete);
+    const up = `UPDATE ${t} SET DateHeureSysteme = ${this.access.escapeValue(date_heure_systeme)}, QrCode = ${this.access.escapeValue(code_unique)}, code_wilaya = ${this.access.escapeValue(codeWilaya)} WHERE ${c.id} = ${isNumericId ? id : this.access.escapeValue(String(id))}`;
+    await this.access.query(up).catch(() => {});
+    return { ok: true, QrCode: code_unique, DateHeureSysteme: date_heure_systeme, code_wilaya: codeWilaya };
+  }
 }
+
+
 

@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "node dist/main.js",
-    "start:dev": "ts-node-dev --respawn --transpile-only src/main.ts"
+    "start:dev": "ts-node-dev --respawn --transpile-only src/main.ts",
+    "test:qr": "ts-node scripts/generate-qr-test.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
@@ -29,3 +30,4 @@
     "typescript": "^5.4.5"
   }
 }
+

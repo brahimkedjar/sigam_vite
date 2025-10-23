@@ -12,11 +12,12 @@ interface TextElementProps {
   onClickElement: (e: any) => void;
   onDragEnd: (e: any) => void;
   onTransformEnd: (e: any) => void;
+  onTransform?: (e: any) => void;
   onDblClickText: () => void;
 }
 
 export const TextElement: React.FC<TextElementProps> = ({
-  element, isSelected, zoom, onClickElement, onDragEnd, onTransformEnd, onDblClickText
+  element, isSelected, zoom, onClickElement, onDragEnd, onTransformEnd, onTransform, onDblClickText
 }) => {
   const textNodeRef = useRef<any>(null);
   const [textBounds, setTextBounds] = useState({ width: element.width || 240, height: element.height || 40 });
@@ -51,6 +52,7 @@ export const TextElement: React.FC<TextElementProps> = ({
     onTap: onClickElement,
     onDragEnd,
     onTransformEnd,
+    onTransform,
     opacity: element.opacity || 1,
   } as any;
 

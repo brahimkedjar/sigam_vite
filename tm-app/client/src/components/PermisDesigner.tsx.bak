@@ -100,13 +100,6 @@ const PermisDesigner: React.FC<PermisDesignerProps> = ({
   });
   const [dragNormalized, setDragNormalized] = useState(false);
 
-  // Disable page 2 (coordinates): force back to details if selected
-  useEffect(() => {
-    if (currentPage === PAGES.COORDINATES) {
-      setCurrentPage(PAGES.PERMIS_DETAILS);
-    }
-  }, [currentPage]);
-
   const currentCanvasSize = canvasSizes[currentPage] || canvasSizes[0] || { width: DEFAULT_CANVAS.width, height: DEFAULT_CANVAS.height };
 
   useEffect(() => {
@@ -371,7 +364,7 @@ function createCornerDecorations(color: string, width: number, height: number): 
       yStart: 0,
       x: 0,
       width: contentWidth - padding * 2,
-      fontFamily: ARABIC_FONTS[1],
+      fontFamily: ARABIC_FONTS[0],
       textAlign: 'right',
       direction: 'rtl',
       fontSize: 20,
@@ -388,11 +381,10 @@ function createCornerDecorations(color: string, width: number, height: number): 
       let h = 0;
       if (el.type === 'text') {
         const fontSize = (el.fontSize || 20);
-        const lineH = (el.lineHeight || 1.8);
+        const lineH = (el.lineHeight || 1.4);
         const text = String(el.text || '');
         const boxW = Math.max(10, el.width || (contentWidth - padding * 2));
-        // Slightly smaller average character width to avoid overestimating text height
-        const avgCharsPerLine = Math.max(1, Math.floor(boxW / (fontSize * 0.40)));
+        const avgCharsPerLine = Math.max(1, Math.floor(boxW / (fontSize * 0.6)));
         const parts = text.split(/\r?\n/);
         let totalLines = 0;
         parts.forEach(part => {
@@ -410,10 +402,6 @@ function createCornerDecorations(color: string, width: number, height: number): 
     // Sum heights of all groups for this article (typically just one)
     heightsByGroup.forEach(v => { articleHeight += v; });
     articleHeight += (article && article.id === "decision" ? decisionGap : defaultArticleGap);
-    // If this article is the DECISION header, gently pull it up a bit to remove visual gap
-    if (article && article.id === 'decision') {
-      currentYByPage[relPage] = Math.max(startY, currentYByPage[relPage] - 12);
-    }
 
     // If it doesn't fit on current page, move to a new page
     const bottom = size.height - bottomMargin;
@@ -462,78 +450,8 @@ function createCornerDecorations(color: string, width: number, height: number): 
     // For each article page, keep non-article elements and add blocks
     for (let rp = 0; rp < neededArticlePages; rp++) {
       const absIdx = PAGES.ARTICLES + rp;
-      const keep = (next[absIdx] || []).filter(el => !el.isArticle && !el.meta?.isArticle && !el.meta?.isFooter);
+      const keep = (next[absIdx] || []).filter(el => !el.isArticle && !el.meta?.isArticle);
       next[absIdx] = [...keep, ...(perPageBlocks[rp] || [])];
-    }
-    // Add footer labels to the last page (middle bottom + right bottom)
-    const lastAbs = PAGES.ARTICLES + neededArticlePages - 1;
-    if (lastAbs >= 0 && next[lastAbs]) {
-      const centerLabelY = (DEFAULT_CANVAS.height - 70);
-      const centerWidth = 600;
-      const centerX = (DEFAULT_CANVAS.width - centerWidth) / 2;
-      const rightWidth = 220;
-      const rightY = (DEFAULT_CANVAS.height - 70);
-      const rightX = DEFAULT_CANVAS.width - rightWidth - 40;
-      const footerEls: PermisElement[] = [
-        {
-          id: uuidv4(),
-          type: 'text',
-          x:rightX-150,
-          y: centerLabelY-50 ,
-          width: centerWidth,
-          text: 'Ø±Ø¦Ù€ÙŠØ³ Ø§Ù„Ù„Ø¬Ù†Ø© Ø§Ù„Ù…Ø¯ÙŠØ±Ø©',
-          language: 'ar',
-          direction: 'rtl',
-          fontSize: 24,
-          fontFamily: ARABIC_FONTS[1],
-          color: '#000',
-          draggable: true,
-          textAlign: 'center',
-          opacity: 1,
-          wrap: 'none',
-          lineHeight: 1.2,
-          meta: { isFooter: true, pageIndex: lastAbs }
-        } as any,
-        {
-          id: uuidv4(),
-          type: 'text',
-          x: centerX-280,
-          y: centerLabelY-30,
-          width: centerWidth,
-          text: 'Ø­Ù€Ø±Ø± Ø¨Ø§Ù„Ù€Ø¬Ø²Ø§Ø¦Ù€Ø± ÙÙŠ:',
-          language: 'ar',
-          direction: 'rtl',
-          fontSize: 24,
-          fontFamily: ARABIC_FONTS[1],
-          color: '#000',
-          draggable: true,
-          textAlign: 'center',
-          opacity: 1,
-          wrap: 'none',
-          lineHeight: 1.2,
-          meta: { isFooter: true, pageIndex: lastAbs }
-        } as any,
-        {
-          id: uuidv4(),
-          type: 'text',
-          x: rightX,
-          y: rightY,
-          width: rightWidth,
-          text: 'Ù…Ø±Ø§Ø¯ Ø­Ù†ÙŠÙÙŠ',
-          language: 'ar',
-          direction: 'rtl',
-          fontSize: 24,
-          fontFamily: ARABIC_FONTS[1],
-          color: '#000',
-          draggable: true,
-          textAlign: 'right',
-          opacity: 1,
-          wrap: 'none',
-          lineHeight: 1.2,
-          meta: { isFooter: true, pageIndex: lastAbs }
-        } as any,
-      ];
-      next[lastAbs] = [...next[lastAbs], ...footerEls];
     }
     pushHistory(JSON.parse(JSON.stringify(next)) as PermisPages);
     return next;
@@ -748,9 +666,9 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     // Algerian Republic - Arabic (top center)
     {
       id: uuidv4(), type: 'text', x: 200, y: 40, width: 400,
-      text: '?Â§?â€ž?Â¬?â€¦?â€¡?Ë†?Â±???Â© ?Â§?â€ž?Â¬?Â²?Â§?Â¦?Â±???Â© ?Â§?â€ž?Â¯???â€¦?â€š?Â±?Â§?Â·???Â© ?Â§?â€ž?Â´?Â¹?Â¨???Â©',
+      text: '?§?„?¬?…?‡?ˆ?±???© ?§?„?¬?²?§?¦?±???© ?§?„?¯???…?‚?±?§?·???© ?§?„?´?¹?¨???©',
       language: 'ar', direction: 'rtl',
-      fontSize: 20, fontFamily: ARABIC_FONTS[1], color: '#000000', draggable: true,
+      fontSize: 20, fontFamily: ARABIC_FONTS[0], color: '#000000', draggable: true,
       textAlign: 'center', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2
     },
     
@@ -789,9 +707,9 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     // Ministry - Arabic (right side)
     {
       id: uuidv4(), type: 'text', x: 450, y: 160, width: 300,
-      text: '?Ë†?Â²?Â§?Â±?Â© ?Â§?â€ž?Âµ?â€ ?Â§?Â¹?Â© ?Ë† ?Â§?â€ž?â€¦?â€ ?Â§?Â¬?â€¦',
+      text: '?ˆ?²?§?±?© ?§?„?µ?†?§?¹?© ?ˆ ?§?„?…?†?§?¬?…',
       language: 'ar', direction: 'rtl',
-      fontSize: 22, fontFamily: ARABIC_FONTS[1], color: '#000000', draggable: true,
+      fontSize: 22, fontFamily: ARABIC_FONTS[0], color: '#000000', draggable: true,
       textAlign: 'right', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2
     },
     
@@ -804,14 +722,14 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     // Agency - French (left side)
     {
       id: uuidv4(), type: 'text', x: 50, y: 230, width: 300,
-      text: 'Agence Nationale des Activit?Â©s',
+      text: 'Agence Nationale des Activit?©s',
       language: 'fr', direction: 'ltr',
       fontSize: 16, fontFamily: FONT_FAMILIES[0], color: '#000000', draggable: true,
       textAlign: 'left', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2
     },
     {
       id: uuidv4(), type: 'text', x: 120, y: 255, width: 300,
-      text: 'Mini?Â¨res',
+      text: 'Mini?¨res',
       language: 'fr', direction: 'ltr',
       fontSize: 16, fontFamily: FONT_FAMILIES[0], color: '#000000', draggable: true,
       textAlign: 'left', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2
@@ -820,9 +738,9 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     // Agency - Arabic (right side)
     {
       id: uuidv4(), type: 'text', x: 450, y: 235, width: 300,
-      text: '?Â§?â€ž?Ë†?Æ’?Â§?â€ž?Â© ?Â§?â€ž?Ë†?Â·?â€ ???Â© ?â€ž?â€ž?â€ ?Â´?Â§?Â·?Â§?? ?Â§?â€ž?â€¦?â€ ?Â¬?â€¦???Â©',
+      text: '?§?„?ˆ?ƒ?§?„?© ?§?„?ˆ?·?†???© ?„?„?†?´?§?·?§?? ?§?„?…?†?¬?…???©',
       language: 'ar', direction: 'rtl',
-      fontSize: 22, fontFamily: ARABIC_FONTS[1], color: '#000000', draggable: true,
+      fontSize: 22, fontFamily: ARABIC_FONTS[0], color: '#000000', draggable: true,
       textAlign: 'right', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2
     },
     
@@ -835,9 +753,9 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     // Permit Type (centered, larger text) - Moved down to fill space
     {
       id: uuidv4(), type: 'text', x: 200, y: 320, width: 400,
-      text: `${data?.typePermis?.lib_type ?? '?Â§?â€ž???â‚¬?Â±?Â®???Âµ ?â€ž?Â§?Â³?????â€ž?Â§?â€ž ?â€¦?â€š?â€ž?Â¹'}`,
+      text: `${data?.typePermis?.lib_type ?? '?§?„???€?±?®???µ ?„?§?³?????„?§?„ ?…?‚?„?¹'}`,
       language: 'ar', direction: 'rtl',
-      fontSize: 28, fontFamily: ARABIC_FONTS[1], color: '#1a5276', draggable: true,
+      fontSize: 28, fontFamily: ARABIC_FONTS[0], color: '#1a5276', draggable: true,
       textAlign: 'center', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2,
       fontWeight: 'bold'
     },
@@ -862,9 +780,9 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     },
     {
       id: uuidv4(), type: 'text', x: 300, y: 480, width: 200,
-      text: '?Â®???â€¦ ?Â±?Â³?â€¦??',
+      text: '?®???… ?±?³?…??',
       language: 'ar', direction: 'rtl',
-      fontSize: 18, fontFamily: ARABIC_FONTS[1], color: '#1a5276', draggable: true,
+      fontSize: 18, fontFamily: ARABIC_FONTS[0], color: '#1a5276', draggable: true,
       textAlign: 'center', opacity: 0.8, rotation: 0, wrap: 'word', lineHeight: 1.2
     },
     {
@@ -888,9 +806,9 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       x: 250,
       y: 700,
       width: 300,
-      text: '???Â±?Â®???Âµ ?â€¦?â€ ?Â¬?â€¦?? ?Â±?â€š?â€¦ :',
+      text: '???±?®???µ ?…?†?¬?…?? ?±?‚?… :',
       fontSize: 22,
-      fontFamily: ARABIC_FONTS[1],
+      fontFamily: ARABIC_FONTS[0],
       color: '#000000',
       draggable: true,
       opacity: 1,
@@ -927,7 +845,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     // Date and location (bottom left)
     {
       id: uuidv4(), type: 'text', x: 50, y: 780, width: 300, 
-      text: `Fait ?Â  Alger, le ${new Date().toLocaleDateString('fr-FR')}`, 
+      text: `Fait ?  Alger, le ${new Date().toLocaleDateString('fr-FR')}`, 
       fontSize: 16, fontFamily: FONT_FAMILIES[0], color: '#000000', 
       draggable: true, opacity: 1, rotation: 0, textAlign: 'left'
     },
@@ -1002,7 +920,6 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     const superficie = data?.superficie ? `${data.superficie}` : '';
     const localisation = data?.localisation || '';
     const detenteur = (data?.detenteur && (data.detenteur.nom_societeFR || data.detenteur.nom_societe || data.detenteur.nom)) || (data?.detenteur || '');
-    const detenteurArabic = (data as any)?.detenteur_ar || ((data?.detenteur as any)?.NomArab) || ((data?.detenteur as any)?.nom_ar) || '';
 
     const els: PermisElement[] = [];
 
@@ -1010,18 +927,18 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     els.push({ id: uuidv4(), type: 'image', x: 38, y: 24, width: 110, height: 90, draggable: false, src: '/logo.png' } as any);
 
     // Bilingual header (centered)
-    els.push({ id: uuidv4(), type: 'text', x: 160, y: 28, width: 480, text: 'Ø§Ù„Ø¬Ù…Ù‡ÙˆØ±ÙŠØ© Ø§Ù„Ø¬Ø²Ø§Ø¦Ø±ÙŠØ© Ø§Ù„Ø¯ÙŠÙ…Ù‚Ø±Ø§Ø·ÙŠØ© Ø§Ù„Ø´Ø¹Ø¨ÙŠØ©', language: 'ar', direction: 'rtl', fontSize: 26, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'center', opacity: 1 });
+    els.push({ id: uuidv4(), type: 'text', x: 160, y: 28, width: 480, text: 'ÇáÌãåæÑíÉ ÇáÌÒÇÆÑíÉ ÇáÏíãÞÑÇØíÉ ÇáÔÚÈíÉ', language: 'ar', direction: 'rtl', fontSize: 26, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center', opacity: 1 });
     els.push({ id: uuidv4(), type: 'text', x: 160, y: 57, width: 480, text: "People's Democratic Republic of Algeria", fontSize: 22, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'center', opacity: 1 });
-    els.push({ id: uuidv4(), type: 'text', x: 160, y: 83, width: 480, text: 'ÙˆØ²Ø§Ø±Ø© Ø§Ù„Ø·Ø§Ù‚Ø© ÙˆØ§Ù„Ù…Ù†Ø§Ø¬Ù…', language: 'ar', direction: 'rtl', fontSize: 26, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'center' });
-    els.push({ id: uuidv4(), type: 'text', x: 160, y: 109, width: 480, text: 'Ø§Ù„ÙˆÙƒØ§Ù„Ø© Ø§Ù„ÙˆØ·Ù†ÙŠØ© Ù„Ù„Ù†Ø´Ø§Ø·Ø§Øª Ø§Ù„Ù…Ù†Ø¬Ù…ÙŠØ©', language: 'ar', direction: 'rtl', fontSize: 26, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'center' });
+    els.push({ id: uuidv4(), type: 'text', x: 160, y: 83, width: 480, text: 'æÒÇÑÉ ÇáØÇÞÉ æÇáãäÇÌã', language: 'ar', direction: 'rtl', fontSize: 26, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center' });
+    els.push({ id: uuidv4(), type: 'text', x: 160, y: 109, width: 480, text: 'ÇáæßÇáÉ ÇáæØäíÉ ááäÔÇØÇÊ ÇáãäÌãíÉ', language: 'ar', direction: 'rtl', fontSize: 26, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center' });
     // Thin rule
     //els.push({ id: uuidv4(), type: 'line', x: 60, y: 134, width: 680, height: 0, stroke: '#000', strokeWidth: 1, draggable: false });
 
     // Main Arabic title (inside a framed box like the model)
     const permitTitle = ((articleSets || []).find(s => s.key === selectedArticleSet)?.name)
       || (data?.typePermis?.lib_type_ar)
-      
-      || 'Ø±Ø®ØµØ© Ù…Ù†Ø¬Ù…ÙŠØ©';
+      || (data?.typePermis?.lib_type)
+      || 'ÑÎÕÉ ãäÌãíÉ';
     // Framed box
     const boxX = 110; const boxY = 146; const boxW = 580; const boxH = 170; // increased to fit 150x150 QR
     const rectLeft = boxX - 90; const rectWidth = 765;
@@ -1039,11 +956,11 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     const __rawTitleSetName = (articleSets || []).find(s => s.key === selectedArticleSet)?.name || '';
     const __arabicIdx = __rawTitleSetName.search(/[\u0600-\u06FF]/);
     const __cleanTitleFromSet = __arabicIdx >= 0 ? __rawTitleSetName.slice(__arabicIdx).trim() : __rawTitleSetName;
-    els.push({ id: uuidv4(), type: 'text', x: titleLeftX+50, y: 180, width: titleAvailW, text: (__cleanTitleFromSet || permitTitle), language: 'ar', direction: 'rtl', fontSize: 32, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'center', fontWeight: 'bold', meta: { isMainTitle: true } });
+    els.push({ id: uuidv4(), type: 'text', x: titleLeftX+50, y: 160, width: titleAvailW, text: (__cleanTitleFromSet || permitTitle), language: 'ar', direction: 'rtl', fontSize: 32, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center', fontWeight: 'bold', meta: { isMainTitle: true } });
 
     // Number line centered
-    const numberLine = `Ø±Ù‚Ù…: ${code} ${typeCode}`.trim();
-    els.push({ id: uuidv4(), type: 'text', x: titleLeftX+60, y: boxY + Math.min(120, Math.max(70, Math.floor(boxH/2) + 30))-20, width: titleAvailW, text: numberLine, language: 'ar', direction: 'rtl', fontSize: 28, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'center' });
+    const numberLine = `ÑÞã: ${code} ${typeCode}`.trim();
+    els.push({ id: uuidv4(), type: 'text', x: titleLeftX+60, y: boxY + Math.min(120, Math.max(70, Math.floor(boxH/2) + 30))-20, width: titleAvailW, text: numberLine, language: 'ar', direction: 'rtl', fontSize: 28, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center' });
 
     // Details block (RTL on the right side of the page)
     const labelW = 200; const valueW = 420; const gap = 10; const marginRight = 40; const detailsBlockW = labelW + gap + valueW; let y = boxY + boxH + 20; const lineH = 30;
@@ -1051,9 +968,9 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     const startX = DEFAULT_CANVAS.width - marginRight - detailsBlockW;
     const addRow = (labelAr: string, value: string) => {
       // Value box (RTL, right-aligned), no wrapping
-      els.push({ id: uuidv4(), type: 'text', x: startX, y, width: valueW, text: value || '....................', language: 'ar', direction: 'rtl', fontSize: 26, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'right', wrap: 'none', lineHeight: 1.35 });
+      els.push({ id: uuidv4(), type: 'text', x: startX, y, width: valueW, text: value || '....................', language: 'ar', direction: 'rtl', fontSize: 24, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'right', wrap: 'none', lineHeight: 1.35 });
       // Label box (to the right of the value), no wrapping
-      els.push({ id: uuidv4(), type: 'text', x: startX + valueW + gap, y, width: labelW, text: labelAr, language: 'ar', direction: 'rtl', fontSize: 26, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'right', wrap: 'none', lineHeight: 1.35 });
+      els.push({ id: uuidv4(), type: 'text', x: startX + valueW + gap, y, width: labelW, text: labelAr, language: 'ar', direction: 'rtl', fontSize: 26, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'right', wrap: 'none', lineHeight: 1.35 });
       // Fixed line advance to avoid unintended breaks
       y += lineH + 6;
     };
@@ -1061,13 +978,13 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     const addInlineRow = (labelAr: string, value: string) => {
       const full = `${labelAr} ${value || '....................'}`.trim();
       // Single text line, no wrapping; if too long it will extend left, but won't break
-      els.push({ id: uuidv4(), type: 'text', x: startX, y, width: detailsBlockW, text: full, language: 'ar', direction: 'rtl', fontSize: 24, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'right', wrap: 'none', lineHeight: 1.35 });
+      els.push({ id: uuidv4(), type: 'text', x: startX, y, width: detailsBlockW, text: full, language: 'ar', direction: 'rtl', fontSize: 24, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'right', wrap: 'none', lineHeight: 1.35 });
       y += lineH + 6;
     };
     // Beneficiary: first the legal form, then the actual holder on a separate line
-    addRow('ÙŠÙ…Ù†Ø­ Ø¥Ù„Ù‰: Ø§Ù„Ø´Ø±ÙƒØ© Ø°Ø§Øª Ø§Ù„Ù…Ø³Ø¤ÙˆÙ„ÙŠØ© Ø§Ù„Ù…Ø­Ø¯ÙˆØ¯Ø©' , detenteurArabic||detenteur);
-    addInlineRow('Ø§Ù„Ù…ÙˆÙ‚Ø¹:', localisation);
-    addInlineRow('Ø§Ù„Ù…Ø³Ø§Ø­Ø©:', superficie ? `${superficie} Ù‡ÙƒØªØ§Ø±` : '');
+    addRow('íãäÍ Åáì: ÇáÔÑßÉ ÐÇÊ ÇáãÓÄæáíÉ ÇáãÍÏæÏÉ' , detenteur);
+    addInlineRow('ÇáãæÞÚ:', localisation);
+    addInlineRow('ÇáãÓÇÍÉ:', superficie ? `${superficie} åßÊÇÑ` : '');
     // Duration row: compute from DateOctroi -> DateExpiration when available, else use server-provided display
     const formatFr = (d: Date | null) => d ? `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}` : '';
     const parseAccessDate = (v: any): Date | null => {
@@ -1088,22 +1005,6 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       if (m < 0 || (m === 0 && b.getDate() < a.getDate())) years -= 1;
       return years < 0 ? 0 : years;
     };
-    // Fixed Arabic duration rendering to avoid mojibake
-    const computeDureeArFixed = (): string => {
-      const badCharRe = /\uFFFD/;
-      const s: any = (data as any)?.duree_display_ar;
-      if (s && !badCharRe.test(String(s))) return String(s);
-      const dStart = parseAccessDate((data as any)?.DateOctroi || (data as any)?.dateDebut || (data as any)?.date_debut || (data as any)?.date_octroi);
-      const dEnd = parseAccessDate((data as any)?.DateExpiration || (data as any)?.dateFin || (data as any)?.date_fin || (data as any)?.date_expiration);
-      if (!dStart || !dEnd || dEnd.getFullYear() <= 1900) return '';
-      const y = diffYears(dStart, dEnd);
-      const y2 = String(y).padStart(2, '0');
-      const noun = y === 1
-        ? '\u0633\u0646\u0629' // Ø³Ù†Ø©
-        : (y === 2 ? '\u0633\u0646\u062A\u0627\u0646' // Ø³Ù†ØªØ§Ù†
-                    : '\u0633\u0646\u0648\u0627\u062A'); // Ø³Ù†ÙˆØ§Øª
-      return `(${y2}) ${noun} (\u0645\u0646 ${formatFr(dStart)} \u0625\u0644\u0649 ${formatFr(dEnd)})`;
-    };
     const computeDureeAr = (): string => {
       // Prefer server-computed string if present
       if (data?.duree_display_ar) return String(data.duree_display_ar);
@@ -1113,12 +1014,12 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       if (!dStart || !dEnd || dEnd.getFullYear() <= 1900) return '';
       const y = diffYears(dStart, dEnd);
       const y2 = String(y).padStart(2, '0');
-      const words: Record<number, string> = { 1: 'Ø³Ù†Ø©', 2: 'Ø³Ù†ØªØ§Ù†', 3: 'Ø«Ù„Ø§Ø«Ø©', 4: 'Ø£Ø±Ø¨Ø¹Ø©', 5: 'Ø®Ù…Ø³Ø©', 6: 'Ø³ØªØ©', 7: 'Ø³Ø¨Ø¹Ø©', 8: 'Ø«Ù…Ø§Ù†ÙŠØ©', 9: 'ØªØ³Ø¹Ø©', 10: 'Ø¹Ø´Ø±Ø©' };
+      const words: Record<number, string> = { 1: 'ÓäÉ', 2: 'ÓäÊÇä', 3: 'ËáÇËÉ', 4: 'ÃÑÈÚÉ', 5: 'ÎãÓÉ', 6: 'ÓÊÉ', 7: 'ÓÈÚÉ', 8: 'ËãÇäíÉ', 9: 'ÊÓÚÉ', 10: 'ÚÔÑÉ' };
       const word = words[y] || y.toString();
-      const noun = y === 1 ? 'Ø³Ù†Ø©' : (y === 2 ? 'Ø³Ù†ØªØ§Ù†' : 'Ø³Ù†ÙˆØ§Øª');
-      return `${word} (${y2}) ${noun} (Ù…Ù€Ù€Ù† ${formatFr(dStart)} Ø¥Ù„Ù€Ù€Ù‰ ${formatFr(dEnd)})`;
+      const noun = y === 1 ? 'ÓäÉ' : (y === 2 ? 'ÓäÊÇä' : 'ÓäæÇÊ');
+      return `${word} (${y2}) ${noun} (ãÜÜä ${formatFr(dStart)} ÅáÜÜì ${formatFr(dEnd)})`;
     };
-    addInlineRow('Ø§Ù„Ù…Ù€Ù€Ø¯Ø©:', computeDureeArFixed());
+    addInlineRow('ÇáãÜÜÏÉ:', computeDureeAr());
 
     // Section title for coordinates table (Arabic + Fuseau)
     els.push({ id: uuidv4(), type: 'text', x: 80, y: y + 42, width: 600, text: 'Fuseau 32', fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'center' });
@@ -1137,7 +1038,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     const headerH = 48;
     const headerY = y + 40;
     els.push({ id: uuidv4(), type: 'rectangle', x: tableX, y: headerY, width: tableW, height: headerH, stroke: '#000', strokeWidth: 1.2, fill: '#f5f5f5' } as any);
-    els.push({ id: uuidv4(), type: 'text', x: tableX + 6, y: headerY + 4, width: tableW - 12, text: 'Ø¥Ø­Ù€Ø¯Ø§Ø«ÙŠØ§Øª Ù‚Ù…Ù… Ø§Ù„Ù…Ø­ÙŠØ· Ø§Ù„Ù…Ù†Ø¬Ù…ÙŠ Ø­Ø³Ø¨ Ù†Ø¸Ø§Ù… UTM Ø´Ù…Ø§Ù„ Ø§Ù„ØµØ­Ø±Ø§Ø¡  Fuseau 32', language: 'ar', direction: 'rtl', fontSize: 20, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'center' } as any);
+    els.push({ id: uuidv4(), type: 'text', x: tableX + 6, y: headerY + 4, width: tableW - 12, text: 'ÅÍÜÏÇËíÇÊ Þãã ÇáãÍíØ ÇáãäÌãí ÍÓÈ äÙÇã UTM ÔãÇá ÇáÕÍÑÇÁ  Fuseau 32', language: 'ar', direction: 'rtl', fontSize: 20, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center' } as any);
 
     // Multi-column coordinates table (colors/separators like the model)
     const tableStartY = headerY + headerH;
@@ -1181,7 +1082,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       els.push({ id: uuidv4(), type: 'rectangle', x: bx, y: tableStartY, width: blockW, height: rowH * (rowsPerCol + 1), stroke: '#000', strokeWidth: 1.2, fill: 'transparent', meta: { nonInteractive: true, isGrid: true } } as any);
     }
     
-    // Compute bottom of table and optionally add a 45Â° line if space remains
+    // Compute bottom of table and optionally add a 45° line if space remains
     const tableBottom = tableStartY + rowH * (rowsPerCol + 1);
     const remainingBelow = DEFAULT_CANVAS.height - tableBottom - 70;
     let diagY: number | null = null;
@@ -1193,9 +1094,9 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
 
     // QR is already placed inside the title box above
     // Footer notice placed above the diagonal line if present
-    const bottomNotice = `Ø³Ù†Ø¯ Ù…Ù†Ø¬Ù…ÙŠ Ù…Ø³Ø¬Ù„ ÙÙŠ Ø§Ù„Ø³Ø¬Ù„ Ø§Ù„Ù…Ù†Ø¬Ù…ÙŠ ØªØ­Øª Ø±Ù‚Ù… : ${code} ${typeCode}`;
+    const bottomNotice = `ÓäÏ ãäÌãí ãÓÌá Ýí ÇáÓÌá ÇáãäÌãí ÊÍÊ ÑÞã : ${code} ${typeCode}`;
     const noticeY = diagY !== null ? Math.max(20, diagY - 18) : (DEFAULT_CANVAS.height - 55);
-    els.push({ id: uuidv4(), type: 'text', x: (DEFAULT_CANVAS.width- 300) / 2 -80, y: noticeY-40, width: 700, text: bottomNotice, language: 'ar', direction: 'rtl', fontSize: 26, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: false, textAlign: 'center' } as any);
+    els.push({ id: uuidv4(), type: 'text', x: (DEFAULT_CANVAS.width- 300) / 2, y: noticeY+10, width: 700, text: bottomNotice, language: 'ar', direction: 'rtl', fontSize: 20, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: false, textAlign: 'center' } as any);
 
     return els;
   }
@@ -1232,7 +1133,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     }
     const tableBottomY1 = tableY + rowH * (coords.length + 1);
     content.push({ id: uuidv4(), type: 'line', x: tableX, y: tableBottomY1, width: tableW, height: 0, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
-    // If bottom space remains, add a 45Â° line
+    // If bottom space remains, add a 45° line
     const remaining1 = DEFAULT_CANVAS.height - tableBottomY1 - 70;
     if (remaining1 > 80) {
       const diagLen = Math.min(DEFAULT_CANVAS.width - 160, remaining1 + 40);
@@ -1241,7 +1142,318 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     return [...borderElements, ...content];
   }
 
+  // New general page layout modeled after Word template
+  function createGeneralPageNew(data: any): PermisElement[] {
+    const typeCode = data?.typePermis?.code || '';
+    const code = data?.code_demande || data?.codeDemande || '';
+    const superficie = data?.superficie ? `${data.superficie}` : '';
+    const localisation = data?.localisation || '';
+    const detenteur = (data?.detenteur && (data.detenteur.nom_societeFR || data.detenteur.nom_societe || data.detenteur.nom)) || (data?.detenteur || '');
 
+    const els: PermisElement[] = []
+    // Logo and bilingual header\n    els.push({ id: uuidv4(), type: 'image', x: 60, y: 20, width: 80, height: 80, draggable: true, src: '/logo.png' } as any);;
+    // Top bilingual header
+    els.push({ id: uuidv4(), type: 'text', x: 120, y: 28, width: 520, text: '?§?„?¬?…?‡?ˆ?±???© ?§?„?¬?²?§?¦?±???© ?§?„?¯???…?‚?±?§?·???© ?§?„?´?¹?¨???©', language: 'ar', direction: 'rtl', fontSize: 18, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center', opacity: 1 });
+    els.push({ id: uuidv4(), type: 'text', x: 120, y: 56, width: 520, text: "People's Democratic Republic of Algeria", fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'center', opacity: 1 });
+    // Rule
+    els.push({ id: uuidv4(), type: 'line', x: 80, y: 86, width: 600, height: 2, stroke: '#000', strokeWidth: 1, draggable: true, opacity: 1, rotation: 0 });
+
+    // Arabic big title + number line
+    els.push({ id: uuidv4(), type: 'text', x: 80, y: 112, width: 600, text: '???ˆ?³???¹ ?…?¬?§?„ ?…?­???· ?§?„?±?®?µ?©', language: 'ar', direction: 'rtl', fontSize: 28, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center', opacity: 1 });
+    const numberLine = `ÑÞã: ${code} ${typeCode}`.trim();
+    els.push({ id: uuidv4(), type: 'text', x: 80, y: 152, width: 600, text: numberLine, language: 'ar', direction: 'rtl', fontSize: 22, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center', opacity: 1 });
+
+    // Details block (beneficiary, location, area)
+    const leftX = 90; const labelW = 200; const valueW = 420; let y = 200; const lineH = 28;
+    const addRow = (labelAr: string, value: string) => {
+      els.push({ id: uuidv4(), type: 'text', x: leftX, y, width: labelW, text: labelAr, language: 'ar', direction: 'rtl', fontSize: 18, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'right' });
+      els.push({ id: uuidv4(), type: 'text', x: leftX + labelW + 10, y, width: valueW, text: value || 'â€”', fontSize: 16, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' });
+      y += Math.max(30, Math.ceil(((value || '').length/Math.max(1,Math.floor(valueW/(18*0.55))))*18*1.35)) + 6;
+    };
+    addRow('?????…?†?­ ?¥?„?‰:', detenteur);
+    addRow('?§?„?…?ˆ?‚?¹:', localisation);
+    addRow('?§?„?…?³?§?­?©:', superficie ? `${superficie} ?‡?ƒ???§?±` : '');
+    addRow('ÇáãÜÜÏÉ:', data?.duree_display_ar || '');
+
+    // Horizontal rule before coordinates table
+    els.push({ id: uuidv4(), type: 'line', x: 80, y: y + 8, width: 600, height: 1, stroke: '#000', strokeWidth: 1, draggable: true, opacity: 1, rotation: 0 });
+
+    // Coordinates table header label
+    els.push({ id: uuidv4(), type: 'text', x: 80, y: y + 24, width: 600, text: '?¥?­?¯?§?«???§?? ?‚???…?… ?§?„?…?­???· ?§?„?…?†?¬?…?? (Fuseau 32)', language: 'ar', direction: 'rtl', fontSize: 16, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center' });
+
+        // Multi-column coordinates table (matches official layout)
+    const tableStartY = y + 60;
+    const rowH = 24;
+    const colPtW = 50, colXW = 75, colYW = 75;
+    const blockW = colPtW + colXW + colYW; // 200
+    const MIN_ROWS = rowsPerColSetting;
+    const coords: any[] = Array.isArray(data?.coordinates) ? data.coordinates : [];
+    const desiredCols = Math.max(1, Math.ceil(Math.max(coords.length, MIN_ROWS) / MIN_ROWS));
+    const blockCols = Math.min(3, desiredCols); // three blocks max across the page
+    const tableW = blockW * blockCols; // 600
+    const tableX = (DEFAULT_CANVAS.width - tableW) / 2; // center horizontally
+    const rowsPerCol = Math.max(MIN_ROWS, Math.min(40, Math.ceil((coords.length || MIN_ROWS) / blockCols)));
+    // Draw block headers and verticals
+    for (let b = 0; b < blockCols; b++) {
+      const bx = tableX + b * blockW;
+      // header background
+      els.push({ id: uuidv4(), type: 'rectangle', x: bx, y: tableStartY, width: blockW, height: rowH, stroke: '#000', strokeWidth: 1, fill: '#f5f5f5' } as any);
+      // internal verticals (rotate to draw vertical lines)
+      const vHeight2 = rowH * (rowsPerCol + 1);
+      els.push({ id: uuidv4(), type: 'line', x: bx + colPtW, y: tableStartY, width: vHeight2, height: 0, rotation: 90, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
+      els.push({ id: uuidv4(), type: 'line', x: bx + colPtW + colXW, y: tableStartY, width: vHeight2, height: 0, rotation: 90, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
+      // headers
+      els.push({ id: uuidv4(), type: 'text', x: bx + 6, y: tableStartY + 4, width: colPtW - 12, text: 'Zone', fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+      els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + 6, y: tableStartY + 4, width: colXW - 12, text: 'X', fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+      els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + colXW + 6, y: tableStartY + 4, width: colYW - 12, text: 'Y', fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+      // rows
+      for (let r = 0; r < rowsPerCol; r++) {
+        const idx = b * rowsPerCol + r;
+        const ry = tableStartY + rowH * (r + 1);
+        // row horizontal line
+        els.push({ id: uuidv4(), type: 'line', x: bx, y: ry, width: blockW, height: 0, stroke: '#ccc', strokeWidth: 1 } as any);
+        if (idx >= coords.length) continue;
+        const item = coords[idx];
+        const vPoint = String((item as any).zone ?? '');
+        const vX = String(item.x ?? '');
+        const vY = String(item.y ?? '');
+        els.push({ id: uuidv4(), type: 'text', x: bx + 6, y: ry + 4, width: colPtW - 12, text: vPoint, fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+        els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + 6, y: ry + 4, width: colXW - 12, text: vX, fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+        els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + colXW + 6, y: ry + 4, width: colYW - 12, text: vY, fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+      }
+      // footer line of this block
+      els.push({ id: uuidv4(), type: 'line', x: bx, y: tableStartY + rowH * (rowsPerCol + 1), width: blockW, height: 0, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
+    }// QR placeholder & code
+    els.push(createQRCodeElement(data, 560, 680));
+    els.push({ id: uuidv4(), type: 'text', x: 80, y: 820, width: 600, text: `${code} ${typeCode}`, fontSize: 12, fontFamily: 'Arial', color: '#666', draggable: true, textAlign: 'center', opacity: 0.8 });
+    return els;
+  }
+
+  // New coordinates-only page with table layout
+  function createCoordsPageNew(data: any): PermisElement[] {
+    const borderElements = createPageBorder(DEFAULT_CANVAS.width, DEFAULT_CANVAS.height);
+    const content: PermisElement[] = [];
+    content.push({ id: uuidv4(), type: 'line', x: 80, y: 72, width: 640, height: 2, stroke: '#1a5276', strokeWidth: 2 } as any);
+    const coords: any[] = Array.isArray(data?.coordinates) ? data.coordinates : [];
+    if (!coords.length) {
+      content.push({ id: uuidv4(), type: 'text', x: 80, y: 110, width: 640, text: '?„?§ ???ˆ?¬?¯ ?¥?­?¯?§?«???§?? ?…???§?­?©.', language: 'ar', direction: 'rtl', fontSize: 16, fontFamily: ARABIC_FONTS[0], color: '#000', textAlign: 'center' } as any);
+      return [...borderElements, ...content];
+    }
+    const tableY = 100; const cols = [{ title: 'Point', w: 80 }, { title: 'X', w: 260 }, { title: 'Y', w: 260 }];
+    const tableW = cols.reduce((s,c)=>s+c.w,0); const rowH = 26;
+    const tableX = (DEFAULT_CANVAS.width - tableW) / 2; // center horizontally
+    content.push({ id: uuidv4(), type: 'rectangle', x: tableX, y: tableY, width: tableW, height: rowH, stroke: '#000', strokeWidth: 1, fill: '#f5f5f5' } as any);
+    let cx = tableX; cols.forEach((c, idx) => {
+      content.push({ id: uuidv4(), type: 'text', x: cx + 6, y: tableY + 4, width: c.w - 12, text: c.title, fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+      // vertical separators between columns (cover header + rows)
+      if (idx > 0) {
+        const vHeight = rowH + (coords.length * rowH);
+        content.push({ id: uuidv4(), type: 'line', x: cx, y: tableY, width: vHeight, height: 0, rotation: 90, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
+      }
+      cx += c.w;
+    });
+    for (let i = 0; i < coords.length; i++) {
+      const ry = tableY + rowH * (i + 1);
+      content.push({ id: uuidv4(), type: 'line', x: tableX, y: ry, width: tableW, height: 0, stroke: '#ccc', strokeWidth: 1 } as any);
+      const row = coords[i];
+      let rx = tableX; const values = [String((row as any).zone ?? ''), String(row.x ?? ''), String(row.y ?? '')];
+      for (let j = 0; j < cols.length; j++) {
+        content.push({ id: uuidv4(), type: 'text', x: rx + 6, y: ry + 4, width: cols[j].w - 12, text: values[j], fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+        rx += cols[j].w;
+      }
+    }
+    const tableBottomY2 = tableY + rowH * (coords.length + 1);
+    content.push({ id: uuidv4(), type: 'line', x: tableX, y: tableBottomY2, width: tableW, height: 0, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
+    // If bottom space remains, add a 45° line
+    const remaining2 = DEFAULT_CANVAS.height - tableBottomY2 - 70;
+    if (remaining2 > 80) {
+      const diagLen2 = Math.min(DEFAULT_CANVAS.width - 160, remaining2 + 40);
+      content.push({ id: uuidv4(), type: 'line', x: DEFAULT_CANVAS.width - 80, y: tableBottomY2 + 30, width: diagLen2, height: 0, rotation: 135, stroke: '#999999', strokeWidth: 2, opacity: 0.8, draggable: true } as any);
+    }
+    return [...borderElements, ...content];
+  }
+
+  function createCoordsPage(data: any): PermisElement[] {
+    const borderElements = createPageBorder(DEFAULT_CANVAS.width, DEFAULT_CANVAS.height);
+    const contentElements: PermisElement[] = [
+      {
+        id: uuidv4(),
+        type: 'text',
+        x: 80,
+        y: 40,
+        width: 640,
+        text: '?¥?­?¯?§?«???§?? ?­?¯?ˆ?¯ ?§?„?±?®?µ?©',
+        language: 'ar',
+        direction: 'rtl',
+        fontSize: 24,
+        fontFamily: ARABIC_FONTS[0],
+        color: '#1a5276',
+        draggable: true,
+        textAlign: 'center',
+        opacity: 1,
+        wrap: 'word',
+        lineHeight: 1.3
+      },
+      {
+        id: uuidv4(),
+        type: 'line',
+        x: 80,
+        y: 85,
+        width: 640,
+        height: 2,
+        stroke: '#1a5276',
+        strokeWidth: 2,
+        draggable: true,
+        opacity: 1
+      },
+    ];
+    const coordContainer = data?.procedure?.coordonnees ?? [];
+    const coordinates = Array.isArray(coordContainer) ? coordContainer.map((c: any) => c.coordonnee).filter(Boolean) : [];
+    let y = 110;
+    const spacing = 32;
+    if (coordinates.length === 0) {
+      contentElements.push({
+        id: uuidv4(),
+        type: 'text',
+        x: 80,
+        y,
+        width: 640,
+        text: '?„?§ ???ˆ?¬?¯ ?¥?­?¯?§?«???§?? ?…???§?­?©.',
+        language: 'ar',
+        direction: 'rtl',
+        fontSize: 16,
+        fontFamily: ARABIC_FONTS[0],
+        color: '#000',
+        draggable: true,
+        textAlign: 'center',
+        lineHeight: 1.4,
+        wrap: 'word'
+      });
+      return [...borderElements, ...contentElements];
+    }
+    contentElements.push({
+      id: uuidv4(),
+      type: 'text',
+      x: 80,
+      y,
+      width: 180,
+      text: 'X',
+      language: 'ar',
+      direction: 'rtl',
+      fontSize: 16,
+      fontFamily: ARABIC_FONTS[0],
+      color: '#000',
+      draggable: true,
+      textAlign: 'left'
+    });
+    contentElements.push({
+      id: uuidv4(),
+      type: 'text',
+      x: 320,
+      y,
+      width: 180,
+      text: 'Y',
+      language: 'ar',
+      direction: 'rtl',
+      fontSize: 16,
+      fontFamily: ARABIC_FONTS[0],
+      color: '#000',
+      draggable: false,
+      textAlign: 'center'
+    });
+    contentElements.push({
+      id: uuidv4(),
+      type: 'text',
+      x: 560,
+      y,
+      width: 180,
+      text: 'Z',
+      language: 'ar',
+      direction: 'rtl',
+      fontSize: 16,
+      fontFamily: ARABIC_FONTS[0],
+      color: '#000',
+      draggable: false,
+      textAlign: 'right'
+    });
+    y += spacing;
+    coordinates.forEach((coord: any) => {
+      contentElements.push({
+        id: uuidv4(),
+        type: 'text',
+        x: 80,
+        y,
+        width: 180,
+        text: `${coord.x}`,
+        language: 'ar',
+        direction: 'rtl',
+        fontSize: 20,
+        fontFamily: ARABIC_FONTS[0],
+        color: '#000',
+        draggable: false,
+        textAlign: 'left'
+      });
+      contentElements.push({
+        id: uuidv4(),
+        type: 'text',
+        x: 320,
+        y,
+        width: 180,
+        text: `${coord.y}`,
+        language: 'ar',
+        direction: 'rtl',
+        fontSize: 20,
+        fontFamily: ARABIC_FONTS[0],
+        color: '#000',
+        draggable: false,
+        textAlign: 'center'
+      });
+      contentElements.push({
+        id: uuidv4(),
+        type: 'text',
+        x: 560,
+        y,
+        width: 180,
+        text: `${coord.z || 0}`,
+        language: 'ar',
+        direction: 'rtl',
+        fontSize: 20,
+        fontFamily: ARABIC_FONTS[0],
+        color: '#000',
+        draggable: false,
+        textAlign: 'right'
+      });
+      y += spacing;
+    });
+    const endOfCoordsY = y + 20;
+    contentElements.push({
+      id: uuidv4(),
+      type: 'line',
+      x: 80,
+      y: endOfCoordsY,
+      width: DEFAULT_CANVAS.width - 160,
+      height: 2,
+      stroke: '#1a5276',
+      strokeWidth: 2,
+      draggable: true,
+      opacity: 1,
+      rotation: 0
+    });
+    contentElements.push({
+      id: uuidv4(),
+      type: 'line',
+      x: 720,
+      y: endOfCoordsY + 30,
+      width: Math.sqrt(Math.pow(DEFAULT_CANVAS.width - 80, 2) + Math.pow(DEFAULT_CANVAS.height - endOfCoordsY, 2)) - 80,
+      height: 2,
+      stroke: '#000000',
+      strokeWidth: 2,
+      draggable: true,
+      opacity: 1,
+      rotation: 135
+    });
+    return [...borderElements, ...contentElements];
+  }
 
   function createArticlesPageHeader(width: number, height: number): PermisElement[] {
     const contentElements: PermisElement[] = [
@@ -1435,11 +1647,11 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       y: 100 / zoom,
       width: type === 'text' ? 240 : type === 'line' ? 150 : 120,
       height: type === 'text' ? 36 : type === 'line' ? 2 : 60,
-      text: type === 'text' ? (currentPage === PAGES.ARTICLES ? '?â€ ?Âµ ?â€¦?Â§?Â¯?Â©' : '?â€ ?Âµ ?Â¬?Â¯???Â¯') : undefined,
+      text: type === 'text' ? (currentPage === PAGES.ARTICLES ? '?†?µ ?…?§?¯?©' : '?†?µ ?¬?¯???¯') : undefined,
       language: type === 'text' ? (currentPage === PAGES.ARTICLES ? 'ar' : 'fr') : undefined,
       direction: type === 'text' ? (currentPage === PAGES.ARTICLES ? 'rtl' : 'ltr') : undefined,
       fontSize: 20,
-      fontFamily: type === 'text' ? (currentPage === PAGES.ARTICLES ? ARABIC_FONTS[1] : FONT_FAMILIES[0]) : FONT_FAMILIES[0],
+      fontFamily: type === 'text' ? (currentPage === PAGES.ARTICLES ? ARABIC_FONTS[0] : FONT_FAMILIES[0]) : FONT_FAMILIES[0],
       color: '#101822',
       draggable: true,
       fill: type === 'rectangle' ? '#ffffff' : undefined,
@@ -1458,7 +1670,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
 
   const handleDeleteSelected = useCallback(() => {
     setElementsForCurrent(prev => prev.filter(el => !selectedIds.includes(el.id)));
-    if (selectedIds.length > 0) toast.success('?â€°l?Â©ments supprim?Â©s');
+    if (selectedIds.length > 0) toast.success('?‰l?©ments supprim?©s');
     setSelectedIds([]);
   }, [selectedIds, setElementsForCurrent]);
 
@@ -1466,7 +1678,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     if (selectedIds.length === 0) return;
     const selectedElements = elements.filter(el => selectedIds.includes(el.id));
     localStorage.setItem('copiedElements', JSON.stringify(selectedElements));
-    toast.success('?â€°l?Â©ments copi?Â©s');
+    toast.success('?‰l?©ments copi?©s');
   }, [selectedIds, elements]);
 
   const handlePasteSelected = useCallback(() => {
@@ -1477,7 +1689,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       const newElements = parsed.map(el => ({ ...el, id: uuidv4(), x: (el.x + 20) / zoom, y: (el.y + 20) / zoom }));
       setElementsForCurrent(prev => [...prev, ...newElements]);
       setSelectedIds(newElements.map(el => el.id));
-      toast.success('?â€°l?Â©ments coll?Â©s');
+      toast.success('?‰l?©ments coll?©s');
     } catch (err) {
       console.error('Failed to paste elements', err);
     }
@@ -1521,7 +1733,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       toast.success('Permis saved successfully');
     } catch (error) {
       console.error('Failed to save permis', error);
-      toast.error("?â€°chec de l'enregistrement du permis");
+      toast.error("?‰chec de l'enregistrement du permis");
     } finally {
       setSavingPermis(false);
     }
@@ -1569,7 +1781,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       toast.success('Template saved successfully');
     } catch (error) {
       console.error('Failed to save template', error);
-      toast.error("?â€°chec de l'enregistrement du template");
+      toast.error("?‰chec de l'enregistrement du template");
     } finally {
       setSavingTemplate(false);
     }
@@ -1591,7 +1803,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
         templateId: activeTemplate,
         name
       });
-      toast.success('Design sauvegard?Â© avec succ?Â¨s');
+      toast.success('Design sauvegard?© avec succ?¨s');
       try {
         if (savedPermisId) {
           const templatesResponse = await axios.get(`${apiURL}/api/permis/${savedPermisId}/templates`);
@@ -1605,7 +1817,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       }
     } catch (error) {
       console.error('Failed to save design', error);
-      toast.error('?â€°chec de la sauvegarde du design');
+      toast.error('?‰chec de la sauvegarde du design');
     } finally {
       setIsLoading(false);
     }
@@ -1692,10 +1904,10 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
         pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
       }
       pdf.save(`permis-${initialData.code_demande}.pdf`);
-      toast.success("PDF g?Â©n?Â©r?Â© avec succ?Â¨s");
+      toast.success("PDF g?©n?©r?© avec succ?¨s");
     } catch (error) {
       console.error("Failed to generate PDF", error);
-      toast.error("?â€°chec de la g?Â©n?Â©ration du PDF");
+      toast.error("?‰chec de la g?©n?©ration du PDF");
     } finally {
       setIsLoading(false);
     }
@@ -1710,7 +1922,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       toast.success('Permis and template saved successfully');
     } catch (error) {
       console.error('Failed to save permis', error);
-      toast.error("?â€°chec de l'enregistrement du permis");
+      toast.error("?‰chec de l'enregistrement du permis");
     } finally {
       setIsLoading(false);
     }
@@ -2067,49 +2279,15 @@ const pageLabel = (idx: number) => {
             </button>
             <button
               className={`${styles.toolButton} ${tool === 'qrcode'}`}
-              onClick={async () => {
-                try {
-                  setTool('qrcode');
-                  const targetId = savedPermisId || initialData.id_demande || initialData.id;
-                  let qrPayload = '';
-                  if (targetId) {
-                    try {
-                      const resp = await axios.post(`${apiURL}/api/permis/${encodeURIComponent(targetId)}/qrcode/generate`);
-                      const code = resp?.data?.QrCode || '';
-                      // Use the unique code as QR payload; adjust to a URL if needed
-                      qrPayload = code;
-                    } catch (e) {
-                      console.warn('QR generation request failed, falling back', e);
-                    }
-                  }
-                  const qrSize = 200;
-                  const qx = 20;
-                  const qy = DEFAULT_CANVAS.height - qrSize - 40; // bottom-left with margin for label
-                  const qrElement = {
-                    ...createQRCodeElement(initialData, qx, qy),
-                    width: qrSize,
-                    height: qrSize,
-                    qrData: qrPayload || generateQRCodeData(initialData)
-                  } as PermisElement;
-                  // Optional text label to show the generated code below the QR
-                  const codeTextEl = qrPayload ? ({
-                    id: uuidv4(),
-                    type: 'text',
-                    x: qx,
-                    y: qy + qrSize + 6,
-                    width: 280,
-                    text: qrPayload,
-                    fontSize: 16,
-                    fontFamily: 'Arial',
-                    color: '#000',
-                    draggable: true,
-                    textAlign: 'left'
-                  } as any) : null;
-                  setElementsForCurrent(prev => codeTextEl ? [...prev, qrElement, codeTextEl] : [...prev, qrElement]);
-                  setSelectedIds([qrElement.id]);
-                } catch (e) {
-                  console.error('Failed to add QR', e);
-                }
+              onClick={() => {
+                setTool('qrcode');
+                const qrElement = createQRCodeElement(
+                  initialData,
+                  DEFAULT_CANVAS.width / 2 - 102,
+                  DEFAULT_CANVAS.height / 2 - 78
+                );
+                setElementsForCurrent(prev => [...prev, qrElement]);
+                setSelectedIds([qrElement.id]);
               }}
               title="Add QR Code"
             >
@@ -2150,7 +2328,7 @@ const pageLabel = (idx: number) => {
                 {elements.map(element => {
                   const isSelected = selectedIds.includes(element.id);
                   return (
-                      <ElementRenderer
+                    <ElementRenderer
                       key={element.id}
                       element={element}
                       isSelected={isSelected}
@@ -2264,7 +2442,7 @@ const pageLabel = (idx: number) => {
 
                   <div className={styles.propRow}>
                     <label>Font</label>
-                    <select value={firstSelected.fontFamily || (firstSelected.language === 'ar' ? ARABIC_FONTS[1] : FONT_FAMILIES[0])}
+                    <select value={firstSelected.fontFamily || (firstSelected.language === 'ar' ? ARABIC_FONTS[0] : FONT_FAMILIES[0])}
                       onChange={(e) => handlePropertyChange('fontFamily', e.target.value)}>
                       {(firstSelected.language === 'ar' ? ARABIC_FONTS : FONT_FAMILIES).map(font => <option key={font} value={font}>{font}</option>)}
                     </select>

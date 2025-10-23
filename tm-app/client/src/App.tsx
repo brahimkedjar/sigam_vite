@@ -45,7 +45,7 @@ export default function App() {
           style={{ padding: 8, minWidth: 240 }}
         />
         <button onClick={loadPermis} disabled={!permisId || loading}>
-          {loading ? 'Loading…' : 'Load'}
+          {loading ? 'Loading…' : 'Charger Les Donnes Du permis'}
         </button>
         <span style={{ color: '#888' }}>API: {API_URL}</span>
       </div>

@@ -31,6 +31,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
         onClickElement={onClickElement}
         onDragEnd={onDragEnd}
         onTransformEnd={onTransformEnd}
+        onTransform={onTransform}
         onDblClickText={onDblClickText}
       />
     );

@@ -91,10 +91,11 @@ const calculateTextHeight = (
   fontSize: number,
   lineHeight: number
 ): number => {
-  const avgCharWidth = fontSize * 0.52; // slightly smaller to over-estimate lines
+  // Use a slightly larger average char width to avoid over-estimating lines for Arabic text
+  const avgCharWidth = fontSize * 0.52;
   const charsPerLine = Math.max(1, Math.floor(width / avgCharWidth));
   const lines = Math.ceil(text.length / charsPerLine);
-  return Math.ceil(lines * fontSize * lineHeight) + 2; // +2px safety
+  return Math.ceil(lines * fontSize * lineHeight);
 };
 
   

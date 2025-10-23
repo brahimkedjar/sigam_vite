@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query, Post } from '@nestjs/common';
 import { PermisService } from './permis.service';
 
 @Controller('permis')
@@ -29,5 +29,10 @@ export class PermisController {
   async findByProcedure(@Param('procedureId') procedureId: string) {
     const result = await this.permisService.findPermisByProcedure(procedureId);
     return result;
+  }
+
+  @Post(':id/qrcode/generate')
+  async generateQrForPermis(@Param('id') id: string) {
+    return this.permisService.generateAndSaveQrCode(id);
   }
 }
