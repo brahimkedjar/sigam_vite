@@ -100,13 +100,6 @@ const PermisDesigner: React.FC<PermisDesignerProps> = ({
   });
   const [dragNormalized, setDragNormalized] = useState(false);
 
-  // Disable page 2 (coordinates): force back to details if selected
-  useEffect(() => {
-    if (currentPage === PAGES.COORDINATES) {
-      setCurrentPage(PAGES.PERMIS_DETAILS);
-    }
-  }, [currentPage]);
-
   const currentCanvasSize = canvasSizes[currentPage] || canvasSizes[0] || { width: DEFAULT_CANVAS.width, height: DEFAULT_CANVAS.height };
 
   useEffect(() => {
@@ -1088,22 +1081,6 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       if (m < 0 || (m === 0 && b.getDate() < a.getDate())) years -= 1;
       return years < 0 ? 0 : years;
     };
-    // Fixed Arabic duration rendering to avoid mojibake
-    const computeDureeArFixed = (): string => {
-      const badCharRe = /\uFFFD/;
-      const s: any = (data as any)?.duree_display_ar;
-      if (s && !badCharRe.test(String(s))) return String(s);
-      const dStart = parseAccessDate((data as any)?.DateOctroi || (data as any)?.dateDebut || (data as any)?.date_debut || (data as any)?.date_octroi);
-      const dEnd = parseAccessDate((data as any)?.DateExpiration || (data as any)?.dateFin || (data as any)?.date_fin || (data as any)?.date_expiration);
-      if (!dStart || !dEnd || dEnd.getFullYear() <= 1900) return '';
-      const y = diffYears(dStart, dEnd);
-      const y2 = String(y).padStart(2, '0');
-      const noun = y === 1
-        ? '\u0633\u0646\u0629' // سنة
-        : (y === 2 ? '\u0633\u0646\u062A\u0627\u0646' // سنتان
-                    : '\u0633\u0646\u0648\u0627\u062A'); // سنوات
-      return `(${y2}) ${noun} (\u0645\u0646 ${formatFr(dStart)} \u0625\u0644\u0649 ${formatFr(dEnd)})`;
-    };
     const computeDureeAr = (): string => {
       // Prefer server-computed string if present
       if (data?.duree_display_ar) return String(data.duree_display_ar);
@@ -1118,7 +1095,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       const noun = y === 1 ? 'سنة' : (y === 2 ? 'سنتان' : 'سنوات');
       return `${word} (${y2}) ${noun} (مــن ${formatFr(dStart)} إلــى ${formatFr(dEnd)})`;
     };
-    addInlineRow('المــدة:', computeDureeArFixed());
+    addInlineRow('المــدة:', computeDureeAr());
 
     // Section title for coordinates table (Arabic + Fuseau)
     els.push({ id: uuidv4(), type: 'text', x: 80, y: y + 42, width: 600, text: 'Fuseau 32', fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'center' });
@@ -2082,30 +2059,11 @@ const pageLabel = (idx: number) => {
                       console.warn('QR generation request failed, falling back', e);
                     }
                   }
-                  const qrSize = 200;
-                  const qx = 20;
-                  const qy = DEFAULT_CANVAS.height - qrSize - 40; // bottom-left with margin for label
                   const qrElement = {
-                    ...createQRCodeElement(initialData, qx, qy),
-                    width: qrSize,
-                    height: qrSize,
+                    ...createQRCodeElement(initialData, DEFAULT_CANVAS.width / 2 - 102, DEFAULT_CANVAS.height / 2 - 78),
                     qrData: qrPayload || generateQRCodeData(initialData)
                   } as PermisElement;
-                  // Optional text label to show the generated code below the QR
-                  const codeTextEl = qrPayload ? ({
-                    id: uuidv4(),
-                    type: 'text',
-                    x: qx,
-                    y: qy + qrSize + 6,
-                    width: 280,
-                    text: qrPayload,
-                    fontSize: 16,
-                    fontFamily: 'Arial',
-                    color: '#000',
-                    draggable: true,
-                    textAlign: 'left'
-                  } as any) : null;
-                  setElementsForCurrent(prev => codeTextEl ? [...prev, qrElement, codeTextEl] : [...prev, qrElement]);
+                  setElementsForCurrent(prev => [...prev, qrElement]);
                   setSelectedIds([qrElement.id]);
                 } catch (e) {
                   console.error('Failed to add QR', e);
