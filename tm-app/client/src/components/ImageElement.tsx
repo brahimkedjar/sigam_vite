@@ -13,9 +13,10 @@ interface ImageElementProps {
   onClickElement: (e: any) => void;
   onDragEnd: (e: any) => void;
   onTransformEnd: (e: any) => void;
+  onTransform?: (e: any) => void;
 }
 
-export const ImageElement: React.FC<ImageElementProps> = ({ element, isSelected, onClickElement, onDragEnd, onTransformEnd }) => {
+export const ImageElement: React.FC<ImageElementProps> = ({ element, isSelected, onClickElement, onDragEnd, onTransformEnd, onTransform }) => {
   const [img] = useImage(element.src || '');
   return (
     <Group
@@ -30,6 +31,7 @@ export const ImageElement: React.FC<ImageElementProps> = ({ element, isSelected,
       onTap={onClickElement}
       onDragEnd={onDragEnd}
       onTransformEnd={onTransformEnd}
+      onTransform={onTransform}
       opacity={element.opacity || 1}
     >
       {img ? (

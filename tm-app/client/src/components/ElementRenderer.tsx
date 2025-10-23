@@ -8,7 +8,7 @@ import { TextElement } from './TextElement';
 import { RectangleElement } from './RectangleElement';
 import { LineElement } from './LineElement';
 import { ImageElement } from './ImageElement';
-import { QRCodeElement } from './QRCodeElement'; // Add this import
+import { QRCodeElement } from './QRCodeElement';
 
 interface ElementRendererProps {
   element: PermisElement;
@@ -18,9 +18,10 @@ interface ElementRendererProps {
   onDragEnd: (e: any) => void;
   onTransformEnd: (e: any) => void;
   onDblClickText: () => void;
+  onTransform?: (e: any) => void;
 }
 
-export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSelected, zoom, onClickElement, onDragEnd, onTransformEnd, onDblClickText }) => {
+export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSelected, zoom, onClickElement, onDragEnd, onTransformEnd, onDblClickText, onTransform }) => {
   if (element.type === 'text') {
     return (
       <TextElement
@@ -42,6 +43,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
         onClickElement={onClickElement}
         onDragEnd={onDragEnd}
         onTransformEnd={onTransformEnd}
+        onTransform={onTransform}
       />
     );
   }
@@ -53,6 +55,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
         onClickElement={onClickElement}
         onDragEnd={onDragEnd}
         onTransformEnd={onTransformEnd}
+        onTransform={onTransform}
       />
     );
   }
@@ -64,6 +67,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
         onClickElement={onClickElement}
         onDragEnd={onDragEnd}
         onTransformEnd={onTransformEnd}
+        onTransform={onTransform}
       />
     );
   }
@@ -76,6 +80,7 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
         onClickElement={onClickElement}
         onDragEnd={onDragEnd}
         onTransformEnd={onTransformEnd}
+        onTransform={onTransform}
       />
     );
   }

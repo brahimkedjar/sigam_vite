@@ -12,6 +12,7 @@ interface QRCodeElementProps {
   onClickElement: (e: any) => void;
   onDragEnd: (e: any) => void;
   onTransformEnd: (e: any) => void;
+  onTransform?: (e: any) => void;
 }
 
 export const QRCodeElement: React.FC<QRCodeElementProps> = ({ 
@@ -20,7 +21,8 @@ export const QRCodeElement: React.FC<QRCodeElementProps> = ({
   zoom, 
   onClickElement, 
   onDragEnd, 
-  onTransformEnd 
+  onTransformEnd,
+  onTransform
 }) => {
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [image] = useImage(qrDataUrl || '');
@@ -60,6 +62,7 @@ export const QRCodeElement: React.FC<QRCodeElementProps> = ({
       onClick={onClickElement}
       onTap={onClickElement}
       onTransformEnd={onTransformEnd}
+      onTransform={onTransform}
       rotation={element.rotation || 0}
       opacity={element.opacity || 1}
     >

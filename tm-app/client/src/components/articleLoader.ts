@@ -36,66 +36,49 @@ export const toArticleElements = (options: {
   const elements: PermisElement[] = [];
   let currentY = options.yStart;
 
+  const joinTitleContent = (title?: string, content?: string) => {
+    const t = (title || '').trim();
+    const c = (content || '').trim();
+    if (!t && !c) return '';
+    if (!t) return c;
+    if (!c) return t;
+    const hasColon = /[:ï¼š]$/.test(t);
+    return `${t}${hasColon ? '' : ' :'} ${c}`;
+  };
+
   options.articleIds.forEach(articleId => {
     const article = options.articles.find(a => a.id === articleId);
     if (!article) return;
 
-    const titleRaw = String(article.title || '').trim();
-    const contentRaw = String(article.content || '').trim();
-    const title = /[:：]$/.test(titleRaw) ? titleRaw : `${titleRaw} :`;
-    const gap = 12; // visual spacing between title and content
-    const avgChar = options.fontSize * 0.65; // Arabic glyphs are wider
-    const estFromLen = Math.max(avgChar * Math.max(1, title.length + 2), 160); const estTitleWidth = Math.min(options.width * 0.35, estFromLen); const titleLeftX = options.x + (options.width - estTitleWidth); const contentRightX = titleLeftX - gap; const contentWidth = Math.max(10, contentRightX - options.x); const contentX = contentRightX - contentWidth;
-    
-    // Content element: fills remaining width (render first)
-    elements.push({
-      id: uuidv4(),
-      type: 'text',
-      x: contentX,
-      y: currentY,
-      width: contentWidth,
-      text: contentRaw,
-      language: 'ar',
-      direction: 'rtl',
-      fontSize: options.fontSize,
-      fontFamily: options.fontFamily,
-      color: '#000000',
-      draggable: true,
-      textAlign: 'right',
-      opacity: 1,
-      rotation: 0,
-      wrap: 'char',
-      lineHeight: options.lineHeight,
-      meta: { articleGroup: articleId, part: 'content' }
-    });
+    const textCombined = joinTitleContent(article.title, article.content);
+    const blockHeight = calculateTextHeight(
+      textCombined,
+      options.width,
+      options.fontSize,
+      options.lineHeight
+    );
 
-    // Title element: bold + underline (render after content so it stays on top)
     elements.push({
       id: uuidv4(),
       type: 'text',
-      x: titleLeftX,
+      x: options.x,
       y: currentY,
-      width: estTitleWidth,
-      text: title,
+      width: options.width,
+      text: textCombined,
       language: 'ar',
       direction: 'rtl',
       fontSize: options.fontSize,
       fontFamily: options.fontFamily,
-      fontStyle: 'bold',
-      textDecoration: 'underline',
       color: '#000000',
       draggable: true,
       textAlign: 'right',
       opacity: 1,
       rotation: 0,
       wrap: 'word',
-      lineHeight: options.lineHeight,
-      meta: { articleGroup: articleId, part: 'title' }
+      lineHeight: options.lineHeight
     });
 
-    const hTitle = calculateTextHeight(title, estTitleWidth, options.fontSize, options.lineHeight);
-    const hBody = calculateTextHeight(contentRaw, contentWidth, options.fontSize, options.lineHeight);
-    currentY += Math.max(hTitle, hBody) + Math.max(2, options.spacing);
+    currentY += blockHeight + Math.max(2, options.spacing);
   });
 
   return elements;
@@ -114,19 +97,6 @@ const calculateTextHeight = (
   return Math.ceil(lines * fontSize * lineHeight) + 2; // +2px safety
 };
 
-
-
-
-
-g
-th / Math.max(1, charsPerLine));
   
-  // Return exact height without extra spacing
-  return lines * fontSize * lineHeight;
-};
-gth / Math.max(1, charsPerLine));
-  
-  // Return exact height without extra spacing
-  return lines * fontSize * lineHeight;
-};
+
 

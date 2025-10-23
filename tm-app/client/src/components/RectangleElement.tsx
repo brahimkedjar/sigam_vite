@@ -11,9 +11,12 @@ interface RectangleElementProps {
   onClickElement: (e: any) => void;
   onDragEnd: (e: any) => void;
   onTransformEnd: (e: any) => void;
+  onTransform?: (e: any) => void;
 }
 
-export const RectangleElement: React.FC<RectangleElementProps> = ({ element, isSelected, onClickElement, onDragEnd, onTransformEnd }) => {
+export const RectangleElement: React.FC<RectangleElementProps> = ({ element, isSelected, onClickElement, onDragEnd, onTransformEnd, onTransform }) => {
+  // Make decorative rectangles (borders, grids) non-interactive so underlying text is selectable
+  const nonInteractive = !!(element.meta?.isBorder || element.meta?.nonInteractive || element.meta?.isGrid);
   return (
     <Rect
       id={element.id}
@@ -22,11 +25,12 @@ export const RectangleElement: React.FC<RectangleElementProps> = ({ element, isS
       width={element.width}
       height={element.height}
       rotation={element.rotation || 0}
-      draggable={element.draggable}
+      draggable={element.draggable && !nonInteractive}
       onClick={onClickElement}
       onTap={onClickElement}
       onDragEnd={onDragEnd}
       onTransformEnd={onTransformEnd}
+      onTransform={onTransform}
       fill={element.fill}
       stroke={isSelected ? '#3498db' : element.stroke}
       strokeWidth={isSelected ? 1 : element.strokeWidth || 1}
@@ -36,6 +40,7 @@ export const RectangleElement: React.FC<RectangleElementProps> = ({ element, isS
       shadowColor={'#3498db'}
       shadowBlur={isSelected ? 5 : 0}
       shadowOpacity={isSelected ? 0.3 : 0}
+      listening={!nonInteractive}
     />
   );
 };

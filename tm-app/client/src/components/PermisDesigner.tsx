@@ -85,15 +85,27 @@ const PermisDesigner: React.FC<PermisDesignerProps> = ({
   const [canvasSizes, setCanvasSizes] = useState<{width: number, height: number}[]>([
     {width: DEFAULT_CANVAS.width, height: DEFAULT_CANVAS.height},
     {width: DEFAULT_CANVAS.width, height: DEFAULT_CANVAS.height},
-    {width: DEFAULT_CANVAS.width * 2, height: DEFAULT_CANVAS.height}
+    // Articles page: single-column portrait (no double width)
+    {width: DEFAULT_CANVAS.width, height: DEFAULT_CANVAS.height}
   ]);
   const [savedPermisId, setSavedPermisId] = useState<number | null>(null);
   const [savingPermis, setSavingPermis] = useState(false);
   const [savingTemplate, setSavingTemplate] = useState(false);
   const [permisCode, setPermisCode] = useState<string | null>(null);
   const [loadingTemplates, setLoadingTemplates] = useState(false);
+  // Table layout controls
+  const [rowsPerColSetting, setRowsPerColSetting] = useState<number>(() => {
+    const v = typeof window !== 'undefined' ? localStorage.getItem('rowsPerColSetting') : null;
+    const n = v ? parseInt(v, 10) : 10;
+    return isNaN(n) ? 10 : Math.max(4, Math.min(30, n));
+  });
+  const [dragNormalized, setDragNormalized] = useState(false);
 
   const currentCanvasSize = canvasSizes[currentPage] || canvasSizes[0] || { width: DEFAULT_CANVAS.width, height: DEFAULT_CANVAS.height };
+
+  useEffect(() => {
+    try { localStorage.setItem('rowsPerColSetting', String(rowsPerColSetting)); } catch {}
+  }, [rowsPerColSetting]);
 
   const handleRefreshTemplates = useCallback(async () => {
     if (!savedPermisId) {
@@ -135,7 +147,8 @@ const PermisDesigner: React.FC<PermisDesignerProps> = ({
   }
 
   function createArticlesPage(data: any, size?: { width: number; height: number }): PermisElement[] {
-    const width = size?.width ?? (DEFAULT_CANVAS.width * 2);
+    // Use standard page width for articles (single-column per page)
+    const width = size?.width ?? DEFAULT_CANVAS.width;
     const height = size?.height ?? DEFAULT_CANVAS.height;
     const borderElements = createPageBorder(width, height);
     const contentElements = createArticlesPageHeader(width, height);
@@ -187,9 +200,7 @@ const PermisDesigner: React.FC<PermisDesignerProps> = ({
   const handleResetCanvasSize = useCallback(() => {
     setCanvasSizes(prev => {
       const newSizes = [...prev];
-      newSizes[currentPage] = currentPage === PAGES.ARTICLES
-        ? {width: DEFAULT_CANVAS.width * 2, height: DEFAULT_CANVAS.height}
-        : {width: DEFAULT_CANVAS.width, height: DEFAULT_CANVAS.height};
+      newSizes[currentPage] = {width: DEFAULT_CANVAS.width, height: DEFAULT_CANVAS.height};
       setPages(prevP => {
         let newP = [...prevP] as PermisPages;
         newP[currentPage] = newP[currentPage].filter(el => !el.meta?.isBorder);
@@ -314,106 +325,100 @@ function createCornerDecorations(color: string, width: number, height: number): 
     }
   }, [templates, savedPermisId, apiURL]);
 
-  
+ 
  const insertArticlesAsElements = useCallback((articleIds: string[], source: ArticleItem[]) => {
-  const gutter = 40;
-  const padding = 3;
-  const spacing = 0;
-  const contentX = 40;
-  const startY = 130;
+  // Single-column layout with automatic pagination
+  const marginX = 40;
+  const padding = 1;
+  const defaultArticleGap = 2; const decisionGap = 10;
+  const startY = 40;
+  const bottomMargin = 20;
 
   // Helper to get size for a given absolute page index
-  const getSize = (absIndex: number) => canvasSizes[absIndex] || canvasSizes[PAGES.ARTICLES] || { width: DEFAULT_CANVAS.width * 2, height: DEFAULT_CANVAS.height };
+  const getSize = (absIndex: number) =>
+    canvasSizes[absIndex] ||
+    canvasSizes[PAGES.ARTICLES] ||
+    { width: DEFAULT_CANVAS.width, height: DEFAULT_CANVAS.height };
 
-  // Collect blocks per article page (relative index 0 => page 2)
+  // Collect blocks per article page (relative index 0 => page 3 visual)
   const perPageBlocks: PermisElement[][] = [];
-  const columnsByPage: { x: number; width: number; currentY: number; bottom: number }[][] = [];
+  const currentYByPage: number[] = [];
 
-  const ensurePageArrays = (relPage: number) => {
+  const ensurePage = (relPage: number) => {
     if (!perPageBlocks[relPage]) perPageBlocks[relPage] = [];
-    if (!columnsByPage[relPage]) {
-      const absIndex = PAGES.ARTICLES + relPage;
-      const size = getSize(absIndex);
-      const contentWidth = size.width - 80;
-      const columnWidth = (contentWidth - gutter) / 2;
-      const bottom = size.height - 0;
-      columnsByPage[relPage] = [
-        { x: contentX + columnWidth + gutter, width: columnWidth, currentY: startY, bottom },
-        { x: contentX, width: columnWidth, currentY: startY, bottom }
-      ];
-    }
+    if (currentYByPage[relPage] == null) currentYByPage[relPage] = startY;
   };
 
   let relPage = 0; // 0 => absolute pageIndex 2
-  let currentColumn = 0; // 0 => right, 1 => left
-  ensurePageArrays(relPage);
+  ensurePage(relPage);
 
   articleIds.forEach((articleId) => {
     const article = source.find(a => a.id === articleId);
     if (!article) return;
 
     const size = getSize(PAGES.ARTICLES + relPage);
-    const contentWidth = size.width - 80;
-    const columnWidth = (contentWidth - gutter) / 2;
+    const contentWidth = size.width - marginX * 2;
 
     const articleElements = toArticleElements({
       articleIds: [articleId],
       articles: source,
       yStart: 0,
       x: 0,
-      width: columnWidth - padding * 2,
+      width: contentWidth - padding * 2,
       fontFamily: ARABIC_FONTS[0],
       textAlign: 'right',
       direction: 'rtl',
       fontSize: 20,
-      lineHeight: 1.4,
+      lineHeight: 1.2,
       padding: padding,
-      spacing: spacing,
+      spacing: 0,
     });
     if (articleElements.length === 0) return;
 
     // Estimate article block height
     let articleHeight = 0;
+        const heightsByGroup = new Map<string, number>();
     articleElements.forEach(el => {
+      let h = 0;
       if (el.type === 'text') {
-        const fontSize = el.fontSize || 20;
-        const lineHeight = el.lineHeight || 1.4;
-        const text = el.text || '';
-        const avgCharsPerLine = Math.floor((columnWidth - padding * 2) / (fontSize * 0.55));
-        const lines = Math.ceil(text.length / Math.max(1, avgCharsPerLine));
-        articleHeight += Math.max(25, lines * fontSize * lineHeight + (padding * 2));
+        const fontSize = (el.fontSize || 20);
+        const lineH = (el.lineHeight || 1.4);
+        const text = String(el.text || '');
+        const boxW = Math.max(10, el.width || (contentWidth - padding * 2));
+        const avgCharsPerLine = Math.max(1, Math.floor(boxW / (fontSize * 0.6)));
+        const parts = text.split(/\r?\n/);
+        let totalLines = 0;
+        parts.forEach(part => {
+          const len = Math.max(1, part.trim().length);
+          totalLines += Math.ceil(len / avgCharsPerLine);
+        });
+        h = Math.max(fontSize * lineH, totalLines * fontSize * lineH);
       } else {
-        articleHeight += el.height || 25;
+        h = el.height || 25;
       }
+      const gid = (el as any).meta?.articleGroup || articleId;
+      const prev = heightsByGroup.get(gid) || 0;
+      heightsByGroup.set(gid, Math.max(prev, h));
     });
-    articleHeight += spacing;
+    // Sum heights of all groups for this article (typically just one)
+    heightsByGroup.forEach(v => { articleHeight += v; });
+    articleHeight += (article && article.id === "decision" ? decisionGap : defaultArticleGap);
 
-    let cols = columnsByPage[relPage];
-    let col = cols[currentColumn];
-    // If it doesn't fit in current column, try the other
-    if (col.currentY + articleHeight > col.bottom) {
-      if (currentColumn === 0) {
-        currentColumn = 1;
-        col = cols[currentColumn];
-        col.currentY = startY;
-      }
-    }
-    // If still doesn't fit, move to new page
-    if (col.currentY + articleHeight > col.bottom) {
+    // If it doesn't fit on current page, move to a new page
+    const bottom = size.height - bottomMargin;
+    if ((currentYByPage[relPage] + articleHeight) > bottom) {
       relPage += 1;
-      ensurePageArrays(relPage);
-      currentColumn = 0;
-      cols = columnsByPage[relPage];
-      col = cols[currentColumn];
+      ensurePage(relPage);
     }
 
     const positioned = articleElements.map(el => {
-      const elWidth = el.width || (columnWidth - padding * 2);
-      const elementX = col.x + col.width - elWidth - padding;
+      const elWidth = el.width || (contentWidth - padding * 2);
+      // Right-align within the single column for RTL text
+      const elementX = marginX + (contentWidth - elWidth) - padding;
       return {
         ...el,
         x: elementX,
-        y: col.currentY + (el.y || 0),
+        y: currentYByPage[relPage] + (el.y || 0),
         isArticle: true,
         direction: 'rtl',
         textAlign: 'right',
@@ -426,7 +431,7 @@ function createCornerDecorations(color: string, width: number, height: number): 
     });
 
     perPageBlocks[relPage].push(...positioned);
-    col.currentY += articleHeight;
+    currentYByPage[relPage] += articleHeight;
   });
 
   const neededArticlePages = Math.max(1, perPageBlocks.length);
@@ -436,7 +441,7 @@ function createCornerDecorations(color: string, width: number, height: number): 
     let next = [...prev] as PermisPages;
     // Ensure enough pages
     while (next.length < PAGES.ARTICLES + neededArticlePages) {
-      const base = canvasSizes[PAGES.ARTICLES] || { width: DEFAULT_CANVAS.width * 2, height: DEFAULT_CANVAS.height };
+      const base = canvasSizes[PAGES.ARTICLES] || { width: DEFAULT_CANVAS.width, height: DEFAULT_CANVAS.height };
       next.push(createArticlesPage(initialData, base));
     }
     // Trim extra article pages if any
@@ -457,7 +462,7 @@ function createCornerDecorations(color: string, width: number, height: number): 
   setCanvasSizes(prev => {
     let sizes = [...prev];
     while (sizes.length < PAGES.ARTICLES + neededArticlePages) {
-      const base = prev[PAGES.ARTICLES] || { width: DEFAULT_CANVAS.width * 2, height: DEFAULT_CANVAS.height };
+      const base = prev[PAGES.ARTICLES] || { width: DEFAULT_CANVAS.width, height: DEFAULT_CANVAS.height };
       sizes.push({ width: base.width, height: base.height });
     }
     if (sizes.length > PAGES.ARTICLES + neededArticlePages) {
@@ -900,10 +905,10 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     els.push({ id: uuidv4(), type: 'image', x: 38, y: 24, width: 110, height: 90, draggable: false, src: '/logo.png' } as any);
 
     // Bilingual header (centered)
-    els.push({ id: uuidv4(), type: 'text', x: 160, y: 28, width: 480, text: 'الجمهورية الجزائرية الديمقراطية الشعبية', language: 'ar', direction: 'rtl', fontSize: 18, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: false, textAlign: 'center', opacity: 1 });
-    els.push({ id: uuidv4(), type: 'text', x: 160, y: 52, width: 480, text: "People's Democratic Republic of Algeria", fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: false, textAlign: 'center', opacity: 1 });
-    els.push({ id: uuidv4(), type: 'text', x: 160, y: 78, width: 480, text: 'وزارة الطاقة والمناجم', language: 'ar', direction: 'rtl', fontSize: 20, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: false, textAlign: 'center' });
-    els.push({ id: uuidv4(), type: 'text', x: 160, y: 104, width: 480, text: 'الوكالة الوطنية للنشاطات المنجمية', language: 'ar', direction: 'rtl', fontSize: 18, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: false, textAlign: 'center' });
+    els.push({ id: uuidv4(), type: 'text', x: 160, y: 28, width: 480, text: 'الجمهورية الجزائرية الديمقراطية الشعبية', language: 'ar', direction: 'rtl', fontSize: 18, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center', opacity: 1 });
+    els.push({ id: uuidv4(), type: 'text', x: 160, y: 52, width: 480, text: "People's Democratic Republic of Algeria", fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'center', opacity: 1 });
+    els.push({ id: uuidv4(), type: 'text', x: 160, y: 78, width: 480, text: 'وزارة الطاقة والمناجم', language: 'ar', direction: 'rtl', fontSize: 20, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center' });
+    els.push({ id: uuidv4(), type: 'text', x: 160, y: 104, width: 480, text: 'الوكالة الوطنية للنشاطات المنجمية', language: 'ar', direction: 'rtl', fontSize: 18, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center' });
     // Thin rule
     els.push({ id: uuidv4(), type: 'line', x: 60, y: 134, width: 680, height: 0, stroke: '#000', strokeWidth: 1, draggable: false });
 
@@ -911,19 +916,19 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     const permitTitle = (data?.typePermis?.lib_type_ar) || (data?.typePermis?.lib_type) || 'رخصة منجمية';
     // Framed box
     const boxX = 110; const boxY = 146; const boxW = 580; const boxH = 99;
-    els.push({ id: uuidv4(), type: 'line', x: boxX, y: boxY, width: boxW, height: 0, stroke: '#000', strokeWidth: 2 } as any);
-    els.push({ id: uuidv4(), type: 'line', x: boxX, y: boxY + boxH, width: boxW, height: 0, stroke: '#000', strokeWidth: 2 } as any);
-    els.push({ id: uuidv4(), type: 'line', x: boxX, y: boxY, width: boxH, height: 0, stroke: '#000', strokeWidth: 2, rotation: 90 } as any);
-    els.push({ id: uuidv4(), type: 'line', x: boxX + boxW, y: boxY, width: boxH, height: 0, stroke: '#000', strokeWidth: 2, rotation: 90 } as any);
+    els.push({ id: uuidv4(), type: 'line', x: boxX, y: boxY, width: boxW, height: 0, stroke: '#000', strokeWidth: 2, draggable: true } as any);
+    els.push({ id: uuidv4(), type: 'line', x: boxX, y: boxY + boxH, width: boxW, height: 0, stroke: '#000', strokeWidth: 2, draggable: true } as any);
+    els.push({ id: uuidv4(), type: 'line', x: boxX, y: boxY, width: boxH, height: 0, stroke: '#000', strokeWidth: 2, rotation: 90, draggable: true } as any);
+    els.push({ id: uuidv4(), type: 'line', x: boxX + boxW, y: boxY, width: boxH, height: 0, stroke: '#000', strokeWidth: 2, rotation: 90, draggable: true } as any);
     // Place a QR code inside the right part of the rectangle
     const qrSize = 90;
     const qrX = boxX + boxW - 6 - qrSize;
     const qrY = boxY + Math.max(3, Math.floor((boxH - qrSize) / 2));
-    els.push({ id: uuidv4(), type: 'qrcode', x: qrX, y: qrY, width: qrSize, height: qrSize, qrData: generateQRCodeData(data), draggable: false, opacity: 1, rotation: 0, scaleX: 1, scaleY: 1 } as any);
+    els.push({ id: uuidv4(), type: 'qrcode', x: qrX, y: qrY, width: qrSize, height: qrSize, qrData: generateQRCodeData(data), draggable: true, opacity: 1, rotation: 0, scaleX: 1, scaleY: 1 } as any);
     // Title text restricted to left side of the box so it doesn't overlap the QR
     const titleLeftX = boxX + 10;
     const titleAvailW = boxW - (qrSize + 18); // leave margin near QR
-    els.push({ id: uuidv4(), type: 'text', x: titleLeftX, y: 160, width: titleAvailW, text: permitTitle, language: 'ar', direction: 'rtl', fontSize: 28, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: false, textAlign: 'center', fontWeight: 'bold' });
+    els.push({ id: uuidv4(), type: 'text', x: titleLeftX, y: 160, width: titleAvailW, text: permitTitle, language: 'ar', direction: 'rtl', fontSize: 28, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center', fontWeight: 'bold' });
 
     // Number line centered
     const numberLine = `رقم: ${code} ${typeCode}`.trim();
@@ -955,28 +960,28 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     addInlineRow('المساحة:', superficie ? `${superficie} هكتار` : '');
 
     // Section title for coordinates table (Arabic + Fuseau)
-    els.push({ id: uuidv4(), type: 'text', x: 80, y: y + 42, width: 600, text: 'Fuseau 32', fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: false, textAlign: 'center' });
+    els.push({ id: uuidv4(), type: 'text', x: 80, y: y + 42, width: 600, text: 'Fuseau 32', fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'center' });
 
     // Multi-column coordinates table (colors/separators like the model)
     let tableX = 40;
     const colPtW = 60, colXW = 90, colYW = 90;
     const blockW = colPtW + colXW + colYW; // 240
-    const MIN_ROWS = 10;
+    const MIN_ROWS = rowsPerColSetting;
     const coords: any[] = Array.isArray(data?.coordinates) ? data.coordinates : [];
     // Compute columns: add a new column every 10 rows, cap to 3 to fit width
     const desiredCols = Math.max(1, Math.ceil(Math.max(coords.length, MIN_ROWS) / MIN_ROWS));
     const blockCols = Math.min(3, desiredCols);
     const tableW = blockW * blockCols;
     tableX = (DEFAULT_CANVAS.width - tableW) / 2;
-    const headerH = 28;
+    const headerH = 48;
     const headerY = y + 40;
     els.push({ id: uuidv4(), type: 'rectangle', x: tableX, y: headerY, width: tableW, height: headerH, stroke: '#000', strokeWidth: 1.2, fill: '#f5f5f5' } as any);
     els.push({ id: uuidv4(), type: 'text', x: tableX + 6, y: headerY + 4, width: tableW - 12, text: 'إحـداثيات قمم المحيط المنجمي حسب نظام UTM شمال الصحراء  Fuseau 32', language: 'ar', direction: 'rtl', fontSize: 20, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: true, textAlign: 'center' } as any);
 
     // Multi-column coordinates table (colors/separators like the model)
     const tableStartY = headerY + headerH;
-    const rowH = 24;
-    const rowsPerCol = Math.max(MIN_ROWS, Math.min(16, Math.ceil((coords.length || MIN_ROWS) / blockCols)));
+    const rowH = 34;
+    const rowsPerCol = Math.max(MIN_ROWS, Math.min(40, Math.ceil((coords.length || MIN_ROWS) / blockCols)));
 
     // Draw outer border for each block and header background; alternate row shading
     for (let b = 0; b < blockCols; b++) {
@@ -988,9 +993,9 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       els.push({ id: uuidv4(), type: 'line', x: bx + colPtW, y: tableStartY, width: vHeight, height: 0, rotation: 90, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
       els.push({ id: uuidv4(), type: 'line', x: bx + colPtW + colXW, y: tableStartY, width: vHeight, height: 0, rotation: 90, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
       // Column headers
-      els.push({ id: uuidv4(), type: 'text', x: bx + 8, y: tableStartY + 4, width: colPtW - 16, text: 'Zone', fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
-      els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + 8, y: tableStartY + 4, width: colXW - 16, text: 'X', fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
-      els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + colXW + 8, y: tableStartY + 4, width: colYW - 16, text: 'Y', fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+      els.push({ id: uuidv4(), type: 'text', x: bx + 8, y: tableStartY + 4, width: colPtW - 16, text: 'Zone', fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+      els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + 8, y: tableStartY + 4, width: colXW - 16, text: 'X', fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+      els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + colXW + 8, y: tableStartY + 4, width: colYW - 16, text: 'Y', fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
 
       // Rows
       for (let r = 0; r < rowsPerCol; r++) {
@@ -1004,9 +1009,9 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
           const vPoint = String(item.order ?? idx + 1);
           const vX = String(item.x ?? '');
           const vY = String(item.y ?? '');
-          els.push({ id: uuidv4(), type: 'text', x: bx + 8, y: ry + 4, width: colPtW - 16, text: vPoint, fontSize: 12, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
-          els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + 8, y: ry + 4, width: colXW - 16, text: vX, fontSize: 12, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
-          els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + colXW + 8, y: ry + 4, width: colYW - 16, text: vY, fontSize: 12, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+          els.push({ id: uuidv4(), type: 'text', x: bx + 8, y: ry + 4, width: colPtW - 16, text: vPoint, fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+          els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + 8, y: ry + 4, width: colXW - 16, text: vX, fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+          els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + colXW + 8, y: ry + 4, width: colYW - 16, text: vY, fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
         }
         // Horizontal subtle grid line
         els.push({ id: uuidv4(), type: 'line', x: bx, y: ry, width: blockW, height: 0, stroke: '#d0d0d0', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
@@ -1022,14 +1027,14 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     if (remainingBelow > 80) {
       const diagLen = Math.min(DEFAULT_CANVAS.width - 160, remainingBelow + 40);
       diagY = tableBottom + 30;
-      els.push({ id: uuidv4(), type: 'line', x: DEFAULT_CANVAS.width - 80, y: diagY, width: diagLen, height: 0, rotation: 135, stroke: '#999999', strokeWidth: 2, opacity: 0.8, draggable: true } as any);
+      els.push({ id: uuidv4(), type: 'line', x: DEFAULT_CANVAS.width - 80, y: diagY +30, width: 600, height: 0, rotation: 135, stroke: '#999999', strokeWidth: 2, opacity: 0.8, draggable: true } as any);
     }
 
     // QR is already placed inside the title box above
     // Footer notice placed above the diagonal line if present
     const bottomNotice = `سند منجمي مسجل في السجل المنجمي تحت رقم : ${code} ${typeCode}`;
     const noticeY = diagY !== null ? Math.max(20, diagY - 18) : (DEFAULT_CANVAS.height - 55);
-    els.push({ id: uuidv4(), type: 'text', x: (DEFAULT_CANVAS.width- 300) / 2, y: noticeY, width: 700, text: bottomNotice, language: 'ar', direction: 'rtl', fontSize: 20, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: false, textAlign: 'center' } as any);
+    els.push({ id: uuidv4(), type: 'text', x: (DEFAULT_CANVAS.width- 300) / 2, y: noticeY+10, width: 700, text: bottomNotice, language: 'ar', direction: 'rtl', fontSize: 20, fontFamily: ARABIC_FONTS[0], color: '#000', draggable: false, textAlign: 'center' } as any);
 
     return els;
   }
@@ -1118,13 +1123,13 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     const rowH = 24;
     const colPtW = 50, colXW = 75, colYW = 75;
     const blockW = colPtW + colXW + colYW; // 200
-    const MIN_ROWS = 10;
+    const MIN_ROWS = rowsPerColSetting;
     const coords: any[] = Array.isArray(data?.coordinates) ? data.coordinates : [];
     const desiredCols = Math.max(1, Math.ceil(Math.max(coords.length, MIN_ROWS) / MIN_ROWS));
     const blockCols = Math.min(3, desiredCols); // three blocks max across the page
     const tableW = blockW * blockCols; // 600
     const tableX = (DEFAULT_CANVAS.width - tableW) / 2; // center horizontally
-    const rowsPerCol = Math.max(MIN_ROWS, Math.min(16, Math.ceil((coords.length || MIN_ROWS) / blockCols)));
+    const rowsPerCol = Math.max(MIN_ROWS, Math.min(40, Math.ceil((coords.length || MIN_ROWS) / blockCols)));
     // Draw block headers and verticals
     for (let b = 0; b < blockCols; b++) {
       const bx = tableX + b * blockW;
@@ -1389,55 +1394,8 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
 
   function createArticlesPageHeader(width: number, height: number): PermisElement[] {
     const contentElements: PermisElement[] = [
-      {
-        id: uuidv4(),
-        type: 'text',
-        x: width / 2 - 250,
-        y: 30,
-        width: 500,
-        text: '?§?„?…?ˆ?§?¯ ?§?„?‚?§?†?ˆ?†???© ?§?„?…?±???‚?© ?¨?§?„?±?®?µ?©',
-        language: 'ar',
-        direction: 'rtl',
-        fontSize: 24,
-        fontFamily: ARABIC_FONTS[0],
-        color: '#1a5276',
-        draggable: true,
-        textAlign: 'center',
-        opacity: 1,
-        rotation: 0,
-        wrap: 'word',
-        lineHeight: 1.3,
-        fontWeight: 'bold'
-      },
-      {
-        id: uuidv4(),
-        type: 'line',
-        x: width / 2 - 250,
-        y: 75,
-        width: 500,
-        height: 2,
-        stroke: '#1a5276',
-        strokeWidth: 2,
-        draggable: true,
-        opacity: 1,
-        rotation: 0
-      },
-      {
-        id: uuidv4(),
-        type: 'text',
-        x: width - 100,
-        y: height - 50,
-        width: 80,
-        text: '?§?„?µ???­?© 3',
-        language: 'ar',
-        direction: 'rtl',
-        fontSize: 12,
-        fontFamily: ARABIC_FONTS[0],
-        color: '#666',
-        draggable: true,
-        textAlign: 'center',
-        opacity: 0.8
-      },
+     
+      
     ];
     return [...contentElements];
   }
@@ -1539,24 +1497,79 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
               } as PermisElement;
             }
           } else {
+            let newW = (node.width?.() || 0) * (node.scaleX?.() || 1);
+            let newH = (node.height?.() || 0) * (node.scaleY?.() || 1);
+            if ((!newW || !newH) && node.getClientRect) {
+              try {
+                const rect = node.getClientRect({ skipShadow: true, skipStroke: true });
+                const sX = stageRef.current?.scaleX?.() || 1;
+                const sY = stageRef.current?.scaleY?.() || 1;
+                newW = Math.max(1, rect.width / sX);
+                newH = Math.max(1, rect.height / sY);
+              } catch {}
+            }
             updated[i] = {
               ...updated[i],
               x: node.x(),
               y: node.y(),
-              width: node.width() * node.scaleX(),
-              height: node.height() * node.scaleY(),
+              width: newW || updated[i].width,
+              height: newH || updated[i].height,
               scaleX: 1,
               scaleY: 1,
               rotation: node.rotation(),
             } as PermisElement;
           }
         }
-        node.scaleX(1);
-        node.scaleY(1);
+        if (node.scaleX) node.scaleX(1);
+        if (node.scaleY) node.scaleY(1);
       });
       return updated;
     });
   }, [setElementsForCurrent]);
+
+  // Live transform handler (no history, no scale reset) to avoid snap-back
+  const handleTransform = useCallback(() => {
+    const nodes = transformerRef.current?.nodes?.() || [];
+    setPages(prevPages => {
+      const next = [...prevPages] as PermisPages;
+      const pageArr = next[currentPage] || [];
+      const updated = [...pageArr];
+      nodes.forEach((node: any) => {
+        const id = node.getAttr('id');
+        const idx = updated.findIndex(el => el.id === id);
+        if (idx < 0) return;
+        const className = node.getClassName ? node.getClassName() : '';
+        if (className === 'Line') {
+          let newLen = (node.width?.() || 0) * (node.scaleX?.() || 1);
+          try {
+            const pts = node.points ? node.points() : [0, 0, node.width() || 0, 0];
+            const t = node.getAbsoluteTransform ? node.getAbsoluteTransform() : null;
+            if (t && t.point) {
+              const p1 = t.point({ x: pts[0] || 0, y: pts[1] || 0 });
+              const p2 = t.point({ x: pts[2] || 0, y: pts[3] || 0 });
+              newLen = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+            }
+          } catch {}
+          updated[idx] = { ...updated[idx], x: node.x(), y: node.y(), width: newLen, rotation: node.rotation?.() || node.rotation } as PermisElement;
+        } else {
+          let newW = (node.width?.() || 0) * (node.scaleX?.() || 1);
+          let newH = (node.height?.() || 0) * (node.scaleY?.() || 1);
+          if ((!newW || !newH) && node.getClientRect) {
+            try {
+              const rect = node.getClientRect({ skipShadow: true, skipStroke: true });
+              const sX = stageRef.current?.scaleX?.() || 1;
+              const sY = stageRef.current?.scaleY?.() || 1;
+              newW = Math.max(1, rect.width / sX);
+              newH = Math.max(1, rect.height / sY);
+            } catch {}
+          }
+          updated[idx] = { ...updated[idx], x: node.x(), y: node.y(), width: newW || updated[idx].width, height: newH || updated[idx].height, rotation: node.rotation?.() || node.rotation } as PermisElement;
+        }
+      });
+      next[currentPage] = updated;
+      return next;
+    });
+  }, [currentPage, setPages]);
 
   const handleTextChange = useCallback((id: string, newText: string) => {
     setElementsForCurrent(prev => prev.map(el => (el.id === id && el.type === 'text' ? { ...el, text: newText } : el)));
@@ -1815,15 +1828,10 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
         const imgData = stage.toDataURL({ pixelRatio: 2, width: currentSize.width, height: currentSize.height });
         stage.scale(prevScale);
         if (pageIndex > 0) {
-          if (pageIndex >= PAGES.ARTICLES) {
-            pdf.addPage('a4', 'landscape');
-            a4Width = 842;
-            a4Height = 595;
-          } else {
-            pdf.addPage('a4', 'portrait');
-            a4Width = 595;
-            a4Height = 842;
-          }
+          const portrait = currentSize.height >= currentSize.width;
+          pdf.addPage('a4', portrait ? 'portrait' : 'landscape');
+          a4Width = portrait ? 595 : 842;
+          a4Height = portrait ? 842 : 595;
         }
         const scale = Math.min(a4Width / currentSize.width, a4Height / currentSize.height);
         const imgWidth = currentSize.width * scale;
@@ -1911,6 +1919,26 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
 
   const selectedElementsList = useMemo(() => elements.filter(el => selectedIds.includes(el.id)), [elements, selectedIds]);
   const firstSelected = selectedElementsList[0];
+
+  // Normalize draggable for common elements to make them movable smoothly
+  useEffect(() => {
+    if (dragNormalized) return;
+    setPages(prev => {
+      let changed = false;
+      const mapped = prev.map(page => page.map(el => {
+        if ((el.type === 'text' || el.type === 'qrcode') && !(el as any).meta?.isBorder) {
+          if (!el.draggable) { changed = true; return { ...el, draggable: true } as PermisElement; }
+        }
+        return el;
+      }));
+      if (changed) {
+        setDragNormalized(true);
+        pushHistory(JSON.parse(JSON.stringify(mapped)) as PermisPages);
+        return mapped as PermisPages;
+      }
+      return prev;
+    });
+  }, [pages, dragNormalized, pushHistory]);
 
   const onToggleArticle = useCallback((id: string, checked: boolean) => {
     setSelectedArticleIds(prev => {
@@ -2439,6 +2467,13 @@ const pageLabel = (idx: number) => {
 };
 
 export default PermisDesigner;
+
+
+
+
+
+
+
 
 
 
