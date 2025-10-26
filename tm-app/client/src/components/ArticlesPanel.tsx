@@ -77,7 +77,7 @@ export const ArticlesPanel: React.FC<Props> = ({
         </button>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .articles-panel {
           width: 300px;
           background: #fff;

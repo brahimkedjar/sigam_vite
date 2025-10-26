@@ -7,7 +7,8 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/main.js",
     "start:dev": "ts-node-dev --respawn --transpile-only src/main.ts",
-    "test:qr": "ts-node scripts/generate-qr-test.ts"
+    "test:qr": "ts-node scripts/generate-qr-test.ts",
+    "columns": "node scripts/columns.js"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

@@ -76,6 +76,10 @@ export class AccessService {
     console.log(`Prepared ODBC connection string: ${this.odbcConnString}`);
   }
 
+  isOdbcMode() {
+    return this.mode === 'odbc';
+  }
+
   escapeValue(val: string | number) {
     if (typeof val === 'number') return val;
     // Use single quotes and escape single-quote by doubling it for Access SQL
@@ -83,6 +87,7 @@ export class AccessService {
   }
 
   async query(sql: string): Promise<any[]> {
+    try { console.log('[ACCESS SQL]', sql); } catch {}
     if (this.mode === 'odbc') {
       return this.queryViaOdbc(sql);
     }
@@ -151,6 +156,30 @@ export class AccessService {
     }
   }
 
+  async queryParam(sql: string, params: any[]): Promise<any[]> {
+    if (this.mode === 'odbc') {
+      try {
+        const conn = await this.ensureOdbcConnected();
+        const result: any = await conn.query(sql, params);
+        const rows = Array.isArray(result) ? result : (result?.rows ?? []);
+        return rows as any[];
+      } catch (e: any) {
+        const errors = (e && (e.odbcErrors || e.errors)) ? JSON.stringify(e.odbcErrors || e.errors) : '';
+        this.lastErrorMessage = `[ODBC PARAM ERROR] ${e?.message || e} ${errors}`;
+        // eslint-disable-next-line no-console
+        console.error('ODBC param query error:', this.lastErrorMessage);
+        throw e;
+      }
+    }
+    // Fallback: inline parameters into SQL safely for ADODB
+    let inlined = sql;
+    for (const p of params) {
+      const lit: string = typeof p === 'number' ? String(p) : (this.escapeValue(String(p)) as string);
+      inlined = inlined.replace('?', lit);
+    }
+    return this.query(inlined);
+  }
+
   private async ensureOdbcConnected(): Promise<odbc.Connection> {
     if (this.odbcConn && !(this.odbcConn as any).closed) return this.odbcConn;
     if (!this.odbcConnString) this.prepareOdbc();
@@ -179,6 +208,7 @@ export class AccessService {
       this.lastErrorMessage = `[ODBC QUERY ERROR] ${e?.message || e} ${errors}`;
       // eslint-disable-next-line no-console
       console.error('ODBC query error:', this.lastErrorMessage);
+      try { console.error('[ACCESS SQL FAILED]', sql); } catch {}
       throw e;
     }
   }
@@ -221,5 +251,35 @@ export class AccessService {
       this.lastErrorMessage = info.testQuery.error;
     }
     return info;
+  }
+
+  // Return columns metadata for a given table using ODBC if possible
+  async getTableColumns(table: string) {
+    try {
+      const conn = await this.ensureOdbcConnected();
+      const meta: any = await (conn as any).columns(null, null, table, null);
+      const rows = Array.isArray(meta) ? meta : (meta?.rows ?? []);
+      // Normalize common fields from ODBC metadata
+      const mapped = rows.map((r: any) => ({
+        table: r.TABLE_NAME || r.tableName || table,
+        column: r.COLUMN_NAME || r.columnName,
+        typeName: r.TYPE_NAME || r.typeName,
+        dataType: r.DATA_TYPE || r.dataType,
+        columnSize: r.COLUMN_SIZE || r.columnSize,
+        nullable: r.NULLABLE ?? r.nullable,
+        remarks: r.REMARKS || r.remarks
+      }));
+      return { mode: this.mode, odbc: true, columns: mapped };
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.warn('ODBC columns() failed, falling back to SELECT 1=0', e);
+      try {
+        const rows = await this.query(`SELECT * FROM ${table} WHERE 1=0`);
+        const cols = Array.isArray(rows) && rows[0] ? Object.keys(rows[0]) : [];
+        return { mode: this.mode, odbc: false, columns: cols.map((c) => ({ column: c })) };
+      } catch (e2) {
+        return { mode: this.mode, odbc: false, error: String((e2 as any)?.message || e2) };
+      }
+    }
   }
 }

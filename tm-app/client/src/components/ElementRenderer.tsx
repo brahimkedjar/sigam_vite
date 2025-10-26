@@ -9,6 +9,7 @@ import { RectangleElement } from './RectangleElement';
 import { LineElement } from './LineElement';
 import { ImageElement } from './ImageElement';
 import { QRCodeElement } from './QRCodeElement';
+import { TableElement } from './TableElement';
 
 interface ElementRendererProps {
   element: PermisElement;
@@ -78,6 +79,18 @@ export const ElementRenderer: React.FC<ElementRendererProps> = ({ element, isSel
         element={element}
         isSelected={isSelected}
         zoom={zoom}
+        onClickElement={onClickElement}
+        onDragEnd={onDragEnd}
+        onTransformEnd={onTransformEnd}
+        onTransform={onTransform}
+      />
+    );
+  }
+  if (element.type === 'table') {
+    return (
+      <TableElement
+        element={element}
+        isSelected={isSelected}
         onClickElement={onClickElement}
         onDragEnd={onDragEnd}
         onTransformEnd={onTransformEnd}

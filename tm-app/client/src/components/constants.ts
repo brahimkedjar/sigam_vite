@@ -24,8 +24,9 @@ export const ARABIC_FONTS = [
 ];
 
 export const DEFAULT_CANVAS = {
-  width: 800,
-  height: 1080
+  // A7 aspect ratio (~74mm x 105mm) scaled up for on‑screen editing
+  width: 900,
+  height: 1276
 };
 
 export const PAGE_MARGINS = {
@@ -55,7 +56,7 @@ export const TOOLBAR_CONFIG = {
 };
 
 export const PDF_CONFIG = {
-  format: 'a4' as const,
+  format: 'a7' as const,
   unit: 'pt' as const,
   orientation: 'portrait' as const,
   quality: 2,

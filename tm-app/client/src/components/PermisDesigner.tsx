@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { Stage, Layer, Transformer } from 'react-konva';
+import { Stage, Layer, Transformer, Rect } from 'react-konva';
 import {
   FiDownload, FiSave, FiEdit2, FiMove, FiType,
   FiTrash2, FiCopy, FiLayers, FiChevronLeft, FiChevronRight, FiGrid,
@@ -12,7 +12,6 @@ import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { toast } from 'react-toastify';
-// @ts-ignore - side-effect CSS import has no type declarations in this project
 import 'react-toastify/dist/ReactToastify.css';
 import { ElementRenderer } from './ElementRenderer';
 import type { PermisElement, PermisDesignerProps, TextEditOverlay, ArticleItem } from './types';
@@ -29,8 +28,7 @@ import { FileUp } from "lucide-react";
 
 const PAGES = {
   PERMIS_DETAILS: 0,
-  COORDINATES: 1,
-  ARTICLES: 2
+  ARTICLES: 1
 } as const;
 
 type TransformerBoundingBox = {
@@ -63,7 +61,7 @@ const PermisDesigner: React.FC<PermisDesignerProps> = ({
   const [pages, setPages] = useState<PermisPages>([[], [], []]);
   const [currentPage, setCurrentPage] = useState<number>(PAGES.PERMIS_DETAILS);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [tool, setTool] = useState<'select' | 'text' | 'rectangle' | 'image' | 'line' | 'qrcode'>('select');
+  const [tool, setTool] = useState<'select' | 'text' | 'rectangle' | 'image' | 'line' | 'qrcode' | 'table'>('select');
   const stageRef = useRef<any>(null);
   const transformerRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -99,8 +97,28 @@ const PermisDesigner: React.FC<PermisDesignerProps> = ({
     return isNaN(n) ? 10 : Math.max(4, Math.min(30, n));
   });
   const [dragNormalized, setDragNormalized] = useState(false);
+  // Marquee selection state
+  const [isSelecting, setIsSelecting] = useState(false);
+  const [selectionRect, setSelectionRect] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+  const selectionStartRef = useRef<{ x: number; y: number } | null>(null);
+  const initialSelectionIdsRef = useRef<string[]>([]);
+  // Table editing helpers (for selected table elements)
+  const [colEditIndex, setColEditIndex] = useState(0);
+  const [cellEditRow, setCellEditRow] = useState(0);
+  const [cellEditKey, setCellEditKey] = useState<string>('x');
+  const [cellEditValue, setCellEditValue] = useState<string>('');
 
   const currentCanvasSize = canvasSizes[currentPage] || canvasSizes[0] || { width: DEFAULT_CANVAS.width, height: DEFAULT_CANVAS.height };
+  // Ensure color inputs always receive #rrggbb to avoid browser warnings
+  const normalizeHexColor = (val: any, fallback = '#000000') => {
+    try {
+      const s = String(val || '').trim();
+      if (/^#[0-9a-fA-F]{6}$/.test(s)) return s;
+      const m3 = s.match(/^#([0-9a-fA-F])([0-9a-fA-F])([0-9a-fA-F])$/);
+      if (m3) return `#${m3[1]}${m3[1]}${m3[2]}${m3[2]}${m3[3]}${m3[3]}`;
+    } catch {}
+    return fallback;
+  };
 
   useEffect(() => {
     try { localStorage.setItem('rowsPerColSetting', String(rowsPerColSetting)); } catch {}
@@ -139,11 +157,11 @@ const PermisDesigner: React.FC<PermisDesignerProps> = ({
     return [...borderElements, ...contentElements];
   }
 
-  function createCoordinatesPage(data: any): PermisElement[] {
-    const borderElements = createPageBorder(DEFAULT_CANVAS.width, DEFAULT_CANVAS.height);
-    const contentElements = createCoordsPageModel(data);
-    return [...borderElements, ...contentElements];
-  }
+  // function createCoordinatesPage(data: any): PermisElement[] {
+  //   const borderElements = createPageBorder(DEFAULT_CANVAS.width, DEFAULT_CANVAS.height);
+  //   const contentElements = createCoordsPageModel(data);
+  //   return [...borderElements, ...contentElements];
+  // }
 
   function createArticlesPage(data: any, size?: { width: number; height: number }): PermisElement[] {
     // Use standard page width for articles (single-column per page)
@@ -159,14 +177,17 @@ const PermisDesigner: React.FC<PermisDesignerProps> = ({
     return elements.filter(el => el.meta?.pageIndex === pageIndex);
   }
 
-    const pushHistory = useCallback((snap: PermisPages) => {
+  // Keep a stable history updater to avoid effect loops
+  const historyIndexRef = useRef(historyIndex);
+  useEffect(() => { historyIndexRef.current = historyIndex; }, [historyIndex]);
+  const pushHistory = useCallback((snap: PermisPages) => {
     setHistory(prev => {
-      const trimmed = prev.slice(0, historyIndex + 1);
+      const trimmed = prev.slice(0, historyIndexRef.current + 1);
       const next = [...trimmed, JSON.parse(JSON.stringify(snap)) as PermisPages];
       setHistoryIndex(next.length - 1);
       return next;
     });
-  }, [historyIndex]);
+  }, []);
 
   const handleResizeCanvas = useCallback((direction: 'width' | 'height', amount: number) => {
     setCanvasSizes(prev => {
@@ -240,7 +261,7 @@ function createPageBorder(width: number, height: number): PermisElement[] {
       width: width - 35,
       height: height - 35,
       stroke: borderColor,
-      strokeWidth: 1,
+        strokeWidth: 2,
       fill: 'transparent',
       draggable: false,
       opacity: 0.6,
@@ -351,6 +372,48 @@ function createCornerDecorations(color: string, width: number, height: number): 
   let relPage = 0; // 0 => absolute pageIndex 2
   ensurePage(relPage);
 
+  // Prepare holder name for placeholder substitution in article texts
+  const pickFirstNonEmpty = (...vals: any[]) => {
+    for (const v of vals) {
+      if (v == null) continue;
+      const s = String(v).trim();
+      if (s) return s;
+    }
+    return '';
+  };
+  const holderArabic = pickFirstNonEmpty(
+    (initialData as any)?.detenteur_ar,
+    (initialData?.detenteur as any)?.NomArab,
+    (initialData?.detenteur as any)?.nom_ar,
+    (initialData?.detenteur as any)?.nom_societeAR,
+  );
+  const holderLatin = pickFirstNonEmpty(
+    (initialData?.detenteur as any)?.Nom,
+    (initialData?.detenteur as any)?.nom,
+    (initialData?.detenteur as any)?.nom_societe,
+    (initialData?.detenteur as any)?.nom_societeFR,
+    typeof initialData?.detenteur === 'string' ? (initialData as any)?.detenteur : ''
+  );
+  const holderDisplay = pickFirstNonEmpty(holderArabic, holderLatin);
+  const replaceHolderDots = (text?: string) => {
+    const t = String(text || '');
+    if (!t) return t;
+    if (!holderDisplay) return t;
+    return t
+      // السيد/السيدة .......
+      .replace(/(السيد)\s*\.{2,}/g, `$1 ${holderDisplay}`)
+      .replace(/(السيدة)\s*\.{2,}/g, `$1 ${holderDisplay}`)
+      // المقدم من طرف .......
+      .replace(/(المقدم\s+من\s+طرف)\s*\.{2,}/g, `$1 ${holderDisplay}`)
+      // ....... المقدم من طرف
+      .replace(/\.{2,}\s*(?=المقدم\s+من\s+طرف)/g, `${holderDisplay} `);
+  };
+  const replacedSource: ArticleItem[] = source.map(a => ({
+    ...a,
+    title: replaceHolderDots((a as any).title),
+    content: replaceHolderDots((a as any).content),
+  }));
+
   articleIds.forEach((articleId) => {
     const article = source.find(a => a.id === articleId);
     if (!article) return;
@@ -360,32 +423,74 @@ function createCornerDecorations(color: string, width: number, height: number): 
 
     const articleElements = toArticleElements({
       articleIds: [articleId],
-      articles: source,
+      articles: replacedSource,
       yStart: 0,
       x: 0,
       width: contentWidth - padding * 2,
       fontFamily: ARABIC_FONTS[1],
       textAlign: 'right',
       direction: 'rtl',
-      fontSize: 20,
+      fontSize: 24,
       lineHeight: 1.8,
       padding: padding,
       spacing: 0,
     });
     if (articleElements.length === 0) return;
 
+    // Inject an underline under titles like "المادة 1:" within each article block
+    const estimateWidth = (text: string, fontSize: number) => {
+      const s = String(text || '');
+      if (!s) return 0;
+      const factor = 0.48;
+      return Math.ceil(s.length * fontSize * factor);
+    };
+    const withUnderlines: PermisElement[] = [];
+    articleElements.forEach(el => {
+      withUnderlines.push(el);
+      if (el.type === 'text') {
+        const txt = String((el as any).text || '');
+        const ci = txt.indexOf(':');
+        // Only underline if looks like a title (starts with المادة ...:)
+        if (ci > 0 && /\u0627\u0644\u0645\u0627\u062F\u0629/.test(txt.slice(0, ci))) {
+          const titlePart = txt.slice(0, ci + 1);
+          const fz = (el as any).fontSize || 24;
+          const lh = (el as any).lineHeight || 1.8;
+          // Underline width at ~73% of title visual width (bounded by column)
+          const titleVisualW = estimateWidth(titlePart, fz);
+          const uW = Math.min(
+            (el.width as number) || (contentWidth - padding * 2),
+            Math.max(40, Math.floor(titleVisualW * 0.59))
+          );
+          withUnderlines.push({
+            id: uuidv4(),
+            type: 'line',
+            x: 0, // will be right-aligned during positioning
+            y: Math.ceil(fz * lh) - 7,
+            width: uW,
+            height: 2,
+            rotation: 0,
+            stroke: '#000',
+            strokeWidth: 1,
+            opacity: 1,
+            draggable: true,
+            meta: { articleGroup: `${articleId}_underline` }
+          } as any);
+        }
+      }
+    });
+
     // Estimate article block height
     let articleHeight = 0;
         const heightsByGroup = new Map<string, number>();
-    articleElements.forEach(el => {
+    withUnderlines.forEach(el => {
       let h = 0;
       if (el.type === 'text') {
         const fontSize = (el.fontSize || 20);
         const lineH = (el.lineHeight || 1.8);
         const text = String(el.text || '');
-        const boxW = Math.max(10, el.width || (contentWidth - padding * 2));
+        const boxW = Math.max(10, el.width || (contentWidth - padding *2));
         // Slightly smaller average character width to avoid overestimating text height
-        const avgCharsPerLine = Math.max(1, Math.floor(boxW / (fontSize * 0.40)));
+        const avgCharsPerLine = Math.max(1, Math.floor(boxW / (fontSize * 0.45)));
         const parts = text.split(/\r?\n/);
         let totalLines = 0;
         parts.forEach(part => {
@@ -394,7 +499,7 @@ function createCornerDecorations(color: string, width: number, height: number): 
         });
         h = Math.max(fontSize * lineH, totalLines * fontSize * lineH);
       } else {
-        h = el.height || 25;
+        h = el.height || 2;
       }
       const gid = (el as any).meta?.articleGroup || articleId;
       const prev = heightsByGroup.get(gid) || 0;
@@ -415,7 +520,7 @@ function createCornerDecorations(color: string, width: number, height: number): 
       ensurePage(relPage);
     }
 
-    const positioned = articleElements.map(el => {
+    const positioned = withUnderlines.map(el => {
       const elWidth = el.width || (contentWidth - padding * 2);
       // Right-align within the single column for RTL text
       const elementX = marginX + (contentWidth - elWidth) - padding;
@@ -490,7 +595,7 @@ function createCornerDecorations(color: string, width: number, height: number): 
         {
           id: uuidv4(),
           type: 'text',
-          x: centerX-280,
+          x: centerX-150,
           y: centerLabelY-30,
           width: centerWidth,
           text: 'حـرر بالـجزائـر في:',
@@ -569,7 +674,7 @@ function createCornerDecorations(color: string, width: number, height: number): 
             if (!template?.elements?.length) {
               return [
                 createPermisDetailsPage(initialData),
-                createCoordinatesPage(initialData),
+               // createCoordinatesPage(initialData),
                 createArticlesPage(initialData)
               ];
             }
@@ -581,7 +686,7 @@ function createCornerDecorations(color: string, width: number, height: number): 
             }
             return [
               filterElementsByPage(templateElements, 0) || createPermisDetailsPage(initialData),
-              filterElementsByPage(templateElements, 1) || createCoordinatesPage(initialData),
+           //   filterElementsByPage(templateElements, 1) || createCoordinatesPage(initialData),
               filterElementsByPage(templateElements, 2) || createArticlesPage(initialData)
             ];
           };
@@ -612,7 +717,7 @@ function createCornerDecorations(color: string, width: number, height: number): 
           setActiveTemplate(null);
           const fallback: PermisPages = [
             createPermisDetailsPage(initialData),
-            createCoordinatesPage(initialData),
+           // createCoordinatesPage(initialData),
             createArticlesPage(initialData)
           ];
           setPages(fallback);
@@ -634,7 +739,7 @@ function createCornerDecorations(color: string, width: number, height: number): 
         setActiveTemplate(null);
         const fallback: PermisPages = [
           createPermisDetailsPage(initialData),
-          createCoordinatesPage(initialData),
+         // createCoordinatesPage(initialData),
           createArticlesPage(initialData)
         ];
         setPages(fallback);
@@ -670,12 +775,13 @@ function createCornerDecorations(color: string, width: number, height: number): 
         if (idx === -1) return prev;
       }
       const page0 = [...next[0]];
+      if ((page0[idx] as any).text === cleaned) return prev;
       page0[idx] = { ...page0[idx], text: cleaned } as any;
       next[0] = page0;
       pushHistory(next);
       return next;
     });
-  }, [articleSets, selectedArticleSet, pushHistory]);
+  }, [articleSets, selectedArticleSet]);
 
   const changeArticleSet = useCallback(async (key: string) => {
     setSelectedArticleSet(key);
@@ -730,245 +836,15 @@ function createCornerDecorations(color: string, width: number, height: number): 
       return idx;
     });
   }, [history]);
-function createDefaultGeneralPage(data: any): PermisElement[] {
-  const contentElements: PermisElement[] = [
-    // Vertical line on the right side
-    {
-      id: uuidv4(), type: 'line', x: 750, y: 30, width: 0, height: 300,
-      stroke: '#000000', strokeWidth: 1, dash: [5, 5], draggable: true, opacity: 1, rotation: 0
-    },
-    
-    // Algerian Republic - Arabic (top center)
-    {
-      id: uuidv4(), type: 'text', x: 200, y: 40, width: 400,
-      text: '?§?„?¬?…?‡?ˆ?±???© ?§?„?¬?²?§?¦?±???© ?§?„?¯???…?‚?±?§?·???© ?§?„?´?¹?¨???©',
-      language: 'ar', direction: 'rtl',
-      fontSize: 20, fontFamily: ARABIC_FONTS[1], color: '#000000', draggable: true,
-      textAlign: 'center', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2
-    },
-    
-    // Algerian Republic - French (below Arabic)
-    {
-      id: uuidv4(), type: 'text', x: 200, y: 70, width: 400, 
-      text: 'REPUBLIQUE ALGERIENNE DEMOCRATIQUE ET POPULAIRE',
-      fontSize: 16, fontFamily: 'Arial', color: '#000000', draggable: true, 
-      textAlign: 'center', opacity: 1, rotation: 0, padding: 5
-    },
-    
-    // Separator line under title
-    {
-      id: uuidv4(), type: 'line', x: 200, y: 110, width: 400, height: 2,
-      stroke: '#000000', strokeWidth: 1, draggable: true, opacity: 1, rotation: 0
-    },
-    
-    // Ministry - French (left side)
-     {
-      id: uuidv4(), type: 'text', x: 50, y: 160, width: 300,
-      text: 'MINISTERE DE L\'INDUSTRIE',
-      language: 'fr', direction: 'ltr',
-      fontSize: 16, fontFamily: FONT_FAMILIES[0], color: '#000000', draggable: true,
-      textAlign: 'left', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2
-    },
-    
-    // Ministry - French Part 2 (left side, below part 1)
-    {
-      id: uuidv4(), type: 'text', x: 100, y: 185, width: 300,
-      text: 'ET DES MINES',
-      language: 'fr', direction: 'ltr',
-      fontSize: 16, fontFamily: FONT_FAMILIES[0], color: '#000000', draggable: true,
-      textAlign: 'left', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2
-    },
-    
-    // Ministry - Arabic (right side)
-    {
-      id: uuidv4(), type: 'text', x: 450, y: 160, width: 300,
-      text: '?ˆ?²?§?±?© ?§?„?µ?†?§?¹?© ?ˆ ?§?„?…?†?§?¬?…',
-      language: 'ar', direction: 'rtl',
-      fontSize: 22, fontFamily: ARABIC_FONTS[1], color: '#000000', draggable: true,
-      textAlign: 'right', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2
-    },
-    
-    // Horizontal separator line
-    {
-      id: uuidv4(), type: 'line', x: 50, y: 210, width: 700, height: 2,
-      stroke: '#000000', strokeWidth: 1, draggable: true, opacity: 1, rotation: 0
-    },
-    
-    // Agency - French (left side)
-    {
-      id: uuidv4(), type: 'text', x: 50, y: 230, width: 300,
-      text: 'Agence Nationale des Activit?©s',
-      language: 'fr', direction: 'ltr',
-      fontSize: 16, fontFamily: FONT_FAMILIES[0], color: '#000000', draggable: true,
-      textAlign: 'left', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2
-    },
-    {
-      id: uuidv4(), type: 'text', x: 120, y: 255, width: 300,
-      text: 'Mini?¨res',
-      language: 'fr', direction: 'ltr',
-      fontSize: 16, fontFamily: FONT_FAMILIES[0], color: '#000000', draggable: true,
-      textAlign: 'left', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2
-    },
-    
-    // Agency - Arabic (right side)
-    {
-      id: uuidv4(), type: 'text', x: 450, y: 235, width: 300,
-      text: '?§?„?ˆ?ƒ?§?„?© ?§?„?ˆ?·?†???© ?„?„?†?´?§?·?§?? ?§?„?…?†?¬?…???©',
-      language: 'ar', direction: 'rtl',
-      fontSize: 22, fontFamily: ARABIC_FONTS[1], color: '#000000', draggable: true,
-      textAlign: 'right', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2
-    },
-    
-    // Horizontal separator line
-    {
-      id: uuidv4(), type: 'line', x: 50, y: 280, width: 700, height: 2,
-      stroke: '#000000', strokeWidth: 1, draggable: true, opacity: 1, rotation: 0
-    },
-    
-    // Permit Type (centered, larger text) - Moved down to fill space
-    {
-      id: uuidv4(), type: 'text', x: 200, y: 320, width: 400,
-      text: `${data?.typePermis?.lib_type ?? '?§?„???€?±?®???µ ?„?§?³?????„?§?„ ?…?‚?„?¹'}`,
-      language: 'ar', direction: 'rtl',
-      fontSize: 28, fontFamily: ARABIC_FONTS[1], color: '#1a5276', draggable: true,
-      textAlign: 'center', opacity: 1, rotation: 0, wrap: 'word', lineHeight: 1.2,
-      fontWeight: 'bold'
-    },
-    
-    // Decorative box around permit type - Moved down
-    { id: uuidv4(), type: 'line', x: 150, y: 300, width: 500, height: 2, stroke: '#1a5276', strokeWidth: 2, draggable: true, opacity: 1, rotation: 0 },
-    { id: uuidv4(), type: 'line', x: 150, y: 370, width: 500, height: 2, stroke: '#1a5276', strokeWidth: 2, draggable: true, opacity: 1, rotation: 0 },
-    { id: uuidv4(), type: 'line', x: 150, y: 300, width: 70, height: 2, stroke: '#1a5276', strokeWidth: 2, draggable: true, opacity: 1, rotation: 90 },
-    { id: uuidv4(), type: 'line', x: 650, y: 300, width: 70, height: 2, stroke: '#1a5276', strokeWidth: 2, draggable: true, opacity: 1, rotation: 90 },
-    
-    // Additional decorative elements to fill space
-    {
-      id: uuidv4(), type: 'line', x: 100, y: 400, width: 600, height: 2,
-      stroke: '#1a5276', strokeWidth: 1, dash: [5, 3], draggable: true, opacity: 0.7, rotation: 0
-    },
-    
-    // Official seal/emblem area (centered)
-    {
-      id: uuidv4(), type: 'rectangle', x: 300, y: 430, width: 190, height: 190,
-      stroke: '#1a5276', strokeWidth: 2, fill: 'transparent', draggable: true, opacity: 0.8,
-      dash: [5, 5], cornerRadius: 100
-    },
-    {
-      id: uuidv4(), type: 'text', x: 300, y: 480, width: 200,
-      text: '?®???… ?±?³?…??',
-      language: 'ar', direction: 'rtl',
-      fontSize: 18, fontFamily: ARABIC_FONTS[1], color: '#1a5276', draggable: true,
-      textAlign: 'center', opacity: 0.8, rotation: 0, wrap: 'word', lineHeight: 1.2
-    },
-    {
-      id: uuidv4(), type: 'text', x: 300, y: 520, width: 200,
-      text: 'Sceau Officiel',
-      language: 'fr', direction: 'ltr',
-      fontSize: 16, fontFamily: FONT_FAMILIES[0], color: '#1a5276', draggable: true,
-      textAlign: 'center', opacity: 0.8, rotation: 0, wrap: 'word', lineHeight: 1.2
-    },
-    
-    // Permit Number section - Moved further down
-    {
-      id: uuidv4(), type: 'line', x: 50, y: 670, width: 700, height: 2,
-      stroke: '#000000', strokeWidth: 1, draggable: true, opacity: 1, rotation: 0
-    },
-    
-    // Permit Number label (Arabic, right aligned)
-    {
-      id: uuidv4(),
-      type: 'text',
-      x: 250,
-      y: 700,
-      width: 300,
-      text: '???±?®???µ ?…?†?¬?…?? ?±?‚?… :',
-      fontSize: 22,
-      fontFamily: ARABIC_FONTS[1],
-      color: '#000000',
-      draggable: true,
-      opacity: 1,
-      rotation: 0,
-      textAlign: 'right',
-      direction: 'rtl',
-    },
-    
-    // Permit Number value (left aligned)
-    {
-      id: uuidv4(),
-      type: 'text',
-      x: 250,
-      y: 700,
-      width: 200,
-      text: `${data?.code_demande ?? '5419 PXC'}`,
-      fontSize: 22,
-      fontFamily: FONT_FAMILIES[0],
-      color: '#000000',
-      draggable: true,
-      opacity: 1,
-      rotation: 0,
-      textAlign: 'left',
-      direction: 'ltr',
-      fontWeight: 'bold'
-    },
-    
-    // Bottom separator line
-    {
-      id: uuidv4(), type: 'line', x: 50, y: 750, width: 700, height: 2,
-      stroke: '#000000', strokeWidth: 1, draggable: true, opacity: 1, rotation: 0
-    },
-    
-    // Date and location (bottom left)
-    {
-      id: uuidv4(), type: 'text', x: 50, y: 780, width: 300, 
-      text: `Fait ?  Alger, le ${new Date().toLocaleDateString('fr-FR')}`, 
-      fontSize: 16, fontFamily: FONT_FAMILIES[0], color: '#000000', 
-      draggable: true, opacity: 1, rotation: 0, textAlign: 'left'
-    },
-    
-    // Minister signature (bottom right)
-    {
-      id: uuidv4(), type: 'text', x: 330, y: 780, width: 300, 
-      text: 'Le Ministre', 
-      fontSize: 16, fontFamily: FONT_FAMILIES[0], color: '#000000', 
-      draggable: true, opacity: 1, rotation: 0, textAlign: 'right'
-    },
-    
-    // Signature line
-    {
-      id: uuidv4(), type: 'line', x: 550, y: 810, width: 200, height: 2, 
-      stroke: '#000000', strokeWidth: 1, draggable: true, opacity: 1, rotation: 0
-    },
-    
-    // Final decorative element at bottom
-    {
-      id: uuidv4(), type: 'line', x: 50, y: 850, width: 700, height: 1,
-      stroke: '#cccccc', strokeWidth: 1, draggable: true, opacity: 0.5, rotation: 0
-    }
-  ];
-  return [...contentElements];
-}
 
-  const generateQRCodeData = (data: any): string => {
-    const permisData = {
-      type: data?.typePermis?.lib_type || 'N/A',
-      code: data?.code_demande || 'N/A',
-      detenteur: (data?.detenteur && (data.detenteur.nom_societeFR || (data.detenteur as any).nom_societe || (data.detenteur as any).nom || (data.detenteur as any).raison_sociale || '')) || 'N/A',
-      superficie: data?.superficie || 0,
-      duree: data?.typePermis?.duree_initiale ? `${data.typePermis.duree_initiale} ans` : 'N/A',
-      localisation: `${data?.wilaya?.nom_wilaya || ''}, ${data?.daira?.nom_daira || ''}, ${data?.commune?.nom_commune || ''}`,
-      date: new Date().toLocaleDateString('fr-FR'),
-    };
+  const generateQRCodeData = (data: any, codeOverride?: string): string => {
+    const baseUrl = 'https://sig.anam.dz/';
+    const code = (codeOverride && String(codeOverride)) || String(data?.code_demande || data?.codeDemande || '');
+    // Keep URL short; include just a code param and type
     const params = new URLSearchParams({
-      type: permisData.type,
-      code: permisData.code,
-      detenteur: permisData.detenteur,
-      superficie: permisData.superficie.toString(),
-      duree: permisData.duree,
-      localisation: permisData.localisation,
-      date: permisData.date,
-      source: 'PermisAlgerie'
+      code,
     });
-    return `https://permis.algerie.dz/verify?${params.toString()}`;
+    return `${baseUrl}?${params.toString()}`;
   };
 
   const createQRCodeElement = (data: any, x: number, y: number): PermisElement => {
@@ -995,18 +871,53 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     const superficie = data?.superficie ? `${data.superficie}` : '';
     const localisation = data?.localisation || '';
     const detenteur = (data?.detenteur && (data.detenteur.nom_societeFR || data.detenteur.nom_societe || data.detenteur.nom)) || (data?.detenteur || '');
-    const detenteurArabic = (data as any)?.detenteur_ar || ((data?.detenteur as any)?.NomArab) || ((data?.detenteur as any)?.nom_ar) || '';
-
+    const detenteurArabicRaw = (data as any)?.detenteur_ar || ((data?.detenteur as any)?.NomArab) || ((data?.detenteur as any)?.nom_ar) || '';
+    // Holder display: Arabic if present, else Latin name, else id
+    const pickFirstNonEmpty = (...vals: any[]) => {
+      for (const v of vals) {
+        if (v == null) continue;
+        const s = String(v).trim();
+        if (s) return s;
+      }
+      return '';
+    };
+    const holderArabic = pickFirstNonEmpty(
+      (data as any)?.detenteur_ar,
+      (data?.detenteur as any)?.NomArab,
+      (data?.detenteur as any)?.nom_ar,
+      (data?.detenteur as any)?.nom_societeAR,
+    );
+    const holderLatin = pickFirstNonEmpty(
+      (data?.detenteur as any)?.Nom,
+      (data?.detenteur as any)?.nom,
+      (data?.detenteur as any)?.nom_societe,
+      (data?.detenteur as any)?.nom_societeFR,
+      typeof data?.detenteur === 'string' ? (data as any)?.detenteur : ''
+    );
+    const holderId = (() => {
+      const id1 = (data?.detenteur as any)?.id;
+      const id2 = (data as any)?.detenteur_id;
+      const id3 = typeof data?.detenteur === 'number' ? data.detenteur : undefined;
+      const id = id1 ?? id2 ?? id3;
+      return id != null ? String(id) : '';
+    })();
+    const holderDisplay = pickFirstNonEmpty(holderArabic, holderLatin, holderId);
+    const detenteurArabic = holderDisplay;
+    console.log('sssssssssssssssssssssss',data)
     const els: PermisElement[] = [];
 
     // Logo (ANAM) on the top-left
-    els.push({ id: uuidv4(), type: 'image', x: 38, y: 24, width: 110, height: 90, draggable: false, src: '/logo.png' } as any);
+    els.push({ id: uuidv4(), type: 'image', x: 38, y: 34, width: 110, height: 90, draggable: false, src: '/logo.png' } as any);
 
-    // Bilingual header (centered)
-    els.push({ id: uuidv4(), type: 'text', x: 160, y: 28, width: 480, text: 'الجمهورية الجزائرية الديمقراطية الشعبية', language: 'ar', direction: 'rtl', fontSize: 26, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'center', opacity: 1 });
-    els.push({ id: uuidv4(), type: 'text', x: 160, y: 57, width: 480, text: "People's Democratic Republic of Algeria", fontSize: 22, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'center', opacity: 1 });
-    els.push({ id: uuidv4(), type: 'text', x: 160, y: 83, width: 480, text: 'وزارة الطاقة والمناجم', language: 'ar', direction: 'rtl', fontSize: 26, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'center' });
-    els.push({ id: uuidv4(), type: 'text', x: 160, y: 109, width: 480, text: 'الوكالة الوطنية للنشاطات المنجمية', language: 'ar', direction: 'rtl', fontSize: 26, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'center' });
+    // Bilingual header centered horizontally with padding between lines
+    const headerWidth = 480;
+    const headerX = (DEFAULT_CANVAS.width - headerWidth) / 2;
+    const headerY1 = 28;
+    const headerPad = 36; // vertical spacing between header lines
+    els.push({ id: uuidv4(), type: 'text', x: headerX, y: headerY1, width: headerWidth, text: 'الجمهورية الجزائرية الديمقراطية الشعبية', language: 'ar', direction: 'rtl', fontSize: 31, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'center', opacity: 1 });
+    els.push({ id: uuidv4(), type: 'text', x: headerX, y: headerY1 + headerPad, width: headerWidth, text: "People's Democratic Republic of Algeria", fontSize: 22, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'center', opacity: 1 });
+    els.push({ id: uuidv4(), type: 'text', x: headerX, y: headerY1 + headerPad * 2, width: headerWidth, text: 'وزارة الطاقة والمناجم', language: 'ar', direction: 'rtl', fontSize: 26, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'center' });
+    els.push({ id: uuidv4(), type: 'text', x: headerX, y: headerY1 + headerPad * 3, width: headerWidth, text: 'الوكالة الوطنية للنشاطات المنجمية', language: 'ar', direction: 'rtl', fontSize: 26, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'center' });
     // Thin rule
     //els.push({ id: uuidv4(), type: 'line', x: 60, y: 134, width: 680, height: 0, stroke: '#000', strokeWidth: 1, draggable: false });
 
@@ -1016,15 +927,18 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       
       || 'رخصة منجمية';
     // Framed box
-    const boxX = 110; const boxY = 146; const boxW = 580; const boxH = 170; // increased to fit 150x150 QR
-    const rectLeft = boxX - 90; const rectWidth = 765;
+    const boxX = 110; 
+    const boxY = 174; 
+    const boxW = 580; 
+    const boxH = 170; // increased to fit 150x150 QR
+    const rectLeft = boxX - 90; 
+    const rectWidth = 865;
     els.push({ id: uuidv4(), type: 'line', x: rectLeft, y: boxY, width: rectWidth, height: 0, stroke: '#000', strokeWidth: 1, draggable: true } as any);
     els.push({ id: uuidv4(), type: 'line', x: rectLeft, y: boxY + boxH, width: rectWidth, height: 0, stroke: '#000', strokeWidth: 1, draggable: true } as any);
     // Place a QR code (150x150) inside the right part of the rectangle
     const qrSize = 150;
     const qrX = rectLeft + rectWidth - 8 - qrSize; // right aligned inside rect
     const qrY = boxY + Math.max(3, Math.floor((boxH - qrSize) / 2));
-    els.push({ id: uuidv4(), type: 'qrcode', x: qrX, y: qrY, width: qrSize, height: qrSize, qrData: generateQRCodeData(data), draggable: true, opacity: 1, rotation: 0, scaleX: 1, scaleY: 1 } as any);
     // Title text restricted to left side of the box so it doesn't overlap the QR
     const titleLeftX = rectLeft + 10;
     const titleAvailW = rectWidth - (qrSize + 28); // leave margin near QR
@@ -1032,38 +946,17 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     const __rawTitleSetName = (articleSets || []).find(s => s.key === selectedArticleSet)?.name || '';
     const __arabicIdx = __rawTitleSetName.search(/[\u0600-\u06FF]/);
     const __cleanTitleFromSet = __arabicIdx >= 0 ? __rawTitleSetName.slice(__arabicIdx).trim() : __rawTitleSetName;
-    els.push({ id: uuidv4(), type: 'text', x: titleLeftX+50, y: 180, width: titleAvailW, text: (__cleanTitleFromSet || permitTitle), language: 'ar', direction: 'rtl', fontSize: 32, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'center', fontWeight: 'bold', meta: { isMainTitle: true } });
+    // Center title inside the header band (no change to Arabic text)
+    const centerBandW = Math.min(DEFAULT_CANVAS.width - 120, rectWidth - 40);
+    const centerBandX = (DEFAULT_CANVAS.width - centerBandW) / 2;
+    els.push({ id: uuidv4(), type: 'text', x: centerBandX, y: boxY + 34, width: centerBandW, text: (__cleanTitleFromSet || permitTitle), language: 'ar', direction: 'rtl', fontSize: 42, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'center', fontWeight: 'bold', meta: { isMainTitle: true } });
 
     // Number line centered
     const numberLine = `رقم: ${code} ${typeCode}`.trim();
-    els.push({ id: uuidv4(), type: 'text', x: titleLeftX+60, y: boxY + Math.min(120, Math.max(70, Math.floor(boxH/2) + 30))-20, width: titleAvailW, text: numberLine, language: 'ar', direction: 'rtl', fontSize: 28, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'center' });
+    // Center number line in the same band (no change to Arabic text)
+    els.push({ id: uuidv4(), type: 'text', x: centerBandX, y: boxY + Math.min(120, Math.max(70, Math.floor(boxH/2) + 30))-20, width: centerBandW, text: numberLine, language: 'ar', direction: 'rtl', fontSize: 38, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'center' });
 
-    // Details block (RTL on the right side of the page)
-    const labelW = 200; const valueW = 420; const gap = 10; const marginRight = 40; const detailsBlockW = labelW + gap + valueW; let y = boxY + boxH + 20; const lineH = 30;
-    // startX anchors the whole block to the right margin
-    const startX = DEFAULT_CANVAS.width - marginRight - detailsBlockW;
-    const addRow = (labelAr: string, value: string) => {
-      // Value box (RTL, right-aligned), no wrapping
-      els.push({ id: uuidv4(), type: 'text', x: startX, y, width: valueW, text: value || '....................', language: 'ar', direction: 'rtl', fontSize: 26, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'right', wrap: 'none', lineHeight: 1.35 });
-      // Label box (to the right of the value), no wrapping
-      els.push({ id: uuidv4(), type: 'text', x: startX + valueW + gap, y, width: labelW, text: labelAr, language: 'ar', direction: 'rtl', fontSize: 26, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'right', wrap: 'none', lineHeight: 1.35 });
-      // Fixed line advance to avoid unintended breaks
-      y += lineH + 6;
-    };
-    // Inline row: label and value as one contiguous text (no gap after ':')
-    const addInlineRow = (labelAr: string, value: string) => {
-      const full = `${labelAr} ${value || '....................'}`.trim();
-      // Single text line, no wrapping; if too long it will extend left, but won't break
-      els.push({ id: uuidv4(), type: 'text', x: startX, y, width: detailsBlockW, text: full, language: 'ar', direction: 'rtl', fontSize: 24, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'right', wrap: 'none', lineHeight: 1.35 });
-      y += lineH + 6;
-    };
-    // Beneficiary: first the legal form, then the actual holder on a separate line
-    addRow('يمنح إلى: الشركة ذات المسؤولية المحدودة' , detenteurArabic||detenteur);
-    addInlineRow('الموقع:', localisation);
-    addInlineRow('المساحة:', superficie ? `${superficie} هكتار` : '');
-    // Duration row: compute from DateOctroi -> DateExpiration when available, else use server-provided display
-    const formatFr = (d: Date | null) => d ? `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}` : '';
-    const parseAccessDate = (v: any): Date | null => {
+     const parseAccessDate = (v: any): Date | null => {
       if (!v && v !== 0) return null;
       if (v instanceof Date) return isNaN(+v) ? null : v;
       const s = String(v).trim();
@@ -1075,40 +968,364 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       const d2 = new Date(s);
       return isNaN(+d2) ? null : d2;
     };
-    const diffYears = (a: Date, b: Date) => {
-      let years = b.getFullYear() - a.getFullYear();
-      const m = b.getMonth() - a.getMonth();
-      if (m < 0 || (m === 0 && b.getDate() < a.getDate())) years -= 1;
-      return years < 0 ? 0 : years;
+
+    // For permits, expiry is often the day before anniversary; still count full years
+    const diffPermitYears = (a: Date, b: Date) => {
+      const naive = b.getFullYear() - a.getFullYear();
+      if (naive <= 0) return 0;
+      const anniversary = new Date(a.getTime());
+      anniversary.setFullYear(a.getFullYear() + naive);
+      // If end is the same day or up to 1 day before anniversary, count the full naive years
+      const oneDayMs = 24 * 60 * 60 * 1000;
+      if (b.getTime() + oneDayMs >= anniversary.getTime()) return naive;
+      return Math.max(0, naive - 1);
     };
-    const computeDureeAr = (): string => {
-      // Prefer server-computed string if present
-      if (data?.duree_display_ar) return String(data.duree_display_ar);
-      // Fallback: try to compute from common fields
-      const dStart = parseAccessDate((data as any)?.DateOctroi || (data as any)?.dateDebut || (data as any)?.date_debut || (data as any)?.date_octroi);
-      const dEnd = parseAccessDate((data as any)?.DateExpiration || (data as any)?.dateFin || (data as any)?.date_fin || (data as any)?.date_expiration);
+
+        const formatFr = (d: Date | null) => d ? `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}` : '';
+
+     // Robust Arabic duration composer with Unicode escapes to avoid encoding issues
+    const computeDureeAr2 = (): string => {
+      const serverVal: any = (data as any)?.duree_display_ar;
+      // Try to extract dates from server string even if encoding is corrupted
+      let svStart: Date | null = null;
+      let svEnd: Date | null = null;
+      if (serverVal) {
+        const m = String(serverVal).match(/(\d{1,2}\/\d{1,2}\/\d{4}).*?(\d{1,2}\/\d{1,2}\/\d{4})/);
+        if (m) {
+          svStart = parseAccessDate(m[1]);
+          svEnd = parseAccessDate(m[2]);
+        }
+      }
+      if (svStart && svEnd) {
+        // Use the two dates seen in the server string, recomposed cleanly
+        const y = diffPermitYears(svStart, svEnd);
+        let phrase = '';
+        if (y === 1) {
+          phrase = `1 \u0633\u0646\u0629`;
+        } else {
+          phrase = `${y} \u0633\u0646\u0648\u0627\u062A`;
+        }
+        const minWord = '\u0645\u0640\u0640\u0646';
+        const ilaWord = '\u0625\u0644\u0640\u0640\u0649';
+        return `${phrase} (${minWord} ${formatFr(svStart)} ${ilaWord} ${formatFr(svEnd)})`;
+      }
+      if (serverVal && !/\uFFFD/.test(String(serverVal)) && /[\u0600-\u06FF]/.test(String(serverVal))) {
+        return String(serverVal).trim();
+      }
+      const dCreation = parseAccessDate((data as any)?.dateCreation || (data as any)?.DateDemande || (data as any)?.date_demande);
+      let dStart = parseAccessDate((data as any)?.DateOctroi
+        || (data as any)?.dateDebut
+        || (data as any)?.date_debut
+        || (data as any)?.date_octroi
+      );
+      let dEnd = parseAccessDate((data as any)?.DateExpiration
+        || (data as any)?.dateFin
+        || (data as any)?.date_fin
+        || (data as any)?.date_expiration
+      );
+      if ((!dStart && dCreation) || (dStart && dCreation && dStart.getTime() < dCreation.getTime() - 24*3600*1000)) {
+        dStart = dCreation;
+      }
+      let years = Number(
+        (data as any)?.typePermis?.duree_initiale
+        ?? (data as any)?.typePermis?.validiteMaximale
+        ?? (data as any)?.typePermis?.ValiditeMaximale
+        ?? (data as any)?.duree
+        ?? 0
+      ) || 0;
+      if (!dEnd && dStart && years > 0) {
+        const tmp = new Date(dStart.getTime());
+        tmp.setFullYear(tmp.getFullYear() + years);
+        dEnd = tmp;
+      }
+      if (!dStart && dEnd && years > 0) {
+        const tmp = new Date(dEnd.getTime());
+        tmp.setFullYear(tmp.getFullYear() - years);
+        dStart = tmp;
+      }
       if (!dStart || !dEnd || dEnd.getFullYear() <= 1900) return '';
-      const y = diffYears(dStart, dEnd);
-      const y2 = String(y).padStart(2, '0');
-      const words: Record<number, string> = { 1: 'سنة', 2: 'سنتان', 3: 'ثلاثة', 4: 'أربعة', 5: 'خمسة', 6: 'ستة', 7: 'سبعة', 8: 'ثمانية', 9: 'تسعة', 10: 'عشرة' };
-      const word = words[y] || y.toString();
-      const noun = y === 1 ? 'سنة' : (y === 2 ? 'سنتان' : 'سنوات');
-      return `${word} (${y2}) ${noun} (مــن ${formatFr(dStart)} إلــى ${formatFr(dEnd)})`;
+      const y = diffPermitYears(dStart, dEnd);
+      let phrase = '';
+      if (y === 1) {
+        phrase = `1 \u0633\u0646\u0629`;
+      } else {
+        phrase = `${y} \u0633\u0646\u0648\u0627\u062A`;
+      }
+      const minWord = '\u0645\u0640\u0640\u0646';
+      const ilaWord = '\u0625\u0644\u0640\u0640\u0649';
+      return `${phrase} (${minWord} ${formatFr(dStart)} ${ilaWord} ${formatFr(dEnd)})`;
     };
+   
+
+     const computeDureeAr = (): string => { return computeDureeAr2();
+    };
+
+    // Details block (RTL on the right side of the page)
+    // Dynamic details block sizing based on content (keeps inside page borders)
+    const gap = 10;
+    const marginRight = 40;
+    const leftMargin = 40;
+    let y = boxY + boxH + 20;
+    const lineH = 30;
+    // Text measurement helpers: measure visual width to size blocks accurately
+    let __measureCtx: CanvasRenderingContext2D | null = null;
+    const ensureMeasureCtx = () => {
+      if (typeof document === 'undefined') return null;
+      if (__measureCtx) return __measureCtx;
+      try {
+        const cnv = document.createElement('canvas');
+        const ctx = cnv.getContext('2d');
+        if (ctx) __measureCtx = ctx;
+      } catch {}
+      return __measureCtx;
+    };
+    const measureTextWidth = (text: string, fontSize: number, fontFamily?: string): number => {
+      const s = String(text || '');
+      if (!s) return 0;
+      const ctx = ensureMeasureCtx();
+      if (ctx) {
+        try {
+          const fam = fontFamily || ARABIC_FONTS[1] || 'Arial';
+          // Quote family to handle spaces; use normal weight/style to match Konva default
+          ctx.font = `${Math.max(10, fontSize)}px "${fam}"`;
+          const m = ctx.measureText(s);
+          // Use measured width only to avoid double-counting bounding boxes
+          const w = m.width || 0;
+          return Math.ceil(w);
+        } catch {}
+      }
+      // Fallback heuristic (slightly narrower to avoid overestimation)
+      const isArabic = /[\u0600-\u06FF]/.test(s);
+      const factor = isArabic ? 0.48 : 0.42;
+      return Math.ceil(s.length * fontSize * factor);
+    };
+    const estimateWidth = (text: string, fontSize: number) => measureTextWidth(text, fontSize, ARABIC_FONTS[1]) + 6;
+    const label1 = 'يُمنـــح إلى: الشركة ذات المسؤولية المحدودة';
+    const value1 = detenteurArabic || detenteur || '';
+    const label2 = 'الموقع:'; const value2 = localisation || '';
+    const label3 = 'المساحة:'; const value3 = superficie ? `${superficie} هكتار` : '';
+    const label4 = 'المــدة:'; const value4 = '';
+    const sepRowLabelW = estimateWidth(label1, 26);
+    const sepRowValueW = estimateWidth(value1, 26);
+    const inlineW2 = estimateWidth(`${label2} ${value2}`, 24);
+    const inlineW3 = estimateWidth(`${label3} ${value3}`, 24);
+    const inlineW4 = estimateWidth(`${label4} 00/00/0000 إلى 00/00/0000`, 24);
+    const desiredW = Math.max(sepRowLabelW + gap + sepRowValueW, inlineW2, inlineW3, inlineW4);
+    const maxBlockW = DEFAULT_CANVAS.width - (leftMargin + marginRight);
+    const detailsBlockW = Math.min(Math.max(300, desiredW), maxBlockW);
+    // Allocate label/value widths within the available space (keep alignment)
+    const minValueW = 220;
+    let valueW = Math.max(minValueW, Math.min(sepRowValueW, detailsBlockW - gap - 160));
+    let labelW = Math.max(160, detailsBlockW - gap - valueW);
+    // Ensure first label fits on a single line
+    if (labelW < sepRowLabelW) {
+      labelW = sepRowLabelW;
+      valueW = Math.max(120, detailsBlockW - gap - labelW);
+    }
+    // startX anchors the whole block to the right margin
+    const startX = DEFAULT_CANVAS.width - marginRight - detailsBlockW;
+    const estimateHeight = (text: string, widthPx: number, fontSize: number, lineHeight: number): number => {
+      const s = String(text || '');
+      if (!s) return fontSize * lineHeight;
+      const avgCharW = fontSize * 0.42;
+      const perLine = Math.max(1, Math.floor((widthPx - 2) / Math.max(1, avgCharW)));
+      const parts = s.split(/\r?\n/);
+      let lines = 0;
+      parts.forEach(p => { lines += Math.ceil(Math.max(1, p.trim().length) / perLine); });
+      return Math.max(fontSize * lineHeight, lines * fontSize * lineHeight);
+    };
+    const addRow = (labelAr: string, value: string) => {
+      const fz = 26; const lh = 1.35;
+      // Unified details renderer in use; disable legacy row rendering
+      return;
+      if (labelAr === label1) {
+        // Compute exact adjacency: label flush-right, value ends at (label start - gap)
+        const blockRight = startX + detailsBlockW;
+        const lblW = Math.max(1, measureTextWidth(labelAr, fz, ARABIC_FONTS[1]));
+        const lblX = blockRight - lblW;
+        const valW = Math.max(120, lblX - gap - startX);
+        // Let value wrap within its column starting at startX; label stays single-line
+        const hVal = estimateHeight(value || '....................', valW, fz, lh);
+        const rowH = Math.max(hVal, fz * lh);
+        els.push({ id: uuidv4(), type: 'text', x: startX, y, width: valW, text: value || '....................', language: 'ar', direction: 'rtl', fontSize: fz, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'right', wrap: 'word', lineHeight: lh });
+        els.push({ id: uuidv4(), type: 'text', x: lblX, y, width: lblW, text: labelAr, language: 'ar', direction: 'rtl', fontSize: fz, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'right', wrap: 'none', lineHeight: lh });
+        y += Math.ceil(rowH) + 6;
+      } else {
+        const hVal = estimateHeight(value || '....................', valueW, fz, lh);
+        const hLbl = estimateHeight(labelAr, labelW, fz, lh);
+        const rowH = Math.max(hVal, hLbl);
+        els.push({ id: uuidv4(), type: 'text', x: startX, y, width: valueW, text: value || '....................', language: 'ar', direction: 'rtl', fontSize: fz, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'right', wrap: 'word', lineHeight: lh });
+        els.push({ id: uuidv4(), type: 'text', x: startX + valueW + gap, y, width: labelW, text: labelAr, language: 'ar', direction: 'rtl', fontSize: fz, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'right', wrap: 'word', lineHeight: lh });
+       
+      }
+    };
+    // Inline row: label and value as one contiguous text (no gap after ':')
+    const addInlineRow = (labelAr: string, value: string) => {
+      const full = `${labelAr} ${value || '....................'}`.trim();
+      const fz = 24; const lh = 1.35;
+      // Unified details renderer in use; disable legacy inline row rendering
+      return;
+      const h = estimateHeight(full, detailsBlockW, fz, lh);
+      // Allow wrapping within details block width
+      els.push({ id: uuidv4(), type: 'text', x: startX, y, width: detailsBlockW, text: full, language: 'ar', direction: 'rtl', fontSize: fz, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'right', wrap: 'word', lineHeight: lh });
+      y += Math.ceil(h) + 6;
+    };
+    // Details: unified block for labels/values (single multi-line text)
+    const detailsFontSize = 26;
+    const detailsLineHeight = 1.55;
+    const dotPlaceholder = '....................';
+    const label1Unified = 'يُمنـــح إلى: الشركة ذات المسؤولية المحدودة';
+    const label2Unified = 'الموقع:';
+    const label3Unified = 'المساحة:';
+    const label4Unified = 'المــدة:';
+    const linesUnified = [
+      `${label1Unified} ${value1 || dotPlaceholder}`.trim(),
+      `${label2Unified} ${localisation || dotPlaceholder}`.trim(),
+      `${label3Unified} ${superficie ? `${superficie} هكتار` : dotPlaceholder}`.trim(),
+      `${label4Unified} ${computeDureeAr() || dotPlaceholder}`.trim(),
+    ];
+    const maxBlockW2 = DEFAULT_CANVAS.width - (leftMargin + marginRight);
+    const maxLineW2 = Math.max(0, ...linesUnified.map(l => measureTextWidth(l, detailsFontSize, ARABIC_FONTS[1])));
+    const detailsBlockW2 = Math.min(Math.max(300, maxLineW2 + 12), maxBlockW2);
+    const startX2 = DEFAULT_CANVAS.width - marginRight - detailsBlockW2;
+    const detailsTextUnified = linesUnified.join('\n');
+    const blockH2 = estimateHeight(detailsTextUnified, detailsBlockW2, detailsFontSize, detailsLineHeight);
+    els.push({ id: uuidv4(), type: 'text', x: startX2, y, width: detailsBlockW2, text: detailsTextUnified, language: 'ar', direction: 'rtl', fontSize: detailsFontSize, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'right', wrap: 'word', lineHeight: detailsLineHeight });
+    y += Math.ceil(blockH2) + 6;
+    // Beneficiary: first the legal form, then the actual holder on a separate line
+    addRow(label1 , detenteurArabic||detenteur);
+    addInlineRow('الموقع:', localisation);
+    addInlineRow('المساحة:', superficie ? `${superficie} هكتار` : '');
+    // Duration row: compute from DateOctroi -> DateExpiration when available, else use server-provided display   
     addInlineRow('المــدة:', computeDureeAr());
 
-    // Section title for coordinates table (Arabic + Fuseau)
-    els.push({ id: uuidv4(), type: 'text', x: 80, y: y + 42, width: 600, text: 'Fuseau 32', fontSize: 13, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'center' });
+    // Replace legacy static grid with a single controllable table element
+    try {
+      const MIN_ROWS = rowsPerColSetting;
+      const coords: any[] = Array.isArray(data?.coordinates) ? data.coordinates : [];
+      const desiredCols = Math.max(1, Math.ceil(Math.max(coords.length, MIN_ROWS) / MIN_ROWS));
+      const blockCols = Math.min(3, desiredCols);
+      const baseColWidths = [60, 90, 90];
+      // Exact rows per column to match dataset size (no extra rows)
+      const rowsPerColExact = Math.max(1, Math.min(60, Math.ceil((coords.length || 1) / blockCols)));
+      const headerText = 'إحـداثيات قمم المحيط المنجمي حسب نظام UTM شمال الصحراء  Fuseau 32';
+      const headerH = 48;
+      const rowH = 34;
+      const blockW = baseColWidths.reduce((a, b) => a + b, 0);
+      const tableWAvail = DEFAULT_CANVAS.width - 80;
+      const tableW = Math.min(tableWAvail, blockW * Math.max(blockCols, 2));
+      const headerY = y + 40;
+      const tableH = headerH + rowH * (rowsPerColExact + 1);
+      const tableEl: PermisElement = {
+        id: uuidv4(),
+        type: 'table',
+        x: (DEFAULT_CANVAS.width - tableW) / 2,
+        y: headerY,
+        width: tableW,
+        height: tableH,
+        draggable: true,
+        stroke: '#000',
+        strokeWidth: 1.2,
+        headerText: 'إحداثيات UTM — Fuseau  32',
+        headerHeight: headerH,
+        headerFill: '#f5f5f5',
+        altRowFill: '#f8f8f8',
+        rowHeight: rowH,
+        rowsPerCol: rowsPerColExact,
+        blockCols,
+        colWidths: baseColWidths,
+        tableFontFamily: 'Arial',
+        tableFontSize: 14,
+        tableTextAlign: 'left',
+        showCellBorders: true,
+        tableGridColor: '#4F4040',
+        tableGridWidth: 1,
+        outerBorderColor: '#000',
+        outerBorderWidth: 1.2,
+        cellPadding: 8,
+        tableColumns: [
+          { key: 'point', title: 'Point', width: baseColWidths[0], align: 'left' },
+          { key: 'x', title: 'X', width: baseColWidths[1], align: 'left' },
+          { key: 'y', title: 'Y', width: baseColWidths[2], align: 'left' },
+        ],
+        tableData: coords.map((c: any, idx: number) => ({ point: String(idx + 1), x: String(c.x ?? ''), y: String(c.y ?? '') })),
+      } as any;
+      els.push(tableEl as any);
+      // Add bottom title inside double lines just below the table
+      try {
+        // Use a centered band that is 90% of the page width
+        const bandW = Math.floor(DEFAULT_CANVAS.width * 0.8);
+        const bandX = Math.floor((DEFAULT_CANVAS.width - bandW) / 2);
+        const baseY = (tableEl as any).y + (tableEl as any).height + 8;
+        const dblGap = 3;
+        const titleFontSize = 32;
+        const titlePadding = 8;
+        const topY1 = baseY;
+        const topY2 = topY1 + dblGap;
+        const textY = topY2 + titlePadding;
+        const bottomY1 = textY + titleFontSize + 6;
+        const bottomY2 = bottomY1 + dblGap;
+        const bottomNotice = `سند منجمي مسجل في السجل المنجمي تحت رقم : ${code} ${typeCode}`;
+        // Double top lines
+        els.push({ id: uuidv4(), type: 'line', x: bandX, y: topY1, width: bandW, height: 0, stroke: '#000', strokeWidth: 1.2, draggable: true } as any);
+        els.push({ id: uuidv4(), type: 'line', x: bandX, y: topY2, width: bandW, height: 0, stroke: '#000', strokeWidth: 1.2, draggable: true } as any);
+        // Title text centered between doubles
+        const noticeText = `سند منجمي مسجل في السجل المنجمي تحت رقم : ${code} ${typeCode}`;
+        const noticeFontSize = 32;
+        els.push({ id: uuidv4(), type: 'text', x: bandX, y: textY, width: bandW, text: noticeText, language: 'ar', direction: 'rtl', fontSize: noticeFontSize, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: true, textAlign: 'center' } as any);
+        
+        // Dynamic diagonal line starting from the left edge of the page band under the sentence to the bottom-left corner
+        try {
+          // Start at the beginning X of the band (page content start) just beneath the text baseline
+          const xStartDiag = 830; // left boundary of the centered text band
+          const yStartDiag = textY + noticeFontSize * 2; // approximate baseline
+          const xDestDiag = 30; // inside left page border
+          const yDestDiag = DEFAULT_CANVAS.height - 20; // inside bottom page border
+          const dxDiag = xDestDiag - xStartDiag;
+          const dyDiag = yDestDiag - yStartDiag;
+          const angleDiag = Math.atan2(dyDiag, dxDiag) * 180 / Math.PI;
+          const lenDiag = Math.hypot(dxDiag, dyDiag);
+          els.push({
+            id: uuidv4(),
+            type: 'line',
+            x: xStartDiag,
+            y: yStartDiag,
+            width: lenDiag,
+            height: 0,
+            rotation: angleDiag,
+            stroke: '#999999',
+            strokeWidth: 2,
+            opacity: 0.9,
+            draggable: true
+          } as any);
+        } catch {}
+        // Double bottom lines
+        els.push({ id: uuidv4(), type: 'line', x: bandX, y: bottomY1, width: bandW, height: 0, stroke: '#000', strokeWidth: 1.2, draggable: true } as any);
+        els.push({ id: uuidv4(), type: 'line', x: bandX, y: bottomY2, width: bandW, height: 0, stroke: '#000', strokeWidth: 1.2, draggable: true } as any);
+      } catch {}
+      return els;
+    } catch {}
 
     // Multi-column coordinates table (colors/separators like the model)
     let tableX = 40;
-    const colPtW = 60, colXW = 90, colYW = 90;
-    const blockW = colPtW + colXW + colYW; // 240
+    let colPtW = 60, colXW = 90, colYW = 90;
+    let blockW = colPtW + colXW + colYW; // 240
+    const baseBlockW = blockW;
     const MIN_ROWS = rowsPerColSetting;
     const coords: any[] = Array.isArray(data?.coordinates) ? data.coordinates : [];
     // Compute columns: add a new column every 10 rows, cap to 3 to fit width
     const desiredCols = Math.max(1, Math.ceil(Math.max(coords.length, MIN_ROWS) / MIN_ROWS));
     const blockCols = Math.min(3, desiredCols);
+    // Make the table fill the page width proportionally when there are few coordinates
+    const tableMarginX = 40;
+    const tableWAvail = DEFAULT_CANVAS.width - tableMarginX * 2;
+    const perBlockWidth = tableWAvail / blockCols;
+    const scaleW = perBlockWidth / baseBlockW;
+    const scaleClamped = Math.max(1, Math.min(1.35, scaleW));
+    colPtW = Math.round(colPtW * scaleClamped);
+    colXW = Math.round(colXW * scaleClamped);
+    colYW = Math.round(colYW * scaleClamped);
+    blockW = colPtW + colXW + colYW;
     const tableW = blockW * blockCols;
     tableX = (DEFAULT_CANVAS.width - tableW) / 2;
     const headerH = 48;
@@ -1118,7 +1335,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
 
     // Multi-column coordinates table (colors/separators like the model)
     const tableStartY = headerY + headerH;
-    const rowH = 34;
+    const rowH = Math.round(34 * scaleClamped);
     const rowsPerCol = Math.max(MIN_ROWS, Math.min(40, Math.ceil((coords.length || MIN_ROWS) / blockCols)));
 
     // Draw outer border for each block and header background; alternate row shading
@@ -1128,10 +1345,10 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       els.push({ id: uuidv4(), type: 'rectangle', x: bx, y: tableStartY, width: blockW, height: rowH, stroke: '#000', strokeWidth: 1.2, fill: '#eeeeee', meta: { nonInteractive: true, isGrid: true } } as any);
       // Internal vertical separators (use rotation=90 because our Line renderer ignores height)
       const vHeight = rowH * (rowsPerCol + 1);
-      els.push({ id: uuidv4(), type: 'line', x: bx + colPtW, y: tableStartY, width: vHeight, height: 0, rotation: 90, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
-      els.push({ id: uuidv4(), type: 'line', x: bx + colPtW + colXW, y: tableStartY, width: vHeight, height: 0, rotation: 90, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
+      els.push({ id: uuidv4(), type: 'line', x: bx + colPtW, y: tableStartY, width: vHeight, height: 0, rotation: 90, stroke: '#4F4040', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
+      els.push({ id: uuidv4(), type: 'line', x: bx + colPtW + colXW, y: tableStartY, width: vHeight, height: 0, rotation: 90, stroke: '#4F4040', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
       // Column headers
-      els.push({ id: uuidv4(), type: 'text', x: bx + 8, y: tableStartY + 4, width: colPtW - 16, text: 'Zone', fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
+      els.push({ id: uuidv4(), type: 'text', x: bx + 8, y: tableStartY + 4, width: colPtW - 16, text: 'Point', fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
       els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + 8, y: tableStartY + 4, width: colXW - 16, text: 'X', fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
       els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + colXW + 8, y: tableStartY + 4, width: colYW - 16, text: 'Y', fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
 
@@ -1141,10 +1358,18 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
         const ry = tableStartY + rowH * (r + 1);
         // Alternate background
         const fill = r % 2 === 0 ? '#f8f8f8' : '#ffffff';
-        els.push({ id: uuidv4(), type: 'rectangle', x: bx, y: ry, width: blockW, height: rowH, stroke: '#cccccc', strokeWidth: 0.5, fill, meta: { nonInteractive: true, isGrid: true } } as any);
+        els.push({ id: uuidv4(), type: 'rectangle', x: bx, y: ry, width: blockW, height: rowH, stroke: '#4F4040', strokeWidth: 0.5, fill, meta: { nonInteractive: true, isGrid: true } } as any);
+        // Draw a thin border for each cell so every value is inside a bounded box
+        let cxCell = bx;
+        const cellWidths = [colPtW, colXW, colYW];
+        for (let c = 0; c < cellWidths.length; c++) {
+          const cw = cellWidths[c];
+          els.push({ id: uuidv4(), type: 'rectangle', x: cxCell, y: ry, width: cw, height: rowH, stroke: '#4F4040', strokeWidth: 0.8, fill: 'transparent', meta: { nonInteractive: true, isGrid: true } } as any);
+          cxCell += cw;
+        }
         if (idx < coords.length) {
           const item = coords[idx];
-          const vPoint = String((item as any).zone ?? '');
+          const vPoint = String(idx + 1);
           const vX = String(item.x ?? '');
           const vY = String(item.y ?? '');
           els.push({ id: uuidv4(), type: 'text', x: bx + 8, y: ry + 4, width: colPtW - 16, text: vPoint, fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
@@ -1152,73 +1377,88 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
           els.push({ id: uuidv4(), type: 'text', x: bx + colPtW + colXW + 8, y: ry + 4, width: colYW - 16, text: vY, fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
         }
         // Horizontal subtle grid line
-        els.push({ id: uuidv4(), type: 'line', x: bx, y: ry, width: blockW, height: 0, stroke: '#d0d0d0', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
+        els.push({ id: uuidv4(), type: 'line', x: bx, y: ry, width: blockW, height: 0, stroke: '#4F4040', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
       }
       // Outer border box
       els.push({ id: uuidv4(), type: 'rectangle', x: bx, y: tableStartY, width: blockW, height: rowH * (rowsPerCol + 1), stroke: '#000', strokeWidth: 1.2, fill: 'transparent', meta: { nonInteractive: true, isGrid: true } } as any);
     }
     
+    
     // Compute bottom of table and optionally add a 45° line if space remains
     const tableBottom = tableStartY + rowH * (rowsPerCol + 1);
     const remainingBelow = DEFAULT_CANVAS.height - tableBottom - 70;
     let diagY: number | null = null;
+    
     if (remainingBelow > 80) {
       const diagLen = Math.min(DEFAULT_CANVAS.width - 160, remainingBelow + 40);
       diagY = tableBottom + 30;
       els.push({ id: uuidv4(), type: 'line', x: DEFAULT_CANVAS.width - 80, y: diagY +30, width: 600, height: 0, rotation: 135, stroke: '#999999', strokeWidth: 2, opacity: 0.8, draggable: true } as any);
     }
 
-    // QR is already placed inside the title box above
-    // Footer notice placed above the diagonal line if present
-    const bottomNotice = `سند منجمي مسجل في السجل المنجمي تحت رقم : ${code} ${typeCode}`;
-    const noticeY = diagY !== null ? Math.max(20, diagY - 18) : (DEFAULT_CANVAS.height - 55);
-    els.push({ id: uuidv4(), type: 'text', x: (DEFAULT_CANVAS.width- 300) / 2 -80, y: noticeY-40, width: 700, text: bottomNotice, language: 'ar', direction: 'rtl', fontSize: 26, fontFamily: ARABIC_FONTS[1], color: '#000', draggable: false, textAlign: 'center' } as any);
+    // Bottom notice, centered near page bottom
+    try {
+      const typeCode = data?.typePermis?.code || '';
+      const code = data?.code_demande || data?.codeDemande || '';
+      const bottomNotice = `سند منجمي مسجل في السجل المنجمي تحت رقم : ${code} ${typeCode}`;
+      // Bottom notice band is always 90% of page width
+      const noticeWidth = Math.floor(DEFAULT_CANVAS.width * 0.9);
+      const noticeX = (DEFAULT_CANVAS.width - noticeWidth) / 2;
+      const noticeY = DEFAULT_CANVAS.height - 60;
+      els.push({
+        id: uuidv4(),
+        type: 'text',
+        x: noticeX,
+        y: noticeY,
+        width: noticeWidth,
+        text: bottomNotice,
+        language: 'ar',
+        direction: 'rtl',
+        fontSize: 32,
+        fontFamily: ARABIC_FONTS[1],
+        color: '#000',
+        draggable: true,
+        textAlign: 'center',
+        opacity: 1,
+        wrap: 'none',
+        lineHeight: 1.2,
+        meta: { isFooter: true }
+      } as any);
 
+      // Dynamic diagonal line starting from the end of the bottom notice text to the bottom-left corner
+      try {
+        const noticeFontSize = 32;
+        const centerX = noticeX + noticeWidth / 2;
+        const textW = Math.max(1, measureTextWidth(bottomNotice, noticeFontSize, ARABIC_FONTS[1]));
+        // Arabic text logical end sits on the left-most edge when centered
+        const xStart = centerX - textW / 2 - 4; // small visual padding
+        const yStart = noticeY + noticeFontSize * 0.7; // approximate baseline
+        const xDest = 20; // inside left border
+        const yDest = DEFAULT_CANVAS.height - 20; // inside bottom border
+        const dx = xDest - xStart;
+        const dy = yDest - yStart;
+        const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+        const len = Math.hypot(dx, dy);
+        els.push({
+          id: uuidv4(),
+          type: 'line',
+          x: xStart,
+          y: yStart,
+          width: len,
+          height: 0,
+          rotation: angle,
+          stroke: '#999999',
+          strokeWidth: 2,
+          opacity: 0.9,
+          draggable: true,
+          meta: { isFooter: true }
+        } as any);
+      } catch {}
+    } catch {}
+
+    // QR is already placed inside the title box above
+  
     return els;
   }
-
-  // Coordinates-only page following the model table style
-  function createCoordsPageModel(data: any): PermisElement[] {
-    const borderElements = createPageBorder(DEFAULT_CANVAS.width, DEFAULT_CANVAS.height);
-    const content: PermisElement[] = [];
-    content.push({ id: uuidv4(), type: 'line', x: 80, y: 72, width: 640, height: 2, stroke: '#1a5276', strokeWidth: 2 } as any);
-    const coords: any[] = Array.isArray(data?.coordinates) ? data.coordinates : [];
-  
-    const tableY = 100; const cols = [{ title: 'Zone', w: 80 }, { title: 'X', w: 260 }, { title: 'Y', w: 260 }];
-    const tableW = cols.reduce((s,c)=>s+c.w,0); const rowH = 26;
-    const tableX = (DEFAULT_CANVAS.width - tableW) / 2; // center horizontally
-    content.push({ id: uuidv4(), type: 'rectangle', x: tableX, y: tableY, width: tableW, height: rowH, stroke: '#000', strokeWidth: 1.2, fill: '#eeeeee', meta: { nonInteractive: true, isGrid: true } } as any);
-    let cx = tableX; cols.forEach((c, idx) => {
-      content.push({ id: uuidv4(), type: 'text', x: cx + 6, y: tableY + 4, width: c.w - 12, text: c.title, fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
-      // vertical separators between columns (cover header + rows)
-      if (idx > 0) {
-        const vHeight = rowH + (coords.length * rowH);
-        content.push({ id: uuidv4(), type: 'line', x: cx, y: tableY, width: vHeight, height: 0, rotation: 90, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
-      }
-      cx += c.w;
-    });
-    for (let i = 0; i < coords.length; i++) {
-      const ry = tableY + rowH * (i + 1);
-      content.push({ id: uuidv4(), type: 'rectangle', x: tableX, y: ry, width: tableW, height: rowH, stroke: '#e0e0e0', strokeWidth: 0.5, fill: (i % 2 === 0) ? '#f9f9f9' : '#ffffff' } as any);
-      const row = coords[i];
-      let rx = tableX; const values = [String((row as any).zone ?? ''), String(row.x ?? ''), String(row.y ?? '')];
-      for (let j = 0; j < cols.length; j++) {
-        content.push({ id: uuidv4(), type: 'text', x: rx + 6, y: ry + 4, width: cols[j].w - 12, text: values[j], fontSize: 14, fontFamily: 'Arial', color: '#000', draggable: true, textAlign: 'left' } as any);
-        rx += cols[j].w;
-      }
-    }
-    const tableBottomY1 = tableY + rowH * (coords.length + 1);
-    content.push({ id: uuidv4(), type: 'line', x: tableX, y: tableBottomY1, width: tableW, height: 0, stroke: '#000', strokeWidth: 1, meta: { nonInteractive: true, isGrid: true } } as any);
-    // If bottom space remains, add a 45° line
-    const remaining1 = DEFAULT_CANVAS.height - tableBottomY1 - 70;
-    if (remaining1 > 80) {
-      const diagLen = Math.min(DEFAULT_CANVAS.width - 160, remaining1 + 40);
-      content.push({ id: uuidv4(), type: 'line', x: DEFAULT_CANVAS.width - 80, y: tableBottomY1 + 30, width: diagLen, height: 0, rotation: 135, stroke: '#999999', strokeWidth: 2, opacity: 0.8, draggable: true } as any);
-    }
-    return [...borderElements, ...content];
-  }
-
-
 
   function createArticlesPageHeader(width: number, height: number): PermisElement[] {
     const contentElements: PermisElement[] = [
@@ -1239,6 +1479,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
   }, [currentPage, pushHistory]);
 
   const handleStageClick = useCallback((e: any) => {
+    if (isSelecting) return;
     // Click empty area: clear selection
     if (e.target === e.currentTarget) {
       setSelectedIds([]);
@@ -1262,7 +1503,89 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     if (el?.meta?.isBorder) return;
     if (e.evt?.shiftKey) setSelectedIds(prev => (prev.includes(foundId!) ? prev : [...prev, foundId!]));
     else setSelectedIds([foundId!]);
-  }, [elements]);
+  }, [elements, isSelecting]);
+
+  // Helpers for marquee selection
+  const getPointerWorldPos = useCallback(() => {
+    const stage = stageRef.current;
+    if (!stage) return { x: 0, y: 0 } as { x: number; y: number };
+    const p = stage.getPointerPosition() || { x: 0, y: 0 };
+    const sx = stage.scaleX?.() || zoom || 1;
+    const sy = stage.scaleY?.() || zoom || 1;
+    return { x: p.x / sx, y: p.y / sy };
+  }, [zoom]);
+
+  const rectFromPoints = (a: { x: number; y: number }, b: { x: number; y: number }) => {
+    const x = Math.min(a.x, b.x);
+    const y = Math.min(a.y, b.y);
+    const width = Math.abs(a.x - b.x);
+    const height = Math.abs(a.y - b.y);
+    return { x, y, width, height };
+  };
+
+  const intersects = (r: { x: number; y: number; width: number; height: number }, s: { x: number; y: number; width: number; height: number }) => {
+    return !(r.x + r.width < s.x || s.x + s.width < r.x || r.y + r.height < s.y || s.y + s.height < r.y);
+  };
+
+  const computeSelectedInRect = useCallback((sel: { x: number; y: number; width: number; height: number }) => {
+    const stage = stageRef.current;
+    if (!stage) return [] as string[];
+    const ids: string[] = [];
+    const current = pages[currentPage] || [];
+    current.forEach(el => {
+      if ((el as any).meta?.isBorder || (el as any).meta?.nonInteractive || (el as any).meta?.isGrid) return;
+      const node = stage.findOne(`#${el.id}`);
+      if (!node || !node.getClientRect) return;
+      try {
+        const rect = node.getClientRect({ skipShadow: true, skipStroke: true });
+        const sX = stage.scaleX?.() || 1;
+        const sY = stage.scaleY?.() || 1;
+        const nr = { x: rect.x / sX, y: rect.y / sY, width: rect.width / sX, height: rect.height / sY };
+        if (intersects(sel, nr)) ids.push(el.id);
+      } catch {}
+    });
+    return ids;
+  }, [pages, currentPage]);
+
+  const handleStageMouseDown = useCallback((e: any) => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    if (e.target !== e.currentTarget) return;
+    const start = getPointerWorldPos();
+    selectionStartRef.current = start;
+    setIsSelecting(true);
+    setSelectionRect({ x: start.x, y: start.y, width: 0, height: 0 });
+    if (e.evt?.shiftKey) {
+      initialSelectionIdsRef.current = selectedIds;
+    } else {
+      initialSelectionIdsRef.current = [];
+      setSelectedIds([]);
+    }
+  }, [getPointerWorldPos, selectedIds]);
+
+  const handleStageMouseMove = useCallback(() => {
+    if (!isSelecting || !selectionStartRef.current) return;
+    const pos = getPointerWorldPos();
+    const rect = rectFromPoints(selectionStartRef.current, pos);
+    setSelectionRect(rect);
+    const ids = computeSelectedInRect(rect);
+    const combined = Array.from(new Set([...(initialSelectionIdsRef.current || []), ...ids]));
+    setSelectedIds(combined);
+  }, [isSelecting, getPointerWorldPos, computeSelectedInRect]);
+
+  const handleStageMouseUp = useCallback(() => {
+    if (!isSelecting) return;
+    if (selectionStartRef.current) {
+      const pos = getPointerWorldPos();
+      const rect = rectFromPoints(selectionStartRef.current, pos);
+      const ids = computeSelectedInRect(rect);
+      const combined = Array.from(new Set([...(initialSelectionIdsRef.current || []), ...ids]));
+      setSelectedIds(combined);
+    }
+    selectionStartRef.current = null;
+    setIsSelecting(false);
+    setSelectionRect(null);
+  }, [isSelecting, getPointerWorldPos, computeSelectedInRect]);
 
   // Direct element click handler (used by element nodes)
   const handleElementClick = useCallback((e: any) => {
@@ -1325,16 +1648,22 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
               } as PermisElement;
             }
           } else {
-            let newW = (node.width?.() || 0) * (node.scaleX?.() || 1);
-            let newH = (node.height?.() || 0) * (node.scaleY?.() || 1);
-            if ((!newW || !newH) && node.getClientRect) {
-              try {
+            // Prefer reliable geometry from client rect, which accounts for Groups and scaled nodes
+            let newW = 0;
+            let newH = 0;
+            try {
+              if (node.getClientRect) {
                 const rect = node.getClientRect({ skipShadow: true, skipStroke: true });
                 const sX = stageRef.current?.scaleX?.() || 1;
                 const sY = stageRef.current?.scaleY?.() || 1;
                 newW = Math.max(1, rect.width / sX);
                 newH = Math.max(1, rect.height / sY);
-              } catch {}
+              }
+            } catch {}
+            // Fallback to width/height * scale if needed
+            if (!newW || !newH) {
+              newW = (node.width?.() || 0) * (node.scaleX?.() || 1) || newW;
+              newH = (node.height?.() || 0) * (node.scaleY?.() || 1) || newH;
             }
             updated[i] = {
               ...updated[i],
@@ -1355,49 +1684,71 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     });
   }, [setElementsForCurrent]);
 
-  // Live transform handler (no history, no scale reset) to avoid snap-back
+  // Live update sizes/positions during transform so properties reflect immediately
   const handleTransform = useCallback(() => {
     const nodes = transformerRef.current?.nodes?.() || [];
-    setPages(prevPages => {
-      const next = [...prevPages] as PermisPages;
-      const pageArr = next[currentPage] || [];
-      const updated = [...pageArr];
+    setPages(prev => {
+      const next = [...prev] as PermisPages;
+      const arr = [...next[currentPage]];
       nodes.forEach((node: any) => {
         const id = node.getAttr('id');
-        const idx = updated.findIndex(el => el.id === id);
+        const idx = arr.findIndex(el => el.id === id);
         if (idx < 0) return;
         const className = node.getClassName ? node.getClassName() : '';
         if (className === 'Line') {
-          let newLen = (node.width?.() || 0) * (node.scaleX?.() || 1);
           try {
             const pts = node.points ? node.points() : [0, 0, node.width() || 0, 0];
+            const x1 = pts[0] || 0, y1 = pts[1] || 0, x2 = pts[2] || 0, y2 = pts[3] || 0;
             const t = node.getAbsoluteTransform ? node.getAbsoluteTransform() : null;
+            let newLen = (node.width() || 0) * (node.scaleX() || 1);
             if (t && t.point) {
-              const p1 = t.point({ x: pts[0] || 0, y: pts[1] || 0 });
-              const p2 = t.point({ x: pts[2] || 0, y: pts[3] || 0 });
+              const p1 = t.point({ x: x1, y: y1 });
+              const p2 = t.point({ x: x2, y: y2 });
               newLen = Math.hypot(p2.x - p1.x, p2.y - p1.y);
             }
+            arr[idx] = {
+              ...arr[idx],
+              x: node.x(),
+              y: node.y(),
+              width: Math.max(1, newLen),
+              rotation: node.rotation(),
+            } as PermisElement;
+            // Reset scale during live transform to bake the change into width
+            if (node.scaleX) node.scaleX(1);
+            if (node.scaleY) node.scaleY(1);
           } catch {}
-          updated[idx] = { ...updated[idx], x: node.x(), y: node.y(), width: newLen, rotation: node.rotation?.() || node.rotation } as PermisElement;
         } else {
-          let newW = (node.width?.() || 0) * (node.scaleX?.() || 1);
-          let newH = (node.height?.() || 0) * (node.scaleY?.() || 1);
-          if ((!newW || !newH) && node.getClientRect) {
-            try {
+          let newW = 0;
+          let newH = 0;
+          try {
+            if (node.getClientRect) {
               const rect = node.getClientRect({ skipShadow: true, skipStroke: true });
               const sX = stageRef.current?.scaleX?.() || 1;
               const sY = stageRef.current?.scaleY?.() || 1;
               newW = Math.max(1, rect.width / sX);
               newH = Math.max(1, rect.height / sY);
-            } catch {}
+            }
+          } catch {}
+          if (!newW || !newH) {
+            newW = (node.width?.() || 0) * (node.scaleX?.() || 1) || newW;
+            newH = (node.height?.() || 0) * (node.scaleY?.() || 1) || newH;
           }
-          updated[idx] = { ...updated[idx], x: node.x(), y: node.y(), width: newW || updated[idx].width, height: newH || updated[idx].height, rotation: node.rotation?.() || node.rotation } as PermisElement;
+          arr[idx] = {
+            ...arr[idx],
+            x: node.x(),
+            y: node.y(),
+            width: newW || arr[idx].width,
+            height: newH || arr[idx].height,
+            rotation: node.rotation(),
+          } as PermisElement;
+          if (node.scaleX) node.scaleX(1);
+          if (node.scaleY) node.scaleY(1);
         }
       });
-      next[currentPage] = updated;
+      next[currentPage] = arr;
       return next;
     });
-  }, [currentPage, setPages]);
+  }, [currentPage]);
 
   const handleTextChange = useCallback((id: string, newText: string) => {
     setElementsForCurrent(prev => prev.map(el => (el.id === id && el.type === 'text' ? { ...el, text: newText } : el)));
@@ -1626,7 +1977,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
         setActiveTemplate(null);
         const defaultPages: PermisPages = [
           createPermisDetailsPage(initialData),
-          createCoordinatesPage(initialData),
+        //  createCoordinatesPage(initialData),
           createArticlesPage(initialData)
         ];
         setPages(defaultPages);
@@ -1642,7 +1993,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     if (!stageRef.current) return;
     setIsLoading(true);
     try {
-      const pdf = new jsPDF('p', 'pt', 'a4');
+      const pdf = new jsPDF('p', 'pt', 'a7');
       let a4Width = pdf.internal.pageSize.getWidth();
       let a4Height = pdf.internal.pageSize.getHeight();
       for (let pageIndex = 0; pageIndex < pages.length; pageIndex++) {
@@ -1657,9 +2008,9 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
         stage.scale(prevScale);
         if (pageIndex > 0) {
           const portrait = currentSize.height >= currentSize.width;
-          pdf.addPage('a4', portrait ? 'portrait' : 'landscape');
-          a4Width = portrait ? 595 : 842;
-          a4Height = portrait ? 842 : 595;
+          pdf.addPage('a7', portrait ? 'portrait' : 'landscape');
+          a4Width = pdf.internal.pageSize.getWidth();
+          a4Height = pdf.internal.pageSize.getHeight();
         }
         const scale = Math.min(a4Width / currentSize.width, a4Height / currentSize.height);
         const imgWidth = currentSize.width * scale;
@@ -1668,15 +2019,29 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
         const y = (a4Height - imgHeight) / 2;
         pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
       }
-      pdf.save(`permis-${initialData.code_demande}.pdf`);
-      toast.success("PDF g?©n?©r?© avec succ?¨s");
+      const defaultName = `permis-${initialData.code_demande}`;
+      try {
+        const dataUri = pdf.output('datauristring');
+        const typeCode = (initialData?.typePermis?.code || initialData?.typePermis?.Code || '').toString();
+        await axios.post(`${apiURL}/api/permis/templates/pdf/save`, {
+          code: String(initialData?.code_demande ?? initialData?.codeDemande ?? ''),
+          typeCode,
+          pdfBase64: dataUri,
+          fileName: defaultName,
+          templateName: templates.find(t => t.id === activeTemplate)?.name || undefined,
+        });
+      } catch (e) {
+        console.warn('Failed to upload PDF copy to server', e);
+      }
+      pdf.save(`${defaultName}.pdf`);
+      toast.success("PDF généré avec succés");
     } catch (error) {
       console.error("Failed to generate PDF", error);
-      toast.error("?‰chec de la g?©n?©ration du PDF");
+      toast.error("?‰chec de la génération du PDF");
     } finally {
       setIsLoading(false);
     }
-  }, [pages, initialData, canvasSizes]);
+  }, [pages, initialData, canvasSizes, apiURL, templates, activeTemplate]);
 
   const handleSavePermis = useCallback(async () => {
     setIsLoading(true);
@@ -1717,11 +2082,11 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
         }
       }));
       const page0Elements = elementsWithIds.filter(el => el.meta?.pageIndex === 0);
-      const page1Elements = elementsWithIds.filter(el => el.meta?.pageIndex === 1);
-      const page2Elements = elementsWithIds.filter(el => el.meta?.pageIndex === 2);
+      //const page1Elements = elementsWithIds.filter(el => el.meta?.pageIndex === 1);
+      const page2Elements = elementsWithIds.filter(el => el.meta?.pageIndex === 1);
       const newPages: PermisPages = [
         page0Elements.length > 0 ? page0Elements : createPermisDetailsPage(initialData),
-        page1Elements.length > 0 ? page1Elements : createCoordinatesPage(initialData),
+      //  page1Elements.length > 0 ? page1Elements : createCoordinatesPage(initialData),
         page2Elements.length > 0 ? page2Elements : createArticlesPage(initialData)
       ];
       setPages(newPages);
@@ -1747,6 +2112,10 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
 
   const selectedElementsList = useMemo(() => elements.filter(el => selectedIds.includes(el.id)), [elements, selectedIds]);
   const firstSelected = selectedElementsList[0];
+  const onlyLineSelected = useMemo(() => (
+    selectedIds.length > 0 && selectedIds.every(id => elements.find(e => e?.id === id)?.type === 'line')
+  ), [selectedIds, elements]);
+  // Keep rotation available for all shapes, including lines.
 
   // Normalize draggable for common elements to make them movable smoothly
   useEffect(() => {
@@ -1803,7 +2172,8 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
     const left = element.x * zoom + containerRect.left + canvasPad;
     const top = element.y * zoom + containerRect.top + canvasPad;
     const width = (element.width || 200) * zoom;
-    const height = (element.height || 40) * zoom;
+    // Add extra height to make editing more comfortable
+    const height = Math.max(120, (element.height || 40) * zoom + 80);
     setTextOverlay({
       id: element.id,
       value: element.text || '',
@@ -1816,7 +2186,9 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
       color: element.color || '#000',
       direction: element.direction || 'ltr',
       textAlign: (element as any).textAlign || 'left',
-      lineHeight: (element as any).lineHeight || 1.2
+      lineHeight: (element as any).lineHeight || 1.2,
+      selectionStart: 0,
+      selectionEnd: 0
     });
   }, [zoom]);
 
@@ -1853,7 +2225,7 @@ function createDefaultGeneralPage(data: any): PermisElement[] {
 
 const pageLabel = (idx: number) => {
   if (idx === PAGES.PERMIS_DETAILS) return 'Page 1';
-  if (idx === PAGES.COORDINATES) return 'Page 2';
+ // if (idx === PAGES.COORDINATES) return 'Page 2';
   if (idx >= PAGES.ARTICLES) return `Articles ${idx - PAGES.ARTICLES + 1}`;
   return `Page ${idx + 1}`;
 };
@@ -2015,7 +2387,7 @@ const pageLabel = (idx: number) => {
             <button
               className={`${styles.actionBtn}`}
               onClick={handleSaveTemplateOnly}
-              disabled={savingTemplate || isLoading || !savedPermisId || loadingTemplates}
+              // disabled={savingTemplate || isLoading || !savedPermisId || loadingTemplates}
               title={!savedPermisId ? 'Save the permis first' : 'Save Template'}
             >
               {savingTemplate ? (
@@ -2028,7 +2400,7 @@ const pageLabel = (idx: number) => {
             <button
               className={`${styles.actionBtn}`}
               onClick={handleCreateNewTemplate}
-              disabled={savingTemplate || isLoading || !savedPermisId}
+              // disabled={savingTemplate || isLoading || !savedPermisId}
               title={!savedPermisId ? 'Save the permis first' : 'Create New Template'}
             >
               <FiSave />
@@ -2042,35 +2414,75 @@ const pageLabel = (idx: number) => {
             >
               <FiRefreshCw className={loadingTemplates ? styles.spinner : ''} />
             </button>
-            <button
-              className={`${styles.toolButton} ${tool === 'qrcode'}`}
-              onClick={async () => {
-                try {
-                  setTool('qrcode');
-                  const targetId = savedPermisId || initialData.id_demande || initialData.id;
-                  let qrPayload = '';
-                  if (targetId) {
-                    try {
-                      const resp = await axios.post(`${apiURL}/api/permis/${encodeURIComponent(targetId)}/qrcode/generate`);
-                      const code = resp?.data?.QrCode || '';
-                      // Use the unique code as QR payload; adjust to a URL if needed
-                      qrPayload = code;
-                    } catch (e) {
-                      console.warn('QR generation request failed, falling back', e);
+              <button
+                className={`${styles.toolButton} ${tool === 'qrcode'}`}
+                onClick={async () => {
+                  try {
+                    setTool('qrcode');
+                    const targetId = savedPermisId || initialData.id_demande || initialData.id;
+                    let qrPayload = '';
+                    if (targetId) {
+                      try {
+                        let by = '';
+                        try { by = localStorage.getItem('auth_user_name') || ''; } catch {}
+                        const resp = await axios.post(`${apiURL}/api/permis/${encodeURIComponent(targetId)}/qrcode/generate`, { by });
+                        const code = resp?.data?.QrCode || '';
+                        // Use the unique code as QR payload
+                        qrPayload = code;
+                      } catch (e) {
+                        console.warn('QR generation request failed, falling back', e);
+                      }
                     }
+                    // Place QR at a fixed position/size as requested
+                    const qrX = 752.0206384470126;
+                    const qrY = 24.802348503240424;
+                    const qrW = 130.95322004714174;
+                    const qrH = 145.8437867490381;
+                    const qrUrl = generateQRCodeData(initialData, qrPayload);
+                    const qrElement = {
+                      ...createQRCodeElement(initialData, qrX, qrY),
+                      width: qrW,
+                      height: qrH,
+                      qrData: qrUrl
+                    } as PermisElement;
+                    setElementsForCurrent(prev => [...prev, qrElement]);
+                    setSelectedIds([qrElement.id]);
+                    // Also place the QR data (code only) as text at bottom-center of the first page
+                    setPages(prev => {
+                      const next = [...prev] as PermisPages;
+                      const page0 = next[0] ? [...next[0]] : [];
+                      const bottomTextWidth = 500;
+                      const bottomMargin = 20;
+                      const bottomY = (DEFAULT_CANVAS.height - bottomMargin - 20);
+                      const displayCode = qrPayload || String(initialData?.code_demande || initialData?.codeDemande || '');
+                      const centerX = Math.max(0, Math.floor((DEFAULT_CANVAS.width - bottomTextWidth) / 2));
+                      page0.push({
+                        id: uuidv4(),
+                        type: 'text',
+                        x: centerX,
+                        y: bottomY,
+                        width: bottomTextWidth,
+                        text: displayCode,
+                        fontSize: 14,
+                        fontFamily: 'Arial',
+                        color: '#000',
+                        draggable: true,
+                        textAlign: 'center',
+                        opacity: 1,
+                        wrap: 'none',
+                        lineHeight: 1.2,
+                        meta: { pageIndex: 0, isFooter: true }
+                      } as any);
+                      next[0] = page0;
+                      pushHistory(next);
+                      return next;
+                    });
+                  } catch (e) {
+                    console.error('Failed to add QR', e);
                   }
-                  const qrElement = {
-                    ...createQRCodeElement(initialData, DEFAULT_CANVAS.width / 2 - 102, DEFAULT_CANVAS.height / 2 - 78),
-                    qrData: qrPayload || generateQRCodeData(initialData)
-                  } as PermisElement;
-                  setElementsForCurrent(prev => [...prev, qrElement]);
-                  setSelectedIds([qrElement.id]);
-                } catch (e) {
-                  console.error('Failed to add QR', e);
-                }
-              }}
-              title="Add QR Code"
-            >
+                }}
+                title="Add QR Code"
+              >
               <AiOutlineQrcode size={16} />
             </button>
           </div>
@@ -2099,6 +2511,12 @@ const pageLabel = (idx: number) => {
               scaleY={zoom}
               onClick={handleStageClick}
               onTap={handleStageClick}
+              onMouseDown={handleStageMouseDown}
+              onMouseMove={handleStageMouseMove}
+              onMouseUp={handleStageMouseUp}
+              onTouchStart={handleStageMouseDown}
+              onTouchMove={handleStageMouseMove}
+              onTouchEnd={handleStageMouseUp}
               style={{
                 backgroundImage: showGrid ? gridBackground(zoom) : 'none',
                 backgroundSize: `${20 * zoom}px ${20 * zoom}px`,
@@ -2117,6 +2535,7 @@ const pageLabel = (idx: number) => {
                       onDragEnd={handleDragEnd}
                       onTransformEnd={handleTransformEnd}
                       onDblClickText={() => openTextEditor(element)}
+                      onTransform={handleTransform}
                     />
                   );
                 })}
@@ -2125,14 +2544,36 @@ const pageLabel = (idx: number) => {
                   anchorSize={8}
                   anchorStrokeWidth={1}
                   borderStrokeWidth={1}
+                  flipEnabled={true}
+                  enabledAnchors={onlyLineSelected ? ['middle-left', 'middle-right'] : undefined}
                   boundBoxFunc={(oldBox, newBox) => {
                     const nodes = transformerRef.current?.nodes?.() || [];
                     const hasLine = nodes.some((n: any) => n.getClassName && n.getClassName() === 'Line');
                     if (hasLine) return newBox;
-                    if (newBox.width < 10 || newBox.height < 10) return oldBox;
+                    const minW = 4;
+                    const minH = 4;
+                    const shrinkingW = newBox.width < oldBox.width;
+                    const shrinkingH = newBox.height < oldBox.height;
+                    // Allow width-only resize even if height is very small
+                    // Block only when a dimension is being shrunk below the minimum
+                    if (shrinkingW && newBox.width < minW) return oldBox;
+                    if (shrinkingH && newBox.height < minH) return oldBox;
                     return newBox;
                   }}
                 />
+                {isSelecting && selectionRect && (
+                  <Rect
+                    x={selectionRect.x}
+                    y={selectionRect.y}
+                    width={selectionRect.width}
+                    height={selectionRect.height}
+                    fill="rgba(41,161,255,0.12)"
+                    stroke="#29a1ff"
+                    strokeWidth={1}
+                    dash={[4, 4]}
+                    listening={false}
+                  />
+                )}
               </Layer>
             </Stage>
           </div>
@@ -2145,6 +2586,10 @@ const pageLabel = (idx: number) => {
                   prev ? { ...prev, value: e.target.value } : prev
                 )
               }
+              onSelect={e => {
+                const target = e.target as HTMLTextAreaElement;
+                setTextOverlay(prev => prev ? { ...prev, selectionStart: target.selectionStart || 0, selectionEnd: target.selectionEnd || 0 } : prev);
+              }}
               onBlur={() => commitTextEditor(true)}
               onKeyDown={onTextAreaKeyDown}
               className={styles.textOverlay}
@@ -2152,14 +2597,17 @@ const pageLabel = (idx: number) => {
                 left: textOverlay.left,
                 top: textOverlay.top,
                 width: textOverlay.width,
-                height: textOverlay.height,
+                // Ensure editor stays usable and scrollable within viewport
+                height: Math.max(120, textOverlay.height || 0),
+                maxHeight: '80vh',
                 fontSize: textOverlay.fontSize,
                 fontFamily: textOverlay.fontFamily,
                 color: textOverlay.color,
                 lineHeight: `${textOverlay.lineHeight}`,
                 direction: textOverlay.direction === 'rtl' ? 'rtl' : 'ltr',
                 textAlign: textOverlay.textAlign as any,
-                overflow: 'hidden',
+                overflowY: 'auto',
+                overflowX: 'hidden',
               }}
             />
           )}
@@ -2236,7 +2684,7 @@ const pageLabel = (idx: number) => {
                   <div className={styles.propRow}>
                     <label>Color</label>
                     <div className={styles.colorRow}>
-                      <input type="color" value={firstSelected.color || '#000000'} onChange={(e) => handlePropertyChange('color', e.target.value)} />
+                      <input type="color" value={normalizeHexColor(firstSelected.color, '#000000')} onChange={(e) => handlePropertyChange('color', e.target.value)} />
                       <div className={styles.colorCode}>{firstSelected.color || '#000000'}</div>
                     </div>
                   </div>
@@ -2262,7 +2710,7 @@ const pageLabel = (idx: number) => {
                   <div className={styles.propRow}>
                     <label>Fill</label>
                     <div className={styles.colorRow}>
-                      <input type="color" value={(firstSelected as any).fill || '#ffffff'} onChange={(e) => handlePropertyChange('fill', e.target.value)} />
+                      <input type="color" value={normalizeHexColor((firstSelected as any).fill, '#ffffff')} onChange={(e) => handlePropertyChange('fill', e.target.value)} />
                       <div className={styles.colorCode}>{(firstSelected as any).fill || '#ffffff'}</div>
                     </div>
                   </div>
@@ -2270,7 +2718,7 @@ const pageLabel = (idx: number) => {
                   <div className={styles.propRow}>
                     <label>Border</label>
                     <div className={styles.inlineInputs}>
-                      <input type="color" value={(firstSelected as any).stroke || '#000000'} onChange={(e) => handlePropertyChange('stroke', e.target.value)} />
+                      <input type="color" value={normalizeHexColor((firstSelected as any).stroke, '#000000')} onChange={(e) => handlePropertyChange('stroke', e.target.value)} />
                       <input type="number" value={(firstSelected as any).strokeWidth || 1} onChange={(e) => handlePropertyChange('strokeWidth', parseInt(e.target.value || '1'))} />
                     </div>
                   </div>
@@ -2281,6 +2729,183 @@ const pageLabel = (idx: number) => {
                       <input type="number" value={(firstSelected as any).cornerRadius || 0} onChange={(e) => handlePropertyChange('cornerRadius', parseInt(e.target.value || '0'))} />
                     </div>
                   )}
+                </>
+              )}
+
+              {firstSelected.type === 'table' && (
+                <>
+                  <div className={styles.propRow}>
+                    <label>Header Text</label>
+                    <input type="text" value={(firstSelected as any).headerText || ''} onChange={(e) => handlePropertyChange('headerText', e.target.value)} />
+                  </div>
+                  <div className={styles.propRow}>
+                    <label>Structure</label>
+                    <div className={styles.inlineInputs}>
+                      <div className={styles.small}>Blocks</div>
+                      <input type="number" min={1} max={5} value={(firstSelected as any).blockCols || 1} onChange={(e) => handlePropertyChange('blockCols', Math.max(1, Math.min(5, parseInt(e.target.value || '1'))))} />
+                      <div className={styles.small}>Rows/Block</div>
+                      <input type="number" min={1} max={60} value={(firstSelected as any).rowsPerCol || 10} onChange={(e) => handlePropertyChange('rowsPerCol', Math.max(1, Math.min(60, parseInt(e.target.value || '10'))))} />
+                    </div>
+                  </div>
+                  <div className={styles.propRow}>
+                    <label>Sizes</label>
+                    <div className={styles.inlineInputs}>
+                      <div className={styles.small}>Row</div>
+                      <input type="number" min={12} max={80} value={(firstSelected as any).rowHeight || 34} onChange={(e) => handlePropertyChange('rowHeight', Math.max(12, parseInt(e.target.value || '34')))} />
+                      <div className={styles.small}>Header H</div>
+                      <input type="number" min={0} max={120} value={(firstSelected as any).headerHeight || 48} onChange={(e) => handlePropertyChange('headerHeight', Math.max(0, parseInt(e.target.value || '48')))} />
+                    </div>
+                  </div>
+                  <div className={styles.propRow}>
+                    <label>Colors</label>
+                    <div className={styles.inlineInputs}>
+                      <div className={styles.small}>Header</div>
+                      <input type="color" value={normalizeHexColor((firstSelected as any).headerFill, '#f5f5f5')} onChange={(e) => handlePropertyChange('headerFill', e.target.value)} />
+                      <div className={styles.small}>Alt Row</div>
+                      <input type="color" value={normalizeHexColor((firstSelected as any).altRowFill, '#f8f8f8')} onChange={(e) => handlePropertyChange('altRowFill', e.target.value)} />
+                      <div className={styles.small}>Grid</div>
+                      <input type="color" value={normalizeHexColor((firstSelected as any).tableGridColor, '#d0d0d0')} onChange={(e) => handlePropertyChange('tableGridColor', e.target.value)} />
+                      <div className={styles.small}>Grid W</div>
+                      <input type="number" min={0} max={4} step={0.2} value={(firstSelected as any).tableGridWidth ?? 1} onChange={(e) => handlePropertyChange('tableGridWidth', parseFloat(e.target.value || '1'))} />
+                    </div>
+                  </div>
+                  <div className={styles.propRow}>
+                    <label>Borders</label>
+                    <div className={styles.inlineInputs}>
+                      <div className={styles.small}>Cell Borders</div>
+                      <select value={(firstSelected as any).showCellBorders === false ? 'off' : 'on'} onChange={(e) => handlePropertyChange('showCellBorders', e.target.value === 'on')}>
+                        <option value="on">On</option>
+                        <option value="off">Off</option>
+                      </select>
+                      <div className={styles.small}>Outer</div>
+                      <input type="color" value={normalizeHexColor((firstSelected as any).outerBorderColor || (firstSelected as any).stroke, '#000000')} onChange={(e) => handlePropertyChange('outerBorderColor', e.target.value)} />
+                      <input type="number" min={0} max={4} step={0.2} value={(firstSelected as any).outerBorderWidth ?? (firstSelected as any).strokeWidth ?? 1.2} onChange={(e) => handlePropertyChange('outerBorderWidth', parseFloat(e.target.value || '1.2'))} />
+                    </div>
+                  </div>
+                  <div className={styles.propRow}>
+                    <label>Header Align</label>
+                    <select value={(firstSelected as any).headerTextAlign || 'center'} onChange={(e) => handlePropertyChange('headerTextAlign', e.target.value)}>
+                      <option value="left">Left</option>
+                      <option value="center">Center</option>
+                      <option value="right">Right</option>
+                    </select>
+                  </div>
+                  <div className={styles.propRow}>
+                    <label>Padding</label>
+                    <input type="number" min={0} max={32} value={(firstSelected as any).cellPadding ?? 8} onChange={(e) => handlePropertyChange('cellPadding', parseInt(e.target.value || '8'))} />
+                  </div>
+                  <div className={styles.propRow}>
+                    <label>Column Widths</label>
+                    <input
+                      type="text"
+                      value={((firstSelected as any).colWidths || []).join(',')}
+                      placeholder="60,90,90"
+                      onChange={(e) => {
+                        const parts = e.target.value.split(',').map(s => parseInt(s.trim() || '0')).filter(n => !isNaN(n) && n > 0);
+                        handlePropertyChange('colWidths', parts.length ? parts : [60,90,90]);
+                      }}
+                    />
+                  </div>
+                  <div className={styles.propRow}>
+                    <label>Rows</label>
+                    <div className={styles.inlineInputs}>
+                      <div className={styles.small}>{Array.isArray((firstSelected as any).tableData) ? (firstSelected as any).tableData.length : 0}</div>
+                      <button className={styles.iconBtn} onClick={() => {
+                        setElementsForCurrent(prev => prev.map(el => {
+                          if (el.id !== firstSelected.id) return el;
+                          const rows = Array.isArray((el as any).tableData) ? [...(el as any).tableData] : [];
+                          rows.push({});
+                          return { ...(el as any), tableData: rows } as any;
+                        }));
+                      }}>Add Row</button>
+                      <button className={styles.iconBtn} onClick={() => {
+                        setElementsForCurrent(prev => prev.map(el => {
+                          if (el.id !== firstSelected.id) return el;
+                          const rows = Array.isArray((el as any).tableData) ? [...(el as any).tableData] : [];
+                          rows.pop();
+                          return { ...(el as any), tableData: rows } as any;
+                        }));
+                      }}>Remove Last</button>
+                      <button className={styles.iconBtn} onClick={() => {
+                        setElementsForCurrent(prev => prev.map(el => (el.id === firstSelected.id ? { ...(el as any), tableData: [] } as any : el)));
+                      }}>Clear</button>
+                    </div>
+                  </div>
+                  <div className={styles.propRow}>
+                    <label>Columns</label>
+                    <div className={styles.inlineInputs}>
+                      <button className={styles.iconBtn} onClick={() => {
+                        setElementsForCurrent(prev => prev.map(el => {
+                          if (el.id !== firstSelected.id) return el;
+                          const cols = Array.isArray((el as any).tableColumns) ? [...(el as any).tableColumns] : [];
+                          const idx = cols.length + 1;
+                          cols.push({ key: `col${idx}`, title: `Col ${idx}`, width: 100, align: 'left' });
+                          const cws = Array.isArray((el as any).colWidths) ? [...(el as any).colWidths] : [];
+                          cws.push(100);
+                          return { ...(el as any), tableColumns: cols, colWidths: cws } as any;
+                        }));
+                      }}>Add Column</button>
+                      <button className={styles.iconBtn} onClick={() => {
+                        setElementsForCurrent(prev => prev.map(el => {
+                          if (el.id !== firstSelected.id) return el;
+                          const cols = Array.isArray((el as any).tableColumns) ? [...(el as any).tableColumns] : [];
+                          cols.pop();
+                          const cws = Array.isArray((el as any).colWidths) ? [...(el as any).colWidths] : [];
+                          cws.pop();
+                          return { ...(el as any), tableColumns: cols, colWidths: cws } as any;
+                        }));
+                      }}>Remove Last</button>
+                    </div>
+                  </div>
+                  <div className={styles.propRow}>
+                    <label>Edit Column</label>
+                    <div className={styles.inlineInputs}>
+                      <input type="number" min={0} value={colEditIndex} onChange={(e) => setColEditIndex(parseInt(e.target.value || '0'))} />
+                      <input type="text" placeholder="key" value={cellEditKey} onChange={(e) => setCellEditKey(e.target.value)} />
+                      <input type="text" placeholder="title" value={cellEditValue} onChange={(e) => setCellEditValue(e.target.value)} />
+                      <button className={styles.iconBtn} onClick={() => {
+                        setElementsForCurrent(prev => prev.map(el => {
+                          if (el.id !== firstSelected.id) return el;
+                          const cols = Array.isArray((el as any).tableColumns) ? [...(el as any).tableColumns] : [];
+                          if (colEditIndex >= 0 && colEditIndex < cols.length) {
+                            const c = { ...cols[colEditIndex] } as any;
+                            if (cellEditKey) c.key = cellEditKey;
+                            if (cellEditValue) c.title = cellEditValue;
+                            cols[colEditIndex] = c;
+                          }
+                          return { ...(el as any), tableColumns: cols } as any;
+                        }));
+                      }}>Apply</button>
+                    </div>
+                  </div>
+                  <div className={styles.propRow}>
+                    <label>Set Cell</label>
+                    <div className={styles.inlineInputs}>
+                      <input type="number" min={0} value={cellEditRow} onChange={(e) => setCellEditRow(parseInt(e.target.value || '0'))} />
+                      <select value={cellEditKey} onChange={(e) => setCellEditKey(e.target.value)}>
+                        {((firstSelected as any).tableColumns || []).map((c: any) => <option key={c.key} value={c.key}>{c.key}</option>)}
+                      </select>
+                      <input type="text" value={cellEditValue} onChange={(e) => setCellEditValue(e.target.value)} />
+                      <button className={styles.iconBtn} onClick={() => {
+                        setElementsForCurrent(prev => prev.map(el => {
+                          if (el.id !== firstSelected.id) return el;
+                          const rows = Array.isArray((el as any).tableData) ? [...(el as any).tableData] : [];
+                          while (cellEditRow >= rows.length) rows.push({});
+                          const r = { ...(rows[cellEditRow] || {}) } as any;
+                          r[cellEditKey] = cellEditValue;
+                          rows[cellEditRow] = r;
+                          return { ...(el as any), tableData: rows } as any;
+                        }));
+                      }}>Apply</button>
+                    </div>
+                  </div>
+                  <div className={styles.propRow}>
+                    <button className={styles.actionBtn} onClick={() => {
+                      const coords: any[] = Array.isArray(initialData?.coordinates) ? initialData.coordinates : [];
+                      const dataRows = coords.map((c: any) => ({ point: undefined, x: String(c.x ?? ''), y: String(c.y ?? '') }));
+                      handlePropertyChange('tableData', dataRows);
+                    }}>Reload from coordinates</button>
+                  </div>
                 </>
               )}
 
@@ -2310,19 +2935,6 @@ const pageLabel = (idx: number) => {
 };
 
 export default PermisDesigner;
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -6,7 +6,7 @@ export interface PermisSaveResponse { id: number; [key: string]: any; }
 export type LanguageCode = 'ar' | 'fr' | 'en' | string;
 export interface PermisElement {
   id: string;
-  type: 'text' | 'rectangle' | 'image' | 'line' | 'qrcode';
+  type: 'text' | 'rectangle' | 'image' | 'line' | 'qrcode' | 'table';
   x: number;
   y: number;
   width?: number;
@@ -38,6 +38,15 @@ export interface PermisElement {
   direction?: 'rtl' | 'ltr' | string;
   scaleX?: any;
   scaleY?: any;
+  // Rich text styling ranges (indices in 'text')
+  styledRanges?: Array<{
+    start: number;
+    end: number; // exclusive
+    fontWeight?: 'bold' | 'normal';
+    fontSize?: number;
+    underline?: boolean;
+    color?: string;
+  }>;
   // Articles linkage
   isArticle?: boolean;
   articleId?: string;
@@ -48,6 +57,31 @@ export interface PermisElement {
   meta?: any;
   align?: 'left' | 'center' | 'right';
   fontWeight?: string;
+
+  // Table-specific (when type === 'table')
+  rowsPerCol?: number;       // number of rows per block column
+  blockCols?: number;        // number of repeated blocks horizontally
+  colWidths?: number[];      // widths of columns in a block (scaled on render)
+  rowHeight?: number;        // base row height
+  headerText?: string;       // text above the table
+  headerHeight?: number;     // header band height
+  headerFill?: string;       // header background color
+  altRowFill?: string;       // alternate row fill color
+  showHeader?: boolean;      // toggle header band
+  tableFontFamily?: string;  // font for table text
+  tableFontSize?: number;    // font size for table text
+  tableTextAlign?: 'left' | 'center' | 'right';
+  // visual options
+  showCellBorders?: boolean;
+  tableGridColor?: string;
+  tableGridWidth?: number;
+  outerBorderColor?: string;
+  outerBorderWidth?: number;
+  headerTextAlign?: 'left' | 'center' | 'right';
+  cellPadding?: number;
+  // data matrix: each item is a row object for the logical dataset (mapped across blocks)
+  tableData?: Array<Record<string, string | number>>;
+  tableColumns?: Array<{ key: string; title: string; width?: number; align?: 'left' | 'center' | 'right' }>;
 }
 
 export interface PermisDesignerProps {
@@ -98,6 +132,8 @@ export interface TextEditOverlay {
   textAlign?: 'left' | 'center' | 'right';
   lineHeight?: number;
   height?: number;
+  selectionStart?: number;
+  selectionEnd?: number;
 }
 
 export interface ArticleItem {

@@ -208,15 +208,16 @@
 /* Properties panel */
 .properties {
   width: 300px;
-  flex: 0 0 300px;
+  flex: 0 0 450px;
   background: var(--panel);
   border-radius: var(--radius);
   border: 1px solid rgba(10,20,30,0.03);
   padding: 12px;
   box-shadow: var(--shadow);
-  height: calc(100vh - 170px);
+  height: auto;
   overflow:auto;
 }
+
 
 .propsInner h3 {
   margin: 0 0 8px 0;

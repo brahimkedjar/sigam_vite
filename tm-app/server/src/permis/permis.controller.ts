@@ -1,9 +1,21 @@
-import { Controller, Get, Param, Query, Post } from '@nestjs/common';
+import { Controller, Get, Param, Query, Post, Body } from '@nestjs/common';
 import { PermisService } from './permis.service';
 
 @Controller('permis')
 export class PermisController {
   constructor(private readonly permisService: PermisService) {}
+
+  // Verify first to avoid matching ':id' with 'verify'
+  @Get('verify')
+  async verifyByQr(@Query('code') code: string) {
+    if (!code) return { exists: false };
+    try {
+      return await this.permisService.verifyByQrCode(code);
+    } catch (e) {
+      try { console.error('[verifyByQr] unexpected error:', (e as any)?.message || e); } catch {}
+      return { exists: false };
+    }
+  }
 
   @Get(':id')
   async getPermis(@Param('id') id: string) {
@@ -32,7 +44,8 @@ export class PermisController {
   }
 
   @Post(':id/qrcode/generate')
-  async generateQrForPermis(@Param('id') id: string) {
-    return this.permisService.generateAndSaveQrCode(id);
+  async generateQrForPermis(@Param('id') id: string, @Body() body?: any) {
+    const by = body?.by || body?.user || body?.username || '';
+    return this.permisService.generateAndSaveQrCode(id, by);
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+ï»¿import { Injectable } from '@nestjs/common';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
@@ -21,7 +21,8 @@ const DEFAULT_COLUMNS = {
     detenteur: process.env.ACCESS_COL_DETENTEUR || 'idDetenteur',
     superficie: process.env.ACCESS_COL_SUPERFICIE || 'Superficie',
     duree: process.env.ACCESS_COL_DUREE || '',
-    localisation: process.env.ACCESS_COL_LOCALISATION || 'LieuDit',
+    // Use Wilaya as localisation (was LieuDit before)
+    localisation: process.env.ACCESS_COL_LOCALISATION || 'Wilaya',
     dateCreation: process.env.ACCESS_COL_DATE || 'DateDemande',
     // Added for duration calculation
     dateDebut: process.env.ACCESS_COL_DATE_DEBUT || 'DateOctroi',
@@ -97,31 +98,47 @@ export class PermisService {
     if (dDebut && dFin && dFin.getFullYear() > 1900) {
       const y = diffYears(dDebut, dFin);
       const y2 = String(y).padStart(2, '0');
-      const words: Record<number, string> = { 1: 'ÓäÉ', 2: 'ÓäÊÇä', 3: 'ËáÇË', 4: 'ÃÑÈÚ', 5: 'ÎãÓ', 6: 'ÓÊ', 7: 'ÓÈÚ', 8: 'ËãÇä', 9: 'ÊÓÚ', 10: 'ÚÔÑ' };
-      const word = words[y] ? (y <= 2 ? words[y] : `${words[y]} (${y2}) ÓäæÇÊ`) : `(${y2}) ÓäæÇÊ`;
-      // Compose full text with tatweel in ãöä/Åáì as per example
-      // Example: (ÇáãÜÜÏÉ: ÃÑÈÚÉ (04) ÓäæÇÊ (ãÜÜä 18/12/2025 ÅáÜÜì 18/12/2029))
+      const words: Record<number, string> = { 1: 'ï¿½ï¿½ï¿½', 2: 'ï¿½ï¿½ï¿½ï¿½ï¿½', 3: 'ï¿½ï¿½ï¿½ï¿½', 4: 'ï¿½ï¿½ï¿½ï¿½', 5: 'ï¿½ï¿½ï¿½', 6: 'ï¿½ï¿½', 7: 'ï¿½ï¿½ï¿½', 8: 'ï¿½ï¿½ï¿½ï¿½', 9: 'ï¿½ï¿½ï¿½', 10: 'ï¿½ï¿½ï¿½' };
+      const word = words[y] ? (y <= 2 ? words[y] : `${words[y]} (${y2}) ï¿½ï¿½ï¿½ï¿½ï¿½`) : `(${y2}) ï¿½ï¿½ï¿½ï¿½ï¿½`;
+      // Compose full text with tatweel in ï¿½ï¿½ï¿½/ï¿½ï¿½ï¿½ as per example
+      // Example: (ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½: ï¿½ï¿½ï¿½ï¿½ï¿½ (04) ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ 18/12/2025 ï¿½ï¿½ï¿½ï¿½ï¿½ 18/12/2029))
       if (y <= 2) {
         // normalize singular/dual
-        const noun = y === 1 ? 'ÓäÉ' : 'ÓäÊÇä';
-        dureeDisplayAr = `${word} (ãÜÜä ${fmtFr(dDebut)} ÅáÜÜì ${fmtFr(dFin)})`;
+        const noun = y === 1 ? 'ï¿½ï¿½ï¿½' : 'ï¿½ï¿½ï¿½ï¿½ï¿½';
+        dureeDisplayAr = `${word} (ï¿½ï¿½ï¿½ï¿½ ${fmtFr(dDebut)} ï¿½ï¿½ï¿½ï¿½ï¿½ ${fmtFr(dFin)})`;
       } else {
-        dureeDisplayAr = `${word} (ãÜÜä ${fmtFr(dDebut)} ÅáÜÜì ${fmtFr(dFin)})`;
+        dureeDisplayAr = `${word} (ï¿½ï¿½ï¿½ï¿½ ${fmtFr(dDebut)} ï¿½ï¿½ï¿½ï¿½ï¿½ ${fmtFr(dFin)})`;
       }
     }
+
+    // Normalize detenteur payload to include Arabic/Latin names if available
+    const detNorm = detData ? {
+      id: detData.id ?? detData.Id ?? detData.ID ?? toStr(r[c.detenteur]),
+      Nom: detData.Nom ?? detData.nom ?? detData.RaisonSociale ?? detData.raison_sociale ?? detData['Raison Sociale'] ?? detData.raisonSociale ?? detData.denomination ?? detData.nom_societe ?? detData.nom_societeFR ?? '',
+      NomArab: detData.NomArab ?? detData.NomAR ?? detData.nomAR ?? detData.nom_ar ?? detData.nom_societeAR ?? '',
+      nom_societeFR: detData.nom_societeFR ?? detData.Nom ?? detData.nom ?? detData.RaisonSociale ?? '',
+      nom_societe: detData.nom_societe ?? detData.Nom ?? detData.nom ?? '',
+      nom_ar: detData.nom_ar ?? detData.NomArab ?? detData.NomAR ?? '',
+      raison_sociale: detData.raison_sociale ?? detData.RaisonSociale ?? detData['Raison Sociale'] ?? ''
+    } : null;
 
     const val: any = {
       id: r[c.id],
       typePermis: typeData || toStr(r[c.typePermis]),
       codeDemande: toStr(r[c.codeDemande]),
-      detenteur: toStr(r[c.detenteur]),
+      detenteur: detNorm || toStr(r[c.detenteur]),
       superficie: toNum(r[c.superficie]),
       duree: c.duree ? toStr(r[c.duree]) : '',
-      localisation: toStr(r[c.localisation]),
+      // Localisation now prefers Wilaya; keep broad fallbacks for older schemas
+      localisation: toStr(
+        (r as any)[c.localisation] ??
+        (r as any).Wilaya ?? (r as any).wilaya ?? (r as any).idWilaya ??
+        (r as any).LieuDit ?? (r as any).lieudit ?? ''
+      ),
       dateCreation: r[c.dateCreation] ? new Date(r[c.dateCreation]).toISOString() : null,
       coordinates: await this.getCoordinatesByPermisId(String(r[c.id])).catch(() => []),
       duree_display_ar: dureeDisplayAr,
-      detenteur_ar: detData?.NomArab || detData?.nom_ar || ''
+      detenteur_ar: (detNorm && (detNorm.NomArab || detNorm.nom_ar)) || detData?.NomArab || detData?.nom_ar || ''
     };
     // Add compatibility fields expected by designer
     val.code_demande = val.codeDemande;
@@ -166,11 +183,12 @@ export class PermisService {
     const t = DEFAULT_TABLES.permis;
     const c = DEFAULT_COLUMNS.permis;
     const isNumericId = /^\d+$/.test(procedureId);
-    const sql = `SELECT ${c.id} as perm_id, ${c.codeDemande} as code FROM ${t} WHERE ${c.id} = ${isNumericId ? procedureId : this.access.escapeValue(procedureId)}`;
+    // Avoid using alias 'code' which may trigger circular alias error in Access
+    const sql = `SELECT ${c.id} AS perm_id, ${c.codeDemande} AS perm_code FROM [${t}] WHERE ${c.id} = ${isNumericId ? procedureId : this.access.escapeValue(procedureId)}`;
     const rows = await this.access.query(sql);
     if (!rows.length) return { exists: false };
     const r = rows[0] as any;
-    return { exists: true, permisId: Number(r.perm_id), permisCode: String(r.code) };
+    return { exists: true, permisId: Number(r.perm_id), permisCode: String(r.perm_code) };
   }
 
   private async getTypeById(typeId: any) {
@@ -211,6 +229,7 @@ export class PermisService {
     await tryAlter(`ALTER TABLE ${t} ADD COLUMN DateHeureSysteme TEXT(50)`);
     await tryAlter(`ALTER TABLE ${t} ADD COLUMN QrCode TEXT(50)`);
     await tryAlter(`ALTER TABLE ${t} ADD COLUMN code_wilaya TEXT(5)`);
+    await tryAlter(`ALTER TABLE ${t} ADD COLUMN Qrinsererpar TEXT(100)`);
   }
 
   private loadWilayaCodeMap(): Record<string, string> {
@@ -232,17 +251,24 @@ export class PermisService {
 
   private generateUniqueQr(codePermis: string, typeCode: string, dateDemandeRaw: any, codeWilaya: string, nomSociete: string) {
     const date_systeme = new Date();
-    const date_heure_systeme = date_systeme.toISOString();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const date_heure_systeme = `${date_systeme.getFullYear()}-${pad(date_systeme.getMonth()+1)}-${pad(date_systeme.getDate())}T${pad(date_systeme.getHours())}:${pad(date_systeme.getMinutes())}:${pad(date_systeme.getSeconds())}`;
     const horodatage_hash = date_heure_systeme.replace(/[-:TZ.]/g, '');
     const date_demande = String(dateDemandeRaw || '').replace(/[^0-9]/g, '');
     const combined = `${codePermis}${typeCode}${date_demande}${codeWilaya}${nomSociete}${horodatage_hash}`;
+    try {
+      // Log the exact combined string used to generate the QR code hash
+      // (codePermis + typeCode + date_demande + codeWilaya + nomSociete + horodatage_hash)
+      // eslint-disable-next-line no-console
+      console.log('[QR GENERATE] raw combined string:', combined);
+    } catch {}
     const hash = crypto.createHash('sha256').update(combined).digest('hex').toUpperCase();
     const base = hash.substring(0, 20);
     const code_unique = (base.match(/.{1,5}/g) || [base]).join('-');
     return { code_unique, date_heure_systeme };
   }
 
-  async generateAndSaveQrCode(id: string) {
+  async generateAndSaveQrCode(id: string, insertedBy?: string) {
     await this.ensureQrColumns();
     const t: any = (DEFAULT_TABLES as any).permis;
     const c: any = (DEFAULT_COLUMNS as any).permis;
@@ -262,11 +288,67 @@ export class PermisService {
     const typeCode = String((type as any)?.code || (type as any)?.Code || '').trim();
     const nomSociete = String((det as any)?.Nom || (det as any)?.nom || '').trim();
     const { code_unique, date_heure_systeme } = this.generateUniqueQr(codePermis, typeCode, r[c.dateCreation], codeWilaya, nomSociete);
-    const up = `UPDATE ${t} SET DateHeureSysteme = ${this.access.escapeValue(date_heure_systeme)}, QrCode = ${this.access.escapeValue(code_unique)}, code_wilaya = ${this.access.escapeValue(codeWilaya)} WHERE ${c.id} = ${isNumericId ? id : this.access.escapeValue(String(id))}`;
+
+    // Log all relevant attributes to the backend console for traceability
+    try {
+      const combinedData = {
+        id: String(id),
+        codePermis,
+        typeCode,
+        typeName: (type as any)?.nom || (type as any)?.Nom || undefined,
+        detenteurName: (det as any)?.Nom || (det as any)?.nom || undefined,
+        wilayaId,
+        codeWilaya,
+        localisation: (r as any)[c.localisation],
+        superficie: (r as any)[c.superficie],
+        dateCreation: (r as any)[c.dateCreation],
+        dateHeureSysteme: date_heure_systeme,
+        insertedBy: insertedBy || '',
+        qrCode: code_unique,
+      };
+      // eslint-disable-next-line no-console
+      console.log('[QR GENERATE] combined data =>', combinedData);
+    } catch {}
+    const up = `UPDATE ${t} SET DateHeureSysteme = ${this.access.escapeValue(date_heure_systeme)}, QrCode = ${this.access.escapeValue(code_unique)}, code_wilaya = ${this.access.escapeValue(codeWilaya)}, Qrinsererpar = ${this.access.escapeValue(String(insertedBy || ''))} WHERE ${c.id} = ${isNumericId ? id : this.access.escapeValue(String(id))}`;
     await this.access.query(up).catch(() => {});
-    return { ok: true, QrCode: code_unique, DateHeureSysteme: date_heure_systeme, code_wilaya: codeWilaya };
+    return { ok: true, QrCode: code_unique, DateHeureSysteme: date_heure_systeme, code_wilaya: codeWilaya, insertedBy: insertedBy || '' };
+  }
+
+  async verifyByQrCode(code: string) {
+    const t = (DEFAULT_TABLES as any).permis;
+    const c: any = (DEFAULT_COLUMNS as any).permis;
+    const lookup = String(code ?? '').trim();
+    if (!lookup) return { exists: false };
+    const literal = `'${lookup.replace(/'/g, "''")}'`;
+    const sql = `SELECT TOP 1 * FROM [${t}] WHERE [QrCode] = ${literal}`;
+    let rows: any[] = [];
+    try {
+      try { console.log('[verifyByQrCode] mode=', (this.access as any)?.isOdbcMode?.() ? 'odbc' : 'adodb', 'code=', lookup); } catch {}
+      rows = await this.access.query(sql);
+    } catch (e) {
+      try { console.error('[verifyByQrCode] query failed, sql=', sql, (e as any)?.message || e); } catch {}
+      return { exists: false };
+    }
+    if (!rows || rows.length === 0) return { exists: false };
+    const r: any = rows[0];
+    // Minimal normalized info, similar to getPermisById
+    const typeId = r[c.typePermis];
+    const type = await this.getTypeById(typeId).catch(() => null);
+    const detId = r[c.detenteur];
+    const det = await this.getDetenteurById(detId).catch(() => null);
+    return {
+      exists: true,
+      permis: {
+        id: r[c.id],
+        codeDemande: r[c.codeDemande],
+        typePermis: { code: (type as any)?.code || (type as any)?.Code, nom: (type as any)?.nom || (type as any)?.Nom },
+        detenteur: { nom: (det as any)?.Nom || (det as any)?.nom },
+        localisation: r[c.localisation],
+        superficie: r[c.superficie],
+        QrCode: r.QrCode,
+        Qrinsererpar: r.Qrinsererpar,
+        DateHeureSysteme: r.DateHeureSysteme,
+      }
+    };
   }
 }
-
-
-

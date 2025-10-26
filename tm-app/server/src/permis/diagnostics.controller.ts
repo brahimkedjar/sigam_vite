@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { AccessService } from './access.service';
 
 @Controller('diagnostics')
@@ -8,6 +8,11 @@ export class DiagnosticsController {
   @Get('access')
   async accessDiagnostics() {
     return this.access.diagnostics();
+  }
+
+  @Get('schema/:table')
+  async schema(@Param('table') table: string) {
+    return this.access.getTableColumns(table);
   }
 }
 

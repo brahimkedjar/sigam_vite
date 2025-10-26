@@ -1,7 +1,51 @@
 import fs from "fs";
 import * as crypto from "crypto"; // module pour le hachage SHA-256
-import { parse } from "csv-parse/sync";
-import { stringify } from "csv-stringify/sync";
+
+// Minimal CSV utilities (semicolon delimiter, supports quotes)
+function splitCsvLine(line: string, delimiter = ";"): string[] {
+  const out: string[] = [];
+  let cur = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i]!;
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') { // escaped quote
+        cur += '"'; i++;
+      } else {
+        inQuotes = !inQuotes;
+      }
+      continue;
+    }
+    if (!inQuotes && ch === delimiter) { out.push(cur); cur = ""; continue; }
+    if (!inQuotes && (ch === "\r" || ch === "\n")) { continue; }
+    cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
+
+function parseCsv(content: string, delimiter = ";"): string[][] {
+  const lines = content.split(/\r?\n/);
+  const rows: string[][] = [];
+  for (const raw of lines) {
+    if (raw == null) continue;
+    const line = raw.replace(/^\ufeff/, "");
+    if (line.trim() === "") continue; // skip empty
+    rows.push(splitCsvLine(line, delimiter));
+  }
+  return rows;
+}
+
+function stringifyCsv(rows: string[][], delimiter = ";"): string {
+  const esc = (v: string) => {
+    if (v == null) return "";
+    const needs = /["\n\r]/.test(v) || v.includes(delimiter);
+    let s = String(v);
+    if (needs) { s = '"' + s.replace(/"/g, '""') + '"'; }
+    return s;
+  };
+  return rows.map(r => r.map(esc).join(delimiter)).join("\n");
+}
 
 // Définition du type pour les tables utilisés
 interface Titre {
@@ -29,15 +73,19 @@ interface TypeTitre {
 //  lire un CSV et le convertir en tableau d’objets
 async function readCSV<T>(path: string): Promise<T[]> {
   const content = await fs.promises.readFile(path, "utf8");
-  const records = parse(content, {
-    columns: (header: string[]) =>
-      header.map((h) => h.replace(/^\ufeff/, "").trim()),
-    delimiter: ";",
-    bom: true,
-    trim: true,
-    skip_empty_lines: false,
-  }) as T[];
-  return records;
+  const rows = parseCsv(content, ";");
+  if (rows.length === 0) return [];
+  const header = rows[0]!.map(h => String(h || "").replace(/^\ufeff/, "").trim());
+  const out: T[] = [] as any;
+  for (let i = 1; i < rows.length; i++) {
+    const r = rows[i]!;
+    const obj: any = {};
+    for (let c = 0; c < header.length; c++) {
+      obj[header[c]!] = r[c] ?? "";
+    }
+    out.push(obj);
+  }
+  return out;
 }
 
 //écrire un CSV en conservant l’ordre des colonnes
@@ -46,21 +94,16 @@ function writeCSV<T extends Record<string, string>>(
   data: T[],
   columns: string[]
 ) {
-  const rows = data.map((entry) => {
-    const row: Record<string, string> = {};
+  const rows: string[][] = [];
+  rows.push(columns.slice());
+  for (const entry of data) {
+    const r: string[] = [];
     for (const col of columns) {
-      const value = entry[col];
-      row[col] = value ?? "";
+      r.push(entry[col] ?? "");
     }
-    return row;
-  });
-
-  const csvOutput = stringify(rows, {
-    header: true,
-    columns,
-    delimiter: ";",
-  });
-
+    rows.push(r);
+  }
+  const csvOutput = stringifyCsv(rows, ";");
   fs.writeFileSync(path, csvOutput, "utf8");
 }
 
