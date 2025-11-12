@@ -8,7 +8,6 @@
     "jsx": "react-jsx",
     "skipLibCheck": true,
     "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["*"],
       "next/router": ["src/next-compat/router.tsx"],
