@@ -43,13 +43,18 @@ export class DemandeService {
     throw new NotFoundException('Type de permis introuvable');
   }
 
-  // Get the "demande" type procedure
-  const typeProcedure = await this.prisma.typeProcedure.findFirst({
-    where: { libelle: 'demande' }
+  // Get the "demande" type procedure, auto-create it if missing
+  let typeProcedure = await this.prisma.typeProcedure.findFirst({
+    where: { libelle: { equals: 'demande', mode: 'insensitive' } }
   });
 
   if (!typeProcedure) {
-    throw new NotFoundException('Type de procédure "demande" introuvable');
+    typeProcedure = await this.prisma.typeProcedure.create({
+      data: {
+        libelle: 'demande',
+        description: 'Procédure par défaut pour la création des demandes',
+      },
+    });
   }
 
   // Generate code if not provided

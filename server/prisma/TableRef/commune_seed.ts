@@ -15,7 +15,7 @@ type CommuneCSV = {
 export async function main() {
   const communeData: any[] = [];
   const csvFilePath =
-    "C:\\Users\\A\\Desktop\\cleaned_df\\df_commune.csv";
+    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_commune.csv";
 
   fs.createReadStream(csvFilePath)
         .pipe(
@@ -27,7 +27,7 @@ export async function main() {
     .on("data", (row: CommuneCSV) => {
      
       communeData.push({
-        id_commune: Number(row.id_commune?.trim()),
+        id_commune: Number(row.id_commune.trim()),
         id_daira: row.id_daira ? Number(row.id_daira) : null,
         nom_communeFR: row.nom_communeFR,
         nom_communeAR: row.nom_communeAR,

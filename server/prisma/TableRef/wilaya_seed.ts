@@ -1,19 +1,21 @@
 import * as fs from 'fs';
-import * as path from 'path';
 import * as csv from 'csv-parser';
-import { PrismaClient, Antenne } from '@prisma/client';
+import {  PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-type AntenneCSV = {
-  id_antenne: string;  
-  nom: string;
-  localisation: string;
+type WilayaCSV = {
+  id_wilaya: string;
+  id_antenne: string; // Changed to string since CSV values are strings
+  code_wilaya: string;
+  nom_wilayaFR: string;
+  nom_wilayaAR: string;
+  zone: string;
 };
 
 export async function main() {
-  const antenneData: Antenne[] = [];
-  const csvFilePath = "C:\\Users\\A\\Desktop\\cleaned_df\\df_antenne.csv";
+  const wilayaData: any[] = [];
+  const csvFilePath = "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_wilaya.csv";
 
   // Check if file exists before trying to read it
   if (!fs.existsSync(csvFilePath)) {
@@ -33,45 +35,54 @@ export async function main() {
   }
 
   fs.createReadStream(csvFilePath)
-    .pipe(csv({ separator: ',' })) 
-    .on('data', (row: AntenneCSV) => {
+    .pipe(
+      csv({
+        separator: ';',
+        mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/g, ""), // supprime BOM + espaces
+      })
+    )
+    .on('data', (row: WilayaCSV) => {
       console.log("ROW:", row);
 
-      // Validate only the essential fields (id_antenne and nom)
-      if (!row.id_antenne || !row.nom) {
+      // Validate required fields
+      if (!row.id_wilaya || !row.id_antenne || !row.code_wilaya || !row.nom_wilayaFR) {
         console.warn('Skipping row with missing required data:', row);
         return;
       }
 
-      // Use empty string if localisation is missing or undefined
-      const localisation = row.localisation || '';
+      // Handle optional fields with defaults
+      const nom_wilayaAR = row.nom_wilayaAR || '';
+      const zone = row.zone || '';
 
-      antenneData.push({
+      wilayaData.push({
+        id_wilaya: Number(row.id_wilaya.trim()),
         id_antenne: Number(row.id_antenne),
-        nom: row.nom,
-        localisation: localisation,
+        code_wilaya: row.code_wilaya,
+        nom_wilayaFR: row.nom_wilayaFR,
+        nom_wilayaAR: nom_wilayaAR,
+        zone: zone,
       });
     })
     .on('end', async () => {
       console.log('CSV loaded, inserting into database...');
-      console.log(`Found ${antenneData.length} records to insert`);
+      console.log(`Found ${wilayaData.length} records to insert`);
 
-      if (antenneData.length === 0) {
+      if (wilayaData.length === 0) {
         console.log('No data to insert');
         await prisma.$disconnect();
         return;
       }
 
       try {
-        await prisma.antenne.createMany({
-          data: antenneData,
+        await prisma.wilaya.createMany({
+          data: wilayaData,
           skipDuplicates: true, 
         });
 
-        console.log(`Successfully inserted ${antenneData.length} antenne records`);
-        console.log("Seed Antenne finished successfully");
+        console.log(`Successfully inserted ${wilayaData.length} wilaya records`);
+        console.log("Seed Wilaya finished successfully");
       } catch (error) {
-        console.error("Error inserting Antenne:", error);
+        console.error("Error inserting Wilaya:", error);
       } finally {
         await prisma.$disconnect();
       }

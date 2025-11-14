@@ -51,6 +51,11 @@ async createInitialDemandeObligations(
   if (!permis) {
     throw new HttpException('Permis not found', HttpStatus.NOT_FOUND);
   }
+  if (!permis.typePermis) {
+    throw new HttpException('TypePermis not configured for this permis', HttpStatus.BAD_REQUEST);
+  }
+
+  const initialDuration = this.ensureInitialDuration(permis.typePermis);
 
   // Check if initial obligations already exist
   const existingInitialObligations = await this.prisma.obligationFiscale.findMany({
@@ -59,7 +64,7 @@ async createInitialDemandeObligations(
       // We can identify initial obligations by their earlier years or specific pattern
       annee_fiscale: {
         gte: dateAttribution.getFullYear(),
-        lte: dateAttribution.getFullYear() + permis.typePermis.duree_initiale - 1
+        lte: dateAttribution.getFullYear() + initialDuration - 1
       }
     },
     include: { typePaiement: true },
@@ -115,7 +120,7 @@ async createInitialDemandeObligations(
     permisId, 
     dateAttribution,
     false, // isRenewal = false
-    permis.typePermis.duree_initiale // Use initial duration
+    initialDuration // Use initial duration
   );
 
   // Combine all obligations
@@ -154,7 +159,7 @@ async createInitialDemandeObligations(
         dateAttribution, 
         tx,
         false, // isRenewal = false
-        permis.typePermis.duree_initiale
+        initialDuration
       );
     }
 
@@ -357,14 +362,18 @@ async createRenewalObligations(
       return;
     }
 
+    if (!obligation.permis?.typePermis) {
+      throw new HttpException('TypePermis not loaded for obligation', HttpStatus.BAD_REQUEST);
+    }
+
     const obligationYear = obligation.annee_fiscale;
     const attributionYear = dateAttribution.getFullYear();
     const attributionMonth = dateAttribution.getMonth() + 1;
     
     // For renewals, use the renewal duration, otherwise use initial duration
-    const permitDuration = isRenewal && renewalDuration 
-      ? renewalDuration 
-      : obligation.permis.typePermis.duree_initiale;
+    const permitDuration = isRenewal
+      ? (renewalDuration ?? this.ensureInitialDuration(obligation.permis.typePermis))
+      : this.ensureInitialDuration(obligation.permis.typePermis);
 
     console.log('Parameters:', { obligationYear, attributionYear, permitDuration, isRenewal });
 
@@ -537,20 +546,29 @@ async createRenewalObligations(
   if (!permis) {
     throw new HttpException('Permis not found', HttpStatus.NOT_FOUND);
   }
+  if (!permis.typePermis) {
+    throw new HttpException('TypePermis not configured for this permis', HttpStatus.BAD_REQUEST);
+  }
 
-  const requiresSurfaceTax = ['PEM', 'PXM', 'PEC', 'PXC'].includes(permis.typePermis.code_type);
+  const codeType = this.ensureCodeType(permis.typePermis);
+  const requiresSurfaceTax = ['PEM', 'PXM', 'PEC', 'PXC'].includes(codeType);
   if (!requiresSurfaceTax) {
-    console.log('No surface tax required for permit type:', permis.typePermis.code_type);
+    console.log('No surface tax required for permit type:', codeType);
     return [];
+  }
+
+  if (!permis.typePermis.taxe) {
+    throw new HttpException('Taxe superficiaire missing for this type de permis', HttpStatus.BAD_REQUEST);
   }
 
   const attributionYear = dateAttribution.getFullYear();
   const attributionMonth = dateAttribution.getMonth() + 1; // JavaScript months are 0-indexed
   
   // For renewals, use the provided renewal duration instead of initial duration
-  const dureeTotale = isRenewal && renewalDuration 
-    ? renewalDuration 
-    : permis.typePermis.duree_initiale;
+  const initialDuration = this.ensureInitialDuration(permis.typePermis);
+  const dureeTotale = isRenewal
+    ? (renewalDuration ?? initialDuration)
+    : initialDuration;
   
   // For renewals, use the appropriate period type based on nombre_renouvellements
   const periodeType = isRenewal 
@@ -646,6 +664,28 @@ async createRenewalObligations(
     } else {
       return 'autre_renouvellement';
     }
+  }
+
+  private ensureInitialDuration(
+    typePermis: { duree_initiale: number | null | undefined; lib_type?: string | null }
+  ): number {
+    if (typePermis?.duree_initiale == null) {
+      throw new HttpException(
+        `La durée initiale n'est pas configurée pour le type de permis ${typePermis?.lib_type ?? ''}`,
+        HttpStatus.BAD_REQUEST
+      );
+    }
+    return typePermis.duree_initiale;
+  }
+
+  private ensureCodeType(typePermis: { code_type: string | null | undefined }): string {
+    if (!typePermis?.code_type) {
+      throw new HttpException(
+        `Le code type n'est pas configuré pour ce type de permis`,
+        HttpStatus.BAD_REQUEST
+      );
+    }
+    return typePermis.code_type;
   }
 
   private calculateSurfaceTaxForPeriod(

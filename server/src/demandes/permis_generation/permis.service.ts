@@ -35,9 +35,14 @@ export class GeneratePermisService {
     throw new Error("Commune missing");
   }
 
+  const initialDuration = demande.typePermis.duree_initiale;
+  if (initialDuration == null) {
+    throw new Error("TypePermis initial duration missing");
+  }
+
   const expirationDate = new Date();
   expirationDate.setFullYear(
-    expirationDate.getFullYear() + demande.typePermis.duree_initiale
+    expirationDate.getFullYear() + initialDuration
   );
 
   // Resolve default statut if available (e.g., "En vigueur"). If not found, leave unset.
@@ -56,7 +61,7 @@ export class GeneratePermisService {
       date_adjudication: null,
       date_octroi: new Date(),
       date_expiration: expirationDate,
-      duree_validite: demande.typePermis.duree_initiale,
+      duree_validite: initialDuration,
       lieu_ditFR: demande.lieu_ditFR || "",
       lieu_ditAR: demande.lieu_dit_ar || "",
       superficie: demande.superficie || 0,

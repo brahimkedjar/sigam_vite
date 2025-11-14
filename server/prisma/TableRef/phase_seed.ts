@@ -1,18 +1,20 @@
 import * as fs from 'fs';
 import * as csv from 'csv-parser';
-import { ExpertMinier, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-type ExpertCSV = {
-  id_expert: string;
-  nom_expert: string;
+type PhasesCSV = {
+  id_phase: string;
+  libelle: string;
+  ordre: string;
+  description: string;
 };
 
 export async function main() {
-  const expertData: any[] = [];
+  const phasesData: any[] = [];
   const csvFilePath =
-    "C:\\Users\\A\\Desktop\\cleaned_df\\df_expert.csv";
+    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_phases.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(
@@ -21,18 +23,20 @@ export async function main() {
           mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/g, ""), 
         })
       )
-    .on("data", (row: ExpertCSV) => {
-      expertData.push({
-        id_expert: Number(row.id_expert?.trim()),
-        nom_expert: row.nom_expert,
+    .on("data", (row: PhasesCSV) => {
+      phasesData.push({
+        id_phase: Number(row.id_phase.trim()),
+        libelle: row.libelle,
+        ordre: parseInt(row.ordre) || null,
+        description: row.description,
       });
     })
     .on("end", async () => {
       console.log("CSV loaded, inserting into database...");
 
       try {
-        await prisma.expertMinier.createMany({
-          data: expertData,
+        await prisma.phase.createMany({
+          data: phasesData,
           skipDuplicates: true,
         });
 

@@ -1,21 +1,20 @@
 import * as fs from 'fs';
 import * as csv from 'csv-parser';
-import { demandeMin, PrismaClient } from "@prisma/client";
+import { StatutJuridique, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-type DemMinCSV = {
-  id_demMin: string;
-  id_demande: string;
-  min_label: string;
-  min_teneur: string;
-  ordre_mineral: string;
+type StatutCSV = {
+  id_statutJuridique: string;
+  code_statut: string;
+  statut_ar: string;
+  statut_fr: string;
 };
 
 export async function main() {
-  const DemMinData: any[] = [];
+  const statutData: any[] = [];
   const csvFilePath =
-    "C:\\Users\\A\\Desktop\\cleaned_df\\df_demandeMin.csv";
+    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_statut.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(
@@ -24,21 +23,20 @@ export async function main() {
           mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/g, ""), 
         })
       )
-    .on("data", (row: DemMinCSV) => {
-      DemMinData.push({
-        id_demMin: Number(row.id_demMin?.trim()),
-        id_demande: Number(row.id_demande),
-        min_label: row.min_label,
-        min_teneur: parseFloat(row.min_teneur),
-        ordre_mineral: row.ordre_mineral
+    .on("data", (row: StatutCSV) => {
+      statutData.push({
+        id_statutJuridique: Number(row.id_statutJuridique.trim()),
+        code_statut: row.code_statut,
+        statut_ar: row.statut_ar,
+        statut_fr: row.statut_fr,
       });
     })
     .on("end", async () => {
       console.log("CSV loaded, inserting into database...");
 
       try {
-        await prisma.demandeMin.createMany({
-          data: DemMinData,
+        await prisma.statutJuridique.createMany({
+          data: statutData,
           skipDuplicates: true,
         });
 

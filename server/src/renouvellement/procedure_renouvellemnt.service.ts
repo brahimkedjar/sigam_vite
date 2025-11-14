@@ -138,7 +138,7 @@ export class ProcedureRenouvellementService {
 
     const currentRenewalCount = await this.countPreviousRenewals(permit.id);
 
-    if (currentRenewalCount >= permitType.nbr_renouv_max) {
+    if (currentRenewalCount >= permitType.nbr_renouv_max!) {
       throw new BadRequestException(`Maximum renewals (${permitType.nbr_renouv_max}) reached`);
     }
 
