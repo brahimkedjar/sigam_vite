@@ -120,6 +120,9 @@ model Antenne {
     id_antenne   Int       @id @default(autoincrement())
     nom          String
     localisation String?
+    Email String?
+    Telephone String?
+    Responsable String?
     wilayas      Wilaya[]
     
 }
@@ -394,19 +397,20 @@ model StatutPermis {
 
 model TypePermis {
     id                   Int                    @id @default(autoincrement())
-    id_taxe              Int
-    lib_type             String                 @unique //Permis de prospection / Permis d'exploration ...
-    code_type            String                 @unique // ppm / PEM / PXC ...
-    regime               String // mines / carriere
-    duree_initiale       Float // in years
-    nbr_renouv_max       Int
-    duree_renouv         Float // max renewal times
-    delai_renouv         Int // days before expiration
+    id_taxe              Int?
+    lib_type             String?                 @unique //Permis de prospection / Permis d'exploration ...
+    code_type            String?                @unique // ppm / PEM / PXC ...
+    regime               String? // mines / carriere
+    duree_initiale       Float? // in years
+    nbr_renouv_max       Int?
+    duree_renouv         Float? // max renewal times
+    delai_renouv         Int? // days before expiration
     superficie_max       Float?
+    ref_legales        String?
     permis               Permis[]
     DossierAdministratif DossierAdministratif[]
     Demande              Demande[]
-    taxe                 SuperficiaireBareme    @relation(fields: [id_taxe], references: [id])
+    taxe                 SuperficiaireBareme?    @relation(fields: [id_taxe], references: [id])
     Barems               BaremProduitetDroit[]
     PermisTemplate     PermisTemplate[]
     @@map("typepermis")
@@ -432,7 +436,9 @@ model TypeProcedure {
   id          Int          @id @default(autoincrement())
   libelle     String?      // demande / extension / renouvellement / modification / fusion ...
   description String?
-  phases      Phase[]      // Each type has its own phases
+  relationPhaseTypeProc relationPhaseTypeProc[]
+
+    // Each type has its own phases
   
   DossierAdministratif DossierAdministratif[]
   Bareme               BaremProduitetDroit[]
@@ -545,14 +551,24 @@ model Phase {
   libelle         String
   ordre           Int             // ordre global des phases
   description     String?
-  dureeEstimee    Int?            // en jours
-  typeProcedureId Int?            // Link to procedure type
-  
-  typeProcedure TypeProcedure?    @relation(fields: [typeProcedureId], references: [id])
+//   typeProcedureId Int?          
+  relationPhaseTypeProc relationPhaseTypeProc[]
   etapes        EtapeProc[]
   procedurePhases ProcedurePhase[]
   
   @@map("phase")
+}
+
+model relationPhaseTypeProc {
+  id_relation Int      @id @default(autoincrement())
+  id_phase        Int
+  id_typeProcedure Int
+  dureeEstimee Int?
+
+  phase          Phase          @relation(fields: [id_phase], references: [id_phase])
+  typeProcedure TypeProcedure  @relation(fields: [id_typeProcedure], references: [id])
+
+  @@map("relation_phase_typeprocedure")
 }
 
 
@@ -632,6 +648,7 @@ model Demande {
     locPointOrigine          String?
     duree_travaux_estimee    String?
     date_demarrage_prevue    DateTime?
+    LocPointOrigine   String?
     // nom_pre_signataire       String?
     qualite_signataire       String?
     montant_produit          String?
@@ -646,9 +663,9 @@ sources_financement  String?
     date_fin_ramassage         DateTime?
     num_enregist             String?
     AreaCat                  Float?                           
-
+    Nom_Prenom_Resp_Enregist String?
     statut_demande           String     //StatutDemande?
-
+    PP                     Boolean?
     wilaya          Wilaya?                  @relation(fields: [id_wilaya], references: [id_wilaya])
     daira           Daira?                   @relation(fields: [id_daira], references: [id_daira])
     commune         Commune?                 @relation(fields: [id_commune], references: [id_commune])
@@ -659,6 +676,7 @@ sources_financement  String?
     typeProcedure   TypeProcedure?            @relation(fields: [id_typeProc], references: [id])
     dossiersFournis DossierFournis[]
     renouvellement  ProcedureRenouvellement?
+    demInitial      demInitial?
     demFermeture    demFermeture?
     demAnnulation   demAnnulation?
     Substitution    demSubstitution?
@@ -668,7 +686,6 @@ sources_financement  String?
     fusion          demFusion?
     transfert       demTransfert?
     verificationGeo demandeVerificationGeo?
-    obs             demandeObs?
     min             demandeMin?
     CahierCharge    CahierCharge[]
     inscriptionProvisoire InscriptionProvisoire?
@@ -679,6 +696,23 @@ sources_financement  String?
 model ProcedureRenouvellement {
     id_renouvellement   Int       @id @default(autoincrement())
     id_demande          Int       @unique
+    duree_trvx   Int?
+    qualite_signataire  String?
+    date_demarrage_prevue    DateTime?
+    dossier_recevable    Boolean?
+    dossier_complet    Boolean?
+    rec_enquete_date DateTime?
+    rec_enquete_nomRespon String?
+    obs_attestation String?
+    ConResGeo Float?
+    ConResExp Float?
+    VolumePrevu Float?
+    obs_sit_geo String?
+    obs_empiet String? 
+    obs_emplacement String?
+    obs_geom String?
+    obs_superficie String? 
+    inscripProv Boolean?
     num_decision        String?
     date_decision       DateTime?
     date_debut_validite DateTime?
@@ -687,6 +721,30 @@ model ProcedureRenouvellement {
     demande             Demande   @relation(fields: [id_demande], references: [id_demande])
 }
 
+model demInitial {
+    id_demInitial     Int       @id @default(autoincrement())
+    id_demande     Int       @unique    
+    duree_trvx   Int?
+    qualite_signataire  String?
+    date_demarrage_prevue    DateTime?
+    dossier_recevable    Boolean?
+    dossier_complet    Boolean?
+    rec_enquete_date DateTime?
+    rec_enquete_nomRespon String?
+    obs_attestation String?
+    ConResGeo Float?
+    ConResExp Float?
+    VolumePrevu Float?
+    obs_sit_geo String?
+    obs_empiet String? 
+    obs_emplacement String?
+    obs_geom String?
+    obs_superficie String? 
+    inscripProv Boolean?
+    intitule_projet String?
+    montant_produit Float?
+    demande        Demande   @relation(fields: [id_demande], references: [id_demande])
+}
 model demFermeture {
     id_fermeture Int       @id @default(autoincrement())
     id_demande   Int       @unique
@@ -699,10 +757,11 @@ model demFermeture {
 model demAnnulation {
     id_annulation     Int       @id @default(autoincrement())
     id_demande        Int       @unique
-    num_decision      String?
-    date_constat      DateTime?
-    date_annulation   DateTime?
-    cause_annulation  String?
+    origin_cadastre      Boolean?
+    verif_doc      String?
+    permis_annule     Boolean?
+    date_vigueur   DateTime?
+    DatePrepDocAnnulation  DateTime?
     statut_annulation String?
     demande           Demande   @relation(fields: [id_demande], references: [id_demande])
 }
@@ -720,8 +779,27 @@ model demSubstitution {
 model demModification {
     id_modification     Int     @id @default(autoincrement())
     id_demande          Int     @unique
-    type_modif          String?
-    statut_modification String?
+    duree_trvx   Int?
+    qualite_signataire  String?
+    date_demarrage_prevue    DateTime?
+    dossier_recevable    Boolean?
+    dossier_complet    Boolean?
+    rec_enquete_date DateTime?
+    rec_enquete_nomRespon String?
+    obs_attestation String?
+    ConResGeo Float?
+    ConResExp Float?
+    VolumePrevu Float?
+    obs_sit_geo String?
+    obs_empiet String? 
+    obs_emplacement String?
+    obs_geom String?
+    obs_superficie String? 
+    inscripProv Boolean?
+    intitule_projet String?
+    montant_produit Float?
+    type_modification          String?
+    idDivisionEnCurso Int?
     demande             Demande @relation(fields: [id_demande], references: [id_demande])
 }
 
@@ -743,8 +821,7 @@ model demCession {
 model demRenonciation {
     id_renonciation    Int     @id @default(autoincrement())
     id_demande         Int     @unique
-    motif_renonciation String?
-    rapport_technique  String?
+    RenonOct Boolean?
     demande            Demande @relation(fields: [id_demande], references: [id_demande])
 }
 
@@ -775,6 +852,8 @@ model demTransfert {
   id_demande       Int       @unique
   motif_transfert  String?
   observations     String?
+  dossier_octroyable Boolean?
+  transfer_obtenu Boolean?
   date_transfert   DateTime  @default(now())
 
   // Relations
@@ -815,24 +894,13 @@ model demandeVerificationGeo {
     demande Demande @relation(fields: [id_demande], references: [id_demande])
 }
 
-model demandeObs {
-    id_demandeObs     Int     @id @default(autoincrement())
-    id_demande        Int     @unique
-    obs_situation_geo String?
-    obs_empietement   String?
-    obs_emplacement   String?
-    obs_geom          String?
-    obs_superficie    String?
-
-    demande Demande @relation(fields: [id_demande], references: [id_demande])
-}
 
 model demandeMin {
     id_demMin     Int     @id @default(autoincrement())
     id_demande    Int     @unique
     min_label     String?
     min_teneur    Float?
-    ordre_mineral String?
+    ordre_mineral Int?
 
     demande Demande @relation(fields: [id_demande], references: [id_demande])
 }
@@ -1002,12 +1070,11 @@ model InteractionWali {
 
 model Substance {
     id_sub           Int                        @id @default(autoincrement())
-    nom_subFR        String
-    nom_subAR        String
-    categorie_sub    String
-    famille_sub      String
-    id_redevance     Int
-    redevance        RedevanceBareme            @relation(fields: [id_redevance], references: [id_redevance])
+    nom_subFR        String?
+    nom_subAR        String?
+    categorie_sub    String?
+    id_redevance     Int?
+    redevance        RedevanceBareme?            @relation(fields: [id_redevance], references: [id_redevance])
     associeesDemande SubstanceAssocieeDemande[]
 
     @@map("substances")

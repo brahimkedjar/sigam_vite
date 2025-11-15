@@ -52,13 +52,10 @@ const ProgressStepper: React.FC<Props> = ({
     if (!Array.isArray(phases) || phases.length === 0) {
       return [] as Phase[];
     }
-
-    const relevantPhases = procedureTypeId
-      ? phases.filter(phase => phase.typeProcedureId === procedureTypeId)
-      : phases;
-
-    return [...relevantPhases].sort((a, b) => a.ordre - b.ordre);
-  }, [phases, procedureTypeId]);
+    // Backend now determines which phases belong to the procedure via ProcedurePhase
+    // so we simply sort the provided phases by ordre without client-side filtering.
+    return [...phases].sort((a, b) => a.ordre - b.ordre);
+  }, [phases]);
   const firstPhaseId = useMemo(() => (filteredPhases[0]?.id_phase ?? null), [filteredPhases]);
 
   useEffect(() => {

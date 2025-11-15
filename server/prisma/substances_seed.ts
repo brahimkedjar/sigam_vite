@@ -1,56 +1,61 @@
-import { PrismaClient } from '@prisma/client';
+import * as fs from 'fs';
+import csv from 'csv-parser';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-async function main() {
-  await prisma.substance.createMany({
-    data: [
-      {
-        nom_subFR: 'Fer',
-        nom_subAR: 'الحديد',
-        categorie_sub: 'métalliques',
-        famille_sub: '',
-        id_redevance:1
-      },
-      {
-        nom_subFR: 'Cuivre',
-        nom_subAR: 'النحاس',
-        categorie_sub: 'métalliques',
-        famille_sub: '',
-        id_redevance:1
-      },
-      {
-        nom_subFR: 'Argile',
-        nom_subAR: 'الطين',
-        categorie_sub: 'non-métalliques',
-        famille_sub: '',
-        id_redevance:1
-      },
-      {
-        nom_subFR: 'Sable',
-        nom_subAR: 'الرمل',
-        categorie_sub: 'non-métalliques',
-        famille_sub: '',
-        id_redevance:1
-      },
-      {
-        nom_subFR: 'Uranium',
-        nom_subAR: 'اليورانيوم',
-        categorie_sub: 'radioactives',
-        famille_sub: '',
-        id_redevance:1
-      }
-    ],
-    skipDuplicates: true,
-  });
+type SubstancesCSV = {
+  id: string;
+  nom_subFR: string;
+  nom_subAR: string;
+  categorie_sub: string;
+  id_redevance: string;
+};
 
-  console.log('✅ Substances inserted successfully');
+export async function main() {
+  const substancesData: any[] = [];
+  const csvFilePath =
+    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_substances.csv";
+
+  fs.createReadStream(csvFilePath)
+    .pipe(
+        csv({
+          separator: ';',
+          mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/g, ""), 
+        })
+      )
+    .on("data", (row: SubstancesCSV) => {
+      substancesData.push({
+        id_sub: Number(row.id.trim()),
+        nom_subFR: row.nom_subFR,
+        nom_subAR: row.nom_subAR,
+        categorie_sub: row.categorie_sub,
+        id_redevance: Number(row.id_redevance.trim()),
+      });
+    })
+    .on("end", async () => {
+      console.log("CSV loaded, inserting into database...");
+
+      try {
+        await prisma.substance.createMany({
+          data: substancesData,
+          skipDuplicates: true,
+        });
+
+        console.log("Seed finished.");
+      } catch (error) {
+        console.error("Error inserting data:", error);
+      } finally {
+        await prisma.$disconnect();
+      }
+    });
 }
 
-main()
-  .catch((e) => {
-    console.error('❌ Error inserting substances:', e);
-  })
-  .finally(() => {
-    prisma.$disconnect();
-  });
+main().catch(async (e) => {
+  console.error(e);
+  await prisma.$disconnect();
+  process.exit(1);
+});
+
+
+// métalliques, non-métalliques, radioactives

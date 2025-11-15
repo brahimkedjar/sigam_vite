@@ -1639,7 +1639,7 @@ const getAllSubstances = () => {
               >
                 <option value="all">Tous les statuts</option>
                 <option value="Payé">Payé</option>
-                <option value="A payer">À payer</option>
+                <option value="A_payer">À payer</option>
                 <option value="En retard">En retard</option>
                 <option value="Partiellement payé">Partiellement payé</option>
               </select>

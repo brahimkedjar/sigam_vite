@@ -16,7 +16,8 @@ try {
   //run('npx ts-node prisma/seed_communs.ts');
   run('npx ts-node prisma/seed_substances.ts');
   run('npx ts-node prisma/seed_statutpermis.ts');
-    run('npx ts-node prisma/etap_proc_seed.ts');
+  // Use the new ASCII-safe seed for phases/steps to avoid encoding issues
+  run('npx ts-node prisma/etap_proc_seed_fix.ts');
     run('npx ts-node prisma/role_seed.ts');
 
   //run('npx ts-node prisma/seed_pays.ts');

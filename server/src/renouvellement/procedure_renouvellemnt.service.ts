@@ -58,9 +58,18 @@ export class ProcedureRenouvellementService {
   }
 
   // 🔑 Create only procedure (no id_typeproc here)
+  // Generate renewal codes using same scheme
+  const codeType = permis.typePermis.code_type;
+  let seq = await this.prisma.demande.count();
+  let demandeCode: string;
+  do {
+    seq += 1;
+    demandeCode = `DEM-${codeType}-${seq}`;
+  } while (await this.prisma.demande.findUnique({ where: { code_demande: demandeCode } }));
+
   const newProcedure = await this.prisma.procedure.create({
     data: {
-      num_proc: `PROC-R-${Date.now()}`,
+      num_proc: `PROC-${codeType}-${seq}`,
       date_debut_proc: new Date(),
       statut_proc: statut,
       permis: { connect: { id: permis.id } },
@@ -75,7 +84,7 @@ export class ProcedureRenouvellementService {
       id_proc: newProcedure.id_proc,
       id_typePermis: permis.id_typePermis,
       id_typeProc: typeProc.id, // moved here
-      code_demande: `DEM-R-${Date.now()}`,
+      code_demande: demandeCode,
       statut_demande: 'EN_COURS',
       date_demande: parsedDate,
       date_instruction: new Date()
@@ -138,7 +147,7 @@ export class ProcedureRenouvellementService {
 
     const currentRenewalCount = await this.countPreviousRenewals(permit.id);
 
-    if (currentRenewalCount >= permitType.nbr_renouv_max) {
+    if (currentRenewalCount >= permitType.nbr_renouv_max!) {
       throw new BadRequestException(`Maximum renewals (${permitType.nbr_renouv_max}) reached`);
     }
 

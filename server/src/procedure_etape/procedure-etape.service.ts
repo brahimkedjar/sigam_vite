@@ -111,7 +111,7 @@ async setStepStatus(id_proc: number, id_etape: number, statut: StatutProcedure, 
     if (phaseCount === 0) {
       // Get phases specific to this procedure type
       const phases = await this.prisma.phase.findMany({
-        where: { typeProcedureId: procedureType.id },
+        where: { relationPhaseTypeProc: { some: { id_typeProcedure: procedureType.id } } },
         orderBy: { ordre: 'asc' }
       });
 
@@ -256,11 +256,19 @@ async setStepStatus(id_proc: number, id_etape: number, statut: StatutProcedure, 
       throw new Error('Cannot move to next phase - current phase not completed');
     }
 
-    // Get the next phase
+    // Get the next phase by comparing ordre against the current phase's ordre
+    const currentProcPhase = await this.prisma.procedurePhase.findUnique({
+      where: { id_proc_id_phase: { id_proc, id_phase: currentPhaseId } },
+    });
+
+    if (!currentProcPhase) {
+      throw new Error('Current phase not found in procedure');
+    }
+
     const nextPhase = await this.prisma.procedurePhase.findFirst({
       where: {
         id_proc,
-        ordre: { gt: currentPhaseId }
+        ordre: { gt: currentProcPhase.ordre }
       },
       orderBy: { ordre: 'asc' },
       include: { 

@@ -37,7 +37,7 @@ export class GeneratePermisService {
 
   const expirationDate = new Date();
   expirationDate.setFullYear(
-    expirationDate.getFullYear() + demande.typePermis.duree_initiale
+    expirationDate.getFullYear() + demande.typePermis.duree_initiale!
   );
 
   // Resolve default statut if available (e.g., "En vigueur"). If not found, leave unset.
@@ -46,17 +46,26 @@ export class GeneratePermisService {
     select: { id: true },
   });
 
+  // Generate code_permis as "<TYPE> <N>" using global sequential count on permis
+  const codeType = demande.typePermis.code_type;
+  let pSeq = await this.prisma.permis.count();
+  let code_permis: string;
+  do {
+    pSeq += 1;
+    code_permis = `${codeType} ${pSeq}`;
+  } while (await this.prisma.permis.findFirst({ where: { code_permis } }));
+
   const newPermis = await this.prisma.permis.create({
     data: {
       id_typePermis: demande.typePermis.id,
       id_commune: demande.commune.id_commune, // Changed to use commune ID
       id_detenteur: demande.detenteur.id_detenteur,
       id_statut: defaultStatut?.id ?? undefined,
-      code_permis: demande.code_demande || null,
+      code_permis,
       date_adjudication: null,
       date_octroi: new Date(),
       date_expiration: expirationDate,
-      duree_validite: demande.typePermis.duree_initiale,
+      duree_validite: demande.typePermis.duree_initiale!,
       lieu_ditFR: demande.lieu_ditFR || "",
       lieu_ditAR: demande.lieu_dit_ar || "",
       superficie: demande.superficie || 0,

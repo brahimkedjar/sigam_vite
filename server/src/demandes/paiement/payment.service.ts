@@ -59,7 +59,7 @@ async createInitialDemandeObligations(
       // We can identify initial obligations by their earlier years or specific pattern
       annee_fiscale: {
         gte: dateAttribution.getFullYear(),
-        lte: dateAttribution.getFullYear() + permis.typePermis.duree_initiale - 1
+        lte: dateAttribution.getFullYear() + permis.typePermis.duree_initiale! - 1
       }
     },
     include: { typePaiement: true },
@@ -115,7 +115,7 @@ async createInitialDemandeObligations(
     permisId, 
     dateAttribution,
     false, // isRenewal = false
-    permis.typePermis.duree_initiale // Use initial duration
+    permis.typePermis.duree_initiale! // Use initial duration
   );
 
   // Combine all obligations
@@ -154,7 +154,7 @@ async createInitialDemandeObligations(
         dateAttribution, 
         tx,
         false, // isRenewal = false
-        permis.typePermis.duree_initiale
+        permis.typePermis.duree_initiale!
       );
     }
 
@@ -538,7 +538,7 @@ async createRenewalObligations(
     throw new HttpException('Permis not found', HttpStatus.NOT_FOUND);
   }
 
-  const requiresSurfaceTax = ['PEM', 'PXM', 'PEC', 'PXC'].includes(permis.typePermis.code_type);
+  const requiresSurfaceTax = ['PEM', 'PXM', 'PEC', 'PXC'].includes(permis.typePermis.code_type!);
   if (!requiresSurfaceTax) {
     console.log('No surface tax required for permit type:', permis.typePermis.code_type);
     return [];
@@ -568,7 +568,7 @@ async createRenewalObligations(
     nombre_renouvellements: permis.nombre_renouvellements
   });
 
-  for (let yearOffset = 0; yearOffset < dureeTotale; yearOffset++) {
+  for (let yearOffset = 0; yearOffset < dureeTotale!; yearOffset++) {
     const currentObligationYear = attributionYear + yearOffset;
     let numberOfMonths = 12;
     
@@ -589,11 +589,11 @@ async createRenewalObligations(
         numberOfMonths = diffDays / 30.44; // Average month length
         numberOfMonths = Math.ceil(numberOfMonths * 10) / 10; // Round to 1 decimal
       }
-    } else if (yearOffset === dureeTotale - 1 && !isRenewal) {
+    } else if (yearOffset === dureeTotale! - 1 && !isRenewal) {
       // Last year of initial permit: from start of year to attribution date + duration - 1 day
       const finalYearStart = new Date(currentObligationYear, 0, 1);
       const permitEndDate = new Date(dateAttribution);
-      permitEndDate.setFullYear(permitEndDate.getFullYear() + dureeTotale);
+      permitEndDate.setFullYear(permitEndDate.getFullYear() + dureeTotale!);
       permitEndDate.setDate(permitEndDate.getDate() - 1); // -1 day to get the last day
         
       const diffTime = Math.abs(permitEndDate.getTime() - finalYearStart.getTime());

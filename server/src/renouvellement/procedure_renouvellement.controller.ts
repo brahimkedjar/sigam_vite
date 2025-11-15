@@ -71,7 +71,7 @@ export class ProcedureRenouvellementController {
       return count + procedure.demandes.filter((demande) => demande.renouvellement).length;
     }, 0);
 
-    if (renewalCount >= permit.typePermis.nbr_renouv_max) {
+    if (renewalCount >= permit.typePermis.nbr_renouv_max!) {
       throw new BadRequestException(
         `Nombre maximum de renouvellements (${permit.typePermis.nbr_renouv_max}) atteint pour ce permis`,
       );
