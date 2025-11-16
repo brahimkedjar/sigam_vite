@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import * as csv from 'csv-parser';
+import csv from 'csv-parser';
 import { PrismaClient, Wilaya } from '@prisma/client';
 
 const prisma = new PrismaClient();

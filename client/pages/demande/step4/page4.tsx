@@ -125,6 +125,14 @@ export default function Step4_Substances() {
   const [summaryData, setSummaryData] = useState<any>(null);
   const [showReplaceModal, setShowReplaceModal] = useState(false);
   const [superficiermax, setSuperficiermax] = useState(0);
+    const [procedureData, setProcedureData] = useState<Procedure | null>(null);
+
+  const lockPerimeter = useMemo(() => {
+    try {
+      const code = (procedureData?.demandes?.[0]?.typePermis?.code_type || '').toUpperCase();
+      return code.startsWith('TX');
+    } catch { return false; }
+  }, [procedureData]);
   // Missing docs alert for first-phase reminder
   const [missingDocsAlert, setMissingDocsAlert] = useState<{ missing: string[]; deadline?: string | null } | null>(null);
   const [tick, setTick] = useState(0);
@@ -151,7 +159,6 @@ export default function Step4_Substances() {
   const [coordinateErrors, setCoordinateErrors] = useState<{ [key: string]: string }>({});
 
   const apiURL = process.env.NEXT_PUBLIC_API_URL;
-  const [procedureData, setProcedureData] = useState<Procedure | null>(null);
   const [currentEtape, setCurrentEtape] = useState<{ id_etape: number } | null>(null);
   const [procedureTypeId, setProcedureTypeId] = useState<number | undefined>();
   const [hasActivatedStep4, setHasActivatedStep4] = useState(false);
@@ -205,13 +212,11 @@ const filteredSubstances = useMemo(() => {
   }, [allSubstances, famille, searchTerm]);
 // Fix the area calculation useEffect
 useEffect(() => {
-  console.log('=== AREA CALCULATION TRIGGERED ===');
-  console.log('Points count:', points.length);
-  console.log('All points have x and y:', points.every((coord) => coord.x && coord.y));
+  
   
   if (points.length >= 3 && points.every((coord) => coord.x && coord.y)) {
     try {
-      console.log('Starting area calculation...');
+      
       
       // Clean coordinates for calculation
       const cleanedPoints = points.map((p, index) => {
@@ -260,10 +265,10 @@ const validateCoordinate = (value: string, field: 'x' | 'y', system: CoordinateS
   const cleanValue = value.replace(/\s/g, '').replace(/,/g, '.');
   const numValue = parseFloat(cleanValue);
   
-  console.log(`Validating ${field}: "${value}" -> "${cleanValue}" -> ${numValue}`);
+  
   
   if (isNaN(numValue)) {
-    console.log(`Validation failed: ${value} is not a number`);
+    
     return false;
   }
 
@@ -276,21 +281,21 @@ const validateCoordinate = (value: string, field: 'x' | 'y', system: CoordinateS
       case 'UTM':
         if (field === 'x') {
           isValid = numValue >= 100000 && numValue <= 999999;
-          console.log(`UTM X validation: ${numValue} between 100000-999999 = ${isValid}`);
+          
         } else if (field === 'y') {
           isValid = numValue >= 0 && numValue <= 10000000;
-          console.log(`UTM Y validation: ${numValue} between 0-10000000 = ${isValid}`);
+          
         }
         break;
       default:
         isValid = true;
-        console.log(`No specific validation for system: ${system}`);
+        
     }
     
-    console.log(` Validation ${isValid ? 'passed' : 'failed'} for ${field}=${numValue} in ${system}`);
+    
     return isValid;
   } catch (error) {
-    console.error('Erreur de validation des coordonnées:', error);
+    
     return false;
   }
 };
@@ -366,7 +371,8 @@ useEffect(() => {
 
       // Fetch procedure data
       const procedureRes = await axios.get<Procedure>(
-        `${apiURL}/api/procedure-etape/procedure/${idProc}`
+        `${apiURL}/api/procedure-etape/procedure/${idProc}`,
+        { withCredentials: true }
       );
       setProcedureData(procedureRes.data);
 
@@ -404,15 +410,14 @@ useEffect(() => {
 
       // Fetch wilayas
       setLoadingMessage('Chargement des wilayas...');
-      const wilayasRes = await axios.get(`${apiURL}/api/wilayas`);
+      const wilayasRes = await axios.get(`${apiURL}/api/wilayas`, { withCredentials: true });
       setWilayas(wilayasRes.data);
 
       // Fetch provisional coordinates first, fallback to legacy coordinates
       setLoadingMessage('Chargement des coordonnées...');
       try {
-        const provRes = await axios.get(`${apiURL}/inscription-provisoire/procedure/${idProc}`);
+        const provRes = await axios.get(`${apiURL}/inscription-provisoire/procedure/${idProc}`, { withCredentials: true });
         const rec = provRes.data;
-        console.log("ssssssssssssssss555",rec)
         const pts = Array.isArray(rec?.points) ? rec.points : [];
 
         if (pts.length > 0) {
@@ -427,6 +432,7 @@ useEffect(() => {
               hemisphere: p.hemisphere,
             }))
           );
+          try { console.log('Step4: loaded coords', { source: 'provisional', count: pts.length, system: pts[0]?.system, zone: pts[0]?.zone, hemisphere: pts[0]?.hemisphere }); } catch {}
           if (typeof rec?.superficie_declaree === 'number') setSuperficieDeclaree(rec.superficie_declaree.toString());
           if (pts[0]?.system) {
             setCoordinateSystem(pts[0].system);
@@ -435,7 +441,7 @@ useEffect(() => {
           }
         } else {
           // Fallback to definitive coordinates if no provisional points
-          const coordsRes = await axios.get(`${apiURL}/coordinates/procedure/${idProc}`);
+          const coordsRes = await axios.get(`${apiURL}/coordinates/procedure/${idProc}`, { withCredentials: true });
           const coords = coordsRes.data.filter(
             (c: any) => c?.coordonnee?.x && c?.coordonnee?.y
           );
@@ -450,6 +456,7 @@ useEffect(() => {
               hemisphere: c.coordonnee.hemisphere,
             }))
           );
+          try { console.log('Step4: loaded coords', { source: 'definitive', count: coords.length, system: coords[0]?.coordonnee?.system, zone: coords[0]?.coordonnee?.zone, hemisphere: coords[0]?.coordonnee?.hemisphere }); } catch {}
           if (coords.length > 0 && coords[0].coordonnee.system) {
             setCoordinateSystem(coords[0].coordonnee.system);
             setUtmZone(coords[0].coordonnee.zone || 31);
@@ -457,7 +464,7 @@ useEffect(() => {
           }
         }
       } catch {
-        const coordsRes = await axios.get(`${apiURL}/coordinates/procedure/${idProc}`);
+        const coordsRes = await axios.get(`${apiURL}/coordinates/procedure/${idProc}`, { withCredentials: true });
         const coords = coordsRes.data.filter(
           (c: any) => c?.coordonnee?.x && c?.coordonnee?.y
         );
@@ -472,6 +479,7 @@ useEffect(() => {
             hemisphere: c.coordonnee.hemisphere,
           }))
         );
+        try { console.log('Step4: loaded coords', { source: 'definitive-fallback', count: coords.length, system: coords[0]?.coordonnee?.system, zone: coords[0]?.coordonnee?.zone, hemisphere: coords[0]?.coordonnee?.hemisphere }); } catch {}
         if (coords.length > 0 && coords[0].coordonnee.system) {
           setCoordinateSystem(coords[0].coordonnee.system);
           setUtmZone(coords[0].coordonnee.zone || 31);
@@ -479,10 +487,145 @@ useEffect(() => {
         }
       }
 
+      // Ensure perimeter is present for exploitation by copying from prior if missing
+      try {
+        const typeCode = (procedureRes.data?.demandes?.[0]?.typePermis?.code_type || '').toUpperCase();
+        if (typeCode.startsWith('TX')) {
+          const check = await axios.get(`${apiURL}/coordinates/procedure/${idProc}`, { withCredentials: true });
+          const hasCoords = Array.isArray(check.data) && check.data.some((c: any) => c?.coordonnee?.x && c?.coordonnee?.y);
+          if (!hasCoords) {
+            let srcProcId: number | null = null;
+            try {
+              const storedSrc = localStorage.getItem('prior_source_proc_id');
+              if (storedSrc) {
+                const n = parseInt(storedSrc, 10);
+                if (!isNaN(n)) srcProcId = n;
+              }
+            } catch {}
+            // Server-side persisted source procedure id on the Demande
+            if (!srcProcId) {
+              try {
+                const dres = await axios.get(`${apiURL}/api/procedures/${idProc}/demande`, { withCredentials: true });
+                const srvSrc = dres.data?.id_sourceProc;
+                if (srvSrc && !isNaN(parseInt(String(srvSrc)))) srcProcId = parseInt(String(srvSrc));
+              } catch {}
+            }
+            if (!srcProcId) {
+              try {
+                const priorPermisId = localStorage.getItem('prior_permis_id');
+                if (priorPermisId) {
+                  const pr = await axios.get(`${apiURL}/Permisdashboard/${priorPermisId}`, { withCredentials: true });
+                  const procedures = pr.data?.procedures || [];
+                  let src = procedures
+                    .filter((p: any) => (p.coordonnees?.length ?? 0) > 0)
+                    .sort((a: any, b: any) => (b.coordonnees?.length ?? 0) - (a.coordonnees?.length ?? 0))[0];
+                  const preferred = procedures.find((p: any) =>
+                    (p.coordonnees?.length ?? 0) > 0 &&
+                    (p.demandes?.[0]?.typeProcedure?.libelle || '').toLowerCase() === 'demande'
+                  );
+                  if (preferred) src = preferred;
+                  if (src?.id_proc) {
+                    srcProcId = src.id_proc;
+                    try { localStorage.setItem('prior_source_proc_id', String(srcProcId)); } catch {}
+                  }
+                }
+              } catch {}
+            }
+            if (srcProcId) {
+              // Try definitive coordinates first
+              let payloadPoints: any[] = [];
+              try {
+                const coordsRes2 = await axios.get(`${apiURL}/coordinates/procedure/${srcProcId}`, { withCredentials: true });
+                const links2: any[] = coordsRes2.data || [];
+                payloadPoints = links2
+                  .filter((l: any) => l?.coordonnee?.x && l?.coordonnee?.y)
+                  .map((l: any) => ({
+                    x: String(l.coordonnee.x),
+                    y: String(l.coordonnee.y),
+                    z: String(l.coordonnee.z ?? '0'),
+                    system: l.coordonnee.system || 'WGS84',
+                    zone: l.coordonnee.zone ?? undefined,
+                    hemisphere: l.coordonnee.hemisphere ?? undefined,
+                  }));
+              } catch {}
+
+              // If none found, try provisional coordinates on the source procedure
+              if (payloadPoints.length < 3) {
+                try {
+                  const prov = await axios.get(`${apiURL}/inscription-provisoire/procedure/${srcProcId}`, { withCredentials: true });
+                  const pts = Array.isArray(prov.data?.points) ? prov.data.points : [];
+                  if (pts.length >= 3) {
+                    payloadPoints = pts.map((p: any) => ({
+                      x: String(p.x),
+                      y: String(p.y),
+                      z: String(p.z ?? '0'),
+                      system: p.system || 'WGS84',
+                      zone: p.zone ?? undefined,
+                      hemisphere: p.hemisphere ?? undefined,
+                    }));
+                  }
+                } catch {}
+              }
+
+              if (payloadPoints.length >= 3) {
+                try {
+                  await axios.post(`${apiURL}/coordinates/update`, {
+                    id_proc: idProc,
+                    id_zone_interdite: null,
+                    points: payloadPoints,
+                  }, { withCredentials: true });
+                } catch {}
+
+                // Re-fetch to ensure points are saved and rendered consistently
+                try {
+                  const saved = await axios.get(`${apiURL}/coordinates/procedure/${idProc}`, { withCredentials: true });
+                  const coords = (saved.data || []).filter((c: any) => c?.coordonnee?.x && c?.coordonnee?.y);
+                  if (coords.length >= 3) {
+                    setPoints(coords.map((c: any) => ({
+                      id: generateId(),
+                      x: String(c.coordonnee.x),
+                      y: String(c.coordonnee.y),
+                      z: String(c.coordonnee.z ?? '0'),
+                      system: c.coordonnee.system || 'WGS84',
+                      zone: c.coordonnee.zone ?? undefined,
+                      hemisphere: c.coordonnee.hemisphere ?? undefined,
+                    })));
+                    try { console.log('Step4: loaded coords', { source: 'prior-definitive', count: coords.length, system: coords[0]?.coordonnee?.system, zone: coords[0]?.coordonnee?.zone, hemisphere: coords[0]?.coordonnee?.hemisphere }); } catch {}
+                  } else {
+                    setPoints(payloadPoints.map((p: any) => ({
+                      id: generateId(),
+                      x: p.x,
+                      y: p.y,
+                      z: p.z,
+                      system: p.system,
+                      zone: p.zone,
+                      hemisphere: p.hemisphere,
+                    })));
+                    try { console.log('Step4: loaded coords', { source: 'prior-provisional', count: payloadPoints.length }); } catch {}
+                  }
+                } catch {
+                  setPoints(payloadPoints.map((p: any) => ({
+                    id: generateId(),
+                    x: p.x,
+                    y: p.y,
+                    z: p.z,
+                    system: p.system,
+                    zone: p.zone,
+                    hemisphere: p.hemisphere,
+                  })));
+                  try { console.log('Step4: loaded coords', { source: 'prior-fallback', count: payloadPoints.length }); } catch {}
+                }
+              }
+            }
+          }
+        }
+      } catch {}
+
       // Fetch substances
       setLoadingMessage('Chargement des substances...');
       const substancesRes = await axios.get(
-        `${apiURL}/api/substances/demande/${procedureRes.data.demandes[0].id_demande}`
+        `${apiURL}/api/substances/demande/${procedureRes.data.demandes[0].id_demande}`,
+        { withCredentials: true }
       );
       const substancesWithPriority = substancesRes.data.map((item: any) => ({
         id_sub: item.id_sub,
@@ -495,7 +638,7 @@ useEffect(() => {
 
       setLoadingMessage('Données chargées avec succès');
     } catch (err) {
-      console.error('Erreur lors du chargement des données:', err);
+      
       setError('Erreur lors du chargement des données');
       setLoadingMessage('Erreur lors du chargement des données');
     }
@@ -520,7 +663,7 @@ useEffect(() => {
         const res = await axios.get(`${apiURL}/api/wilayas/${selectedWilaya}/dairas`);
         setDairas(res.data);
       } catch (err) {
-        console.error('Erreur lors du chargement des dairas:', err);
+        
         setError('Erreur lors du chargement des dairas');
       }
     };
@@ -541,7 +684,7 @@ useEffect(() => {
         const res = await axios.get(`${apiURL}/api/dairas/${selectedDaira}/communes`);
         setCommunes(res.data);
       } catch (err) {
-        console.error('Erreur lors du chargement des communes:', err);
+        
         setError('Erreur lors du chargement des communes');
       }
     };
@@ -588,7 +731,7 @@ useEffect(() => {
         const res = await axios.get(`${apiURL}/api/substances`, { params: { famille } });
         setAllSubstances(res.data);
       } catch (err) {
-        console.error('Erreur lors du chargement des substances:', err);
+        
         setError('Erreur lors du chargement des substances');
       } finally {
         setIsLoading(false);
@@ -636,7 +779,7 @@ const checkButtonConditions = () => {
         hemisphere: converted.hemisphere,
       };
     } catch (error) {
-      console.error('Échec de la conversion des coordonnées:', error);
+      
       toast.error('Erreur de conversion des coordonnées');
       return point;
     }
@@ -694,7 +837,7 @@ const checkButtonConditions = () => {
       toast.success('Coordonnées provisoires enregistrées avec succès');
 
     } catch (err) {
-      console.error("Erreur lors de l'enregistrement des coordonnées:", err);
+      
       toast.error("Erreur lors de l'enregistrement des coordonnées");
     } finally {
       setIsSaving(false);
@@ -771,7 +914,7 @@ const checkButtonConditions = () => {
         await submitCoordinates();
       }
     } catch (error) {
-      console.error('Erreur de vérification des coordonnées existantes:', error);
+      
       toast.error('Erreur de vérification des coordonnées existantes');
     }
   };
@@ -799,7 +942,7 @@ const checkButtonConditions = () => {
         toast.error('Aucune donnée valide trouvée dans le fichier.');
       }
     } catch (error) {
-      console.error('Erreur lors de limportation:', error);
+      
       toast.error('Erreur lors de limportation du fichier.');
     } finally {
       event.target.value = '';
@@ -873,7 +1016,7 @@ const checkButtonConditions = () => {
       }
       return points;
     } catch (error) {
-      console.error('Erreur lors de la lecture du fichier Excel:', error);
+      
       throw error;
     }
   };
@@ -911,7 +1054,7 @@ const checkButtonConditions = () => {
         setSelectedIds((prev) => [...prev, sub.id_sub]);
       }
     } catch (err) {
-      console.error('Erreur lors de la mise a jour de la sélection:', err);
+      
       toast.error('Erreur lors de la mise a jour de la sélection');
     } finally {
       setIsLoading(false);
@@ -977,7 +1120,7 @@ const checkButtonConditions = () => {
         setPolygonArea(area);
         setSuperficie((area / 10000).toFixed(2));
       } catch (err) {
-        console.error('Erreur lors du calcul de la superficie:', err);
+        
         setPolygonArea(null);
       }
     } else {
@@ -1044,7 +1187,7 @@ const checkButtonConditions = () => {
       await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/4`);
       setEtapeMessage('Étape 4 enregistrée avec succès !');
     } catch (err) {
-      console.error("Erreur lors de l'enregistrement de l'étape:", err);
+      
       setEtapeMessage("Erreur lors de l'enregistrement de l'étape.");
     } finally {
       setSavingEtape(false);
@@ -1115,7 +1258,7 @@ const checkButtonConditions = () => {
       setSuccess('Données enregistrées avec succès !');
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error("Erreur lors de la sauvegarde de l'étape:", err);
+      
       toast.error("Erreur lors de la sauvegarde de l'étape");
     } finally {
       setIsLoading(false);
@@ -1442,7 +1585,7 @@ const checkButtonConditions = () => {
                       </table>
                       <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', justifyContent: 'space-between', marginBottom: '6px' }}>
                         <button
-                          disabled={statutProc === 'TERMINEE' || !statutProc}
+                          disabled={statutProc === 'TERMINEE' || !statutProc || lockPerimeter}
                           className={styles['btn-add-row']}
                           onClick={addPoint}
                         >
@@ -1452,7 +1595,7 @@ const checkButtonConditions = () => {
                         <button
   className={`${styles['btn-save']} ${checkButtonConditions() ? styles['btn-disabled'] : ''}`}
   onClick={saveCoordinatesToBackend}
-  disabled={checkButtonConditions()}
+  disabled={checkButtonConditions() || lockPerimeter}
 >
   {isSaving ? (
     <>

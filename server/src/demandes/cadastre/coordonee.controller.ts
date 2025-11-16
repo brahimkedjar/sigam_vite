@@ -79,6 +79,18 @@ export class CoordonneesController {
     );
   }
 
+  // Copy coordinates from a source procedure to a target one
+  @Post('/copy')
+  async copyFromProcedure(
+    @Body() body: { source_proc: number; target_proc: number; mode?: 'duplicate' | 'link' }
+  ) {
+    return this.coordonneesService.copyFromProcedure(
+      body.source_proc,
+      body.target_proc,
+      body.mode || 'duplicate'
+    );
+  }
+
   // New endpoint to get coordinate systems
   @Get('/systems')
   async getCoordinateSystems() {

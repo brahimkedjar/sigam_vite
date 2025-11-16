@@ -770,6 +770,7 @@ const PermisViewPage: React.FC<Props> = ({ permis: initialPermis, latestTransfer
   const [latestTransfer, setLatestTransfer] = useState<TransferEntry | null>(initialLatestTransfer ?? null);
   const [error, setError] = useState<string | null>(initialError ?? null);
   const [isLoading, setIsLoading] = useState<boolean>(!initialPermis && !!idPermis);
+  const [historique, setHistorique] = useState<any[]>([]);
 
   const [notif, setNotif] = useState<{ message: string; type: 'error' | 'success' | 'info' } | null>(null);
   const [selectedProcedure, setSelectedProcedure] = useState<Procedure | null>(null);
@@ -883,6 +884,13 @@ const formatCurrency = (amount: number) => {
         };
 
         setPermis(serializablePermis);
+        try {
+          const histRes = await fetch(`${apiURL}/Permisdashboard/${id}/historique`);
+          if (histRes.ok) {
+            const hist = await histRes.json();
+            setHistorique(hist);
+          }
+        } catch {}
         setLatestTransfer(latestTransferLocal);
         setError(null);
       } catch (e: any) {
@@ -2436,6 +2444,44 @@ const getAllSubstances = () => {
 )}
       {activeTab === 'history' && (
         <div className={styles.tabContent}>
+          <div className={`${styles.card} ${styles.animateIn}`}>
+            <div className={styles.cardHeader}>
+              <div className={styles.cardHeaderIcon}>
+                <RefreshCw size={20} />
+              </div>
+              <h2 className={styles.cardTitle}>Historique du périmètre</h2>
+            </div>
+            <div className={styles.cardContent}>
+              {historique && historique.length > 0 ? (
+                <div className={styles.renewalTimeline}>
+                  {historique.map((h: any, idx: number) => (
+                    <div key={`${h.type_code}-${h.id}`} className={styles.renewalItem}>
+                      <div className={styles.renewalMarker}>
+                        <div className={styles.renewalNumber}>{idx + 1}</div>
+                        <div className={styles.renewalConnector}></div>
+                      </div>
+                      <div className={styles.renewalDetails}>
+                        <div className={styles.renewalHeader}>
+                          <span className={styles.renewalDecision}>{h.code} • {h.type}</span>
+                          <span className={styles.renewalDate}>{formatDate(h.date_octroi)}</span>
+                        </div>
+                        <div className={styles.renewalPeriod}>
+                          <span>Expiration: {formatDate(h.date_expiration)}</span>
+                          {h.detenteur && (<span style={{ marginLeft: 16 }}>Titulaire: {h.detenteur}</span>)}
+                          {h.statut && (<span style={{ marginLeft: 16 }}>Statut: {h.statut}</span>)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className={styles.emptyState}>
+                  <FileText size={48} className={styles.emptyStateIcon} />
+                  <p>Aucun historique du périmètre</p>
+                </div>
+              )}
+            </div>
+          </div>
           <div className={`${styles.card} ${styles.animateIn}`}>
             <div className={styles.cardHeader}>
               <div className={styles.cardHeaderIcon}>

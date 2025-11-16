@@ -46,6 +46,8 @@ async createDemande(
     id_detenteur?: number;
     date_demande: string;
     date_instruction: string;
+    id_sourceProc?: number;
+    designation_number?: string;
   }
 ) {
   const demande = await this.demandeService.createDemande({
@@ -54,7 +56,9 @@ async createDemande(
     code_demande: body.code_demande,
     id_detenteur: body.id_detenteur,
     date_demande: new Date(body.date_demande),
-    date_instruction: new Date(body.date_instruction)
+    date_instruction: new Date(body.date_instruction),
+    id_sourceProc: body.id_sourceProc,
+    designation_number: body.designation_number,
   });
 
   return demande;

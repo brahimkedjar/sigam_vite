@@ -1,6 +1,6 @@
 ﻿// UserObligationsPage.tsx - Updated
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import styles from './UserObligations.module.css';
 import { useSearchParams } from '@/src/hooks/useSearchParams';
@@ -63,6 +63,7 @@ const UserObligationsPage = () => {
   const apiURL = process.env.NEXT_PUBLIC_API_URL; 
   const [permisDetails, setPermisDetails] = useState<any>(null);
   const [dateAttribution, setDateAttribution] = useState<Date>(new Date());
+  const initInProgress = useRef(false);
 
   const isRouterReady = router.isReady === undefined ? false : router.isReady;
 
@@ -117,7 +118,9 @@ const UserObligationsPage = () => {
   // UserObligationsPage.tsx - Updated data fetching
 useEffect(() => {
   const initializePayments = async () => {
-    if (!idProc) return;
+    if (initInProgress.current) return;
+    initInProgress.current = true;
+    if (!idProc) { initInProgress.current = false; return; }
 
     try {
       setLoading(true);
@@ -204,11 +207,12 @@ useEffect(() => {
       setError(err instanceof Error ? err.message : 'Échec de l\'initialisation');
     } finally {
       setLoading(false);
+      initInProgress.current = false;
     }
   };
 
   initializePayments();
-}, [idProc, router.asPath]);
+}, [idProc]);
 
   const handleTerminerProcedure = async () => {
     if (!idProc) return;

@@ -240,7 +240,7 @@ async getDocumentsByProcedure(permisId: number) {
 
 
 
-async getAllDocumentsForPermis(permisId: number) {
+  async getAllDocumentsForPermis(permisId: number) {
   const [procedureDocuments] = await Promise.all([
     this.getDocumentsByProcedure(permisId),
   ]);
@@ -252,4 +252,51 @@ async getAllDocumentsForPermis(permisId: number) {
     totalCount,
   };
 }
+
+  async getHistoriqueByPermisId(permisId: number) {
+    const current = await this.prisma.permis.findUnique({
+      where: { id: permisId },
+      select: { code_permis: true }
+    });
+    if (!current?.code_permis) return [];
+
+    const match = current.code_permis.match(/(\d+)$/);
+    const num = match ? match[1] : null;
+    if (!num) return [];
+
+    const list = await this.prisma.permis.findMany({
+      where: {
+        code_permis: { endsWith: ` ${num}` }
+      },
+      include: {
+        typePermis: true,
+        detenteur: true,
+        statut: true,
+      },
+      orderBy: { date_octroi: 'asc' },
+    });
+
+    const order: Record<string, number> = { APM: 1, TEM: 2, TEC: 3, TXM: 4, TXC: 5 };
+    const sorted = list.sort((a, b) => {
+      const aCode = (a.typePermis?.code_type || '').toUpperCase();
+      const bCode = (b.typePermis?.code_type || '').toUpperCase();
+      const ao = order[aCode] ?? 99;
+      const bo = order[bCode] ?? 99;
+      if (ao !== bo) return ao - bo;
+      const ad = a.date_octroi ? new Date(a.date_octroi).getTime() : 0;
+      const bd = b.date_octroi ? new Date(b.date_octroi).getTime() : 0;
+      return ad - bd;
+    });
+
+    return sorted.map(p => ({
+      id: p.id,
+      code: p.code_permis,
+      type: p.typePermis?.lib_type || '',
+      type_code: p.typePermis?.code_type || '',
+      detenteur: p.detenteur?.nom_societeFR || null,
+      statut: p.statut?.lib_statut || null,
+      date_octroi: p.date_octroi,
+      date_expiration: p.date_expiration,
+    }));
+  }
 }

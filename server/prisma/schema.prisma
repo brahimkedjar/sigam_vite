@@ -616,6 +616,8 @@ model Procedure {
     InteractionWali          InteractionWali[]
     ProcedureEtape           ProcedureEtape[]           // status of etapes
     ProcedurePhase           ProcedurePhase[] 
+    // Back relation: exploitation lineage (procedures that used this as source)
+    demandesAsSource         Demande[]               @relation("DemandeSourceProcedure")
     seance                   SeanceCDPrevue?            @relation("SeanceProcedures", fields: [id_seance], references: [id_seance])
     //TypeProcedure            TypeProcedure?             @relation(fields: [typeProcedureId], references: [id])
     typeProcedureId          Int?
@@ -689,6 +691,10 @@ sources_financement  String?
     min             demandeMin?
     CahierCharge    CahierCharge[]
     inscriptionProvisoire InscriptionProvisoire?
+    // Exploitation lineage support
+    id_sourceProc          Int?
+    designation_number     String?
+    sourceProcedure        Procedure? @relation("DemandeSourceProcedure", fields: [id_sourceProc], references: [id_proc])
 
     @@map("demande")
 }

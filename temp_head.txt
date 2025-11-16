@@ -1,0 +1,260 @@
+﻿// UserObligationsPage.tsx - Updated
+'use client';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import styles from './UserObligations.module.css';
+import { useSearchParams } from '@/src/hooks/useSearchParams';
+import { FiChevronLeft, FiChevronRight, FiDownload, FiCheckCircle, FiAlertCircle, FiClock } from 'react-icons/fi';
+import Sidebar from '../../sidebar/Sidebar';
+import Navbar from '../../navbar/Navbar';
+import { useViewNavigator } from '../../../src/hooks/useViewNavigator';
+import { STEP_LABELS } from '../../../src/constants/steps';
+import { useRouter } from 'next/router';
+
+interface Obligation {
+  id: number;
+  details_calcul: string | null;
+  typePaiement: {
+    id: number;
+    libelle: string;
+  };
+  amount: number;
+  fiscalYear: number;
+  dueDate: string;
+  status: string;
+  payments: Payment[];
+  tsPaiements?: TsPaiement[]; // Add TsPaiement data
+}
+
+interface Payment {
+  id: number;
+  paymentDate: string;
+  amount: number;
+  paymentMethod: string;
+  receiptNumber: string;
+  status: string;
+  proofUrl: string | null;
+  currency: string;
+}
+
+interface TsPaiement {
+  id_tsPaiement: number;
+  datePerDebut: string;
+  datePerFin: string;
+  surfaceMin: number;
+  surfaceMax: number;
+}
+
+const UserObligationsPage = () => {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const queryId = router.query?.id;
+  const idParam = searchParams?.get('id') ?? (Array.isArray(queryId) ? queryId[0] : queryId ?? null);
+  const idProc = idParam ? parseInt(idParam, 10) : undefined;
+  const [permisId, setPermisId] = useState<number | null>(null);
+  const [obligations, setObligations] = useState<Obligation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [totalAmount, setTotalAmount] = useState<number>(0);
+  const [paidAmount, setPaidAmount] = useState<number>(0);
+  const [pendingAmount, setPendingAmount] = useState<number>(0);
+  const { currentView, navigateTo } = useViewNavigator('nouvelle-demande');
+  const [statutProc, setStatutProc] = useState<string | undefined>(undefined);
+  const apiURL = process.env.NEXT_PUBLIC_API_URL; 
+  const [permisDetails, setPermisDetails] = useState<any>(null);
+  const [dateAttribution, setDateAttribution] = useState<Date>(new Date());
+
+  const isRouterReady = router.isReady === undefined ? false : router.isReady;
+
+  if (isRouterReady && !idProc) {
+    return (
+      <div className={styles.appContainer}>
+        <Navbar />
+        <div className={styles.appContent}>
+          <Sidebar currentView={currentView} navigateTo={navigateTo} />
+          <main className={styles.mainContent}>
+            <div className={styles.loadingContainer}>
+              <h1>Procédure introuvable</h1>
+              <p>Aucune procédure sélectionnée. Choisissez un dossier puis réessayez.</p>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+
+  // Add this useEffect to calculate amounts whenever obligations change
+  useEffect(() => {
+    if (obligations.length > 0) {
+      const total = obligations.reduce((sum: number, obligation: Obligation) => {
+        return sum + (obligation.amount || 0);
+      }, 0);
+      
+      const paid = obligations.reduce((sum: number, obligation: Obligation) => {
+        if (obligation.status === 'Payé') {
+          return sum + (obligation.amount || 0);
+        }
+        return sum;
+      }, 0);
+      
+      const pending = obligations.reduce((sum: number, obligation: Obligation) => {
+        if (obligation.status !== 'Payé') {
+          return sum + (obligation.amount || 0);
+        }
+        return sum;
+      }, 0);
+      
+      setTotalAmount(total);
+      setPaidAmount(paid);
+      setPendingAmount(pending);
+      
+      console.log('Amounts calculated:', { total, paid, pending });
+    }
+  }, [obligations]);
+
+  // Fetch obligations with TsPaiement data
+  // UserObligationsPage.tsx - Updated data fetching
+useEffect(() => {
+  const initializePayments = async () => {
+    if (!idProc) return;
+
+    try {
+      setLoading(true);
+      
+      // Get procedure with permis details
+      const procedureResponse = await axios.get(`${apiURL}/payments/procedures/${idProc}`);
+      
+      if (!procedureResponse.data.permis) throw new Error('Aucun permis associé');
+
+      const currentPermisId = procedureResponse.data.permis.id;
+      setPermisId(currentPermisId);
+      setPermisDetails(procedureResponse.data.permis);
+      
+      // Get attribution date from permis if available
+      const attributionDate = procedureResponse.data.permis.date_octroi 
+        ? new Date(procedureResponse.data.permis.date_octroi)
+        : new Date();
+      setDateAttribution(attributionDate);
+
+      // Check if obligations exist
+      const obligationsResponse = await axios.get(
+        `${apiURL}/payments/obligations/${currentPermisId}`
+      );
+
+      if (obligationsResponse.data.length === 0) {
+        // Initialize obligations with attribution date
+        await axios.post(`${apiURL}/payments/initialize/${currentPermisId}/${idProc}`, {
+          dateAttribution: attributionDate.toISOString()
+        });
+        
+        // Get the newly created obligations
+        const newObligationsResponse = await axios.get(
+          `${apiURL}/payments/obligations/${currentPermisId}`
+        );
+        
+        // Get TsPaiement data for surface tax obligations
+        const obligationsWithTsPaiement = await Promise.all(
+          newObligationsResponse.data.map(async (obligation: any) => {
+            if (obligation.typePaiement?.libelle === 'Taxe superficiaire') {
+              try {
+                const tsPaiementResponse = await axios.get(
+                  `${apiURL}/payments/ts-paiement/obligation/${obligation.id}`
+                );
+                return {
+                  ...obligation,
+                  tsPaiements: tsPaiementResponse.data
+                };
+              } catch (error) {
+                console.error('Error fetching TsPaiement data:', error);
+                return obligation;
+              }
+            }
+            return obligation;
+          })
+        );
+        
+        setObligations(obligationsWithTsPaiement);
+      } else {
+        // Get TsPaiement data for existing surface tax obligations
+        const obligationsWithTsPaiement = await Promise.all(
+          obligationsResponse.data.map(async (obligation: any) => {
+            if (obligation.typePaiement?.libelle === 'Taxe superficiaire') {
+              try {
+                const tsPaiementResponse = await axios.get(
+                  `${apiURL}/payments/ts-paiement/obligation/${obligation.id}`
+                );
+                return {
+                  ...obligation,
+                  tsPaiements: tsPaiementResponse.data
+                };
+              } catch (error) {
+                console.error('Error fetching TsPaiement data:', error);
+                return obligation;
+              }
+            }
+            return obligation;
+          })
+        );
+        
+        setObligations(obligationsWithTsPaiement);
+      }
+    } catch (err) {
+      console.error('Error in initializePayments:', err);
+      setError(err instanceof Error ? err.message : 'Échec de l\'initialisation');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  initializePayments();
+}, [idProc, router.asPath]);
+
+  const handleTerminerProcedure = async () => {
+    if (!idProc) return;
+    
+    try {
+      const res = await axios.put(`${apiURL}/api/procedures/terminer/${idProc}`);
+      await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/9`);
+      alert('Procédure terminée avec succés');
+      router.push(`/demande/Timeline/Timeline?id=${idProc}`)
+       
+    } catch (err) {
+      alert('Erreur lors de la terminaison de la procédure');
+      console.error(err);
+    }
+  };
+
+  const handleBack = () => {
+    if (!idProc) {
+      setError("ID procédure manquant");
+      return;
+    }
+    router.push(`/demande/step8/page8?id=${idProc}`)
+  };
+
+  useEffect(() => {
+    if (!idProc) return;
+
+    axios.get(`${apiURL}/api/procedures/${idProc}/demande`)
+      .then(res => {
+        setStatutProc(res.data.procedure.statut_proc);
+      })
+      .catch(err => {
+        console.error("Erreur lors de la récupération de la demande", err);
+      });
+  }, [idProc, router.asPath]);
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'Payé':
+        return <FiCheckCircle className={styles.statusIconPaid} />;
+      case 'En retard':
+        return <FiAlertCircle className={styles.statusIconOverdue} />;
+      case 'A payer':
+        return <FiClock className={styles.statusIconPending} />;
+      default:
+        return <FiClock className={styles.statusIconPending} />;
+    }
+  };
+

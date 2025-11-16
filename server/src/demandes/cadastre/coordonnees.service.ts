@@ -260,8 +260,69 @@ async getExistingPerimeters() {
       throw new InternalServerErrorException(
         'Erreur lors de la mise à jour des coordonnées.'
       );
+  }}
+
+  // Copy coordinates from a source procedure to a target procedure
+  async copyFromProcedure(
+    sourceProcId: number,
+    targetProcId: number,
+    mode: 'duplicate' | 'link' = 'duplicate',
+  ) {
+    // Ensure both procedures exist
+    const [src, trg] = await Promise.all([
+      this.prisma.procedure.findUnique({ where: { id_proc: sourceProcId } }),
+      this.prisma.procedure.findUnique({ where: { id_proc: targetProcId } }),
+    ]);
+    if (!src) throw new Error(`Source procedure ${sourceProcId} not found`);
+    if (!trg) throw new Error(`Target procedure ${targetProcId} not found`);
+
+    // Get coordinates linked to source procedure, ordered
+    const links = await this.prisma.procedureCoord.findMany({
+      where: { id_proc: sourceProcId },
+      include: { coordonnee: true },
+      orderBy: { id_coordonnees: 'asc' },
+    });
+
+    if (!links.length) {
+      return { copied: 0, linked: 0, message: 'No coordinates on source procedure' };
     }
+
+    if (mode === 'link') {
+      // Link to the same coordinate rows (no duplication)
+      const toCreate = links.map((l) => ({
+        id_proc: targetProcId,
+        id_coordonnees: l.id_coordonnees,
+        statut_coord: 'ANCIENNE' as const,
+      }));
+
+      await this.prisma.procedureCoord.createMany({
+        data: toCreate,
+        skipDuplicates: true,
+      });
+
+      return { copied: 0, linked: toCreate.length };
+    }
+
+    // Duplicate coordinates into target procedure
+    const points = links.map((l) => ({
+      x: String(l.coordonnee.x),
+      y: String(l.coordonnee.y),
+      z: String(l.coordonnee.z ?? '0'),
+      system: l.coordonnee.system || 'WGS84',
+      zone: (l.coordonnee.zone as number | undefined) ?? undefined,
+      hemisphere: (l.coordonnee.hemisphere as string | undefined) ?? undefined,
+    }));
+
+    const res = await this.updateCoordonnees(
+      targetProcId,
+      0 as any,
+      points,
+      'ANCIENNE',
+    );
+
+    return { copied: points.length, linked: 0, result: res };
   }
+
 
   // In CoordonneesService
 async convertCoordinate(

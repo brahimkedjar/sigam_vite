@@ -52,7 +52,7 @@ async createInitialDemandeObligations(
     throw new HttpException('Permis not found', HttpStatus.NOT_FOUND);
   }
 
-  // Check if initial obligations already exist
+  // Check if initial obligations already exist (we will still create any missing ones)
   const existingInitialObligations = await this.prisma.obligationFiscale.findMany({
     where: { 
       id_permis: permisId,
@@ -68,20 +68,18 @@ async createInitialDemandeObligations(
   console.log('Existing initial obligations:', existingInitialObligations.length);
 
   if (existingInitialObligations.length > 0) {
-    console.log('Initial obligations already exist, updating if needed');
-    
+    console.log('Initial obligations found; updating missing TS details if needed');
     // Update any surface tax obligations with missing details
     const obligationsWithMissingDetails = existingInitialObligations.filter(
       ob => !ob.details_calcul && ob.typePaiement.libelle === 'Taxe superficiaire'
     );
-    
     if (obligationsWithMissingDetails.length > 0) {
       console.log('Updating initial obligations with missing details:', obligationsWithMissingDetails.length);
       for (const obligation of obligationsWithMissingDetails) {
         await this.updateSurfaceTaxObligationDetails(obligation.id, permisId, dateAttribution, false);
       }
     }
-    return existingInitialObligations;
+    // Do not return here; proceed to create any missing obligations
   }
 
   // Calculate fees for initial demande
@@ -123,14 +121,26 @@ async createInitialDemandeObligations(
 
   console.log('Creating initial demande obligations:', obligations.length);
 
-  // Create obligations in transaction
+  // Create obligations in transaction (deduplicated)
   const createdObligations = await this.prisma.$transaction(async (tx) => {
-    // Create new obligations
-    const created = await tx.obligationFiscale.createMany({
-      data: obligations,
+    // Filter out obligations that already exist to avoid duplicates
+    const existing = await tx.obligationFiscale.findMany({
+      where: {
+        id_permis: permisId,
+        annee_fiscale: { in: obligations.map(o => o.annee_fiscale) },
+      },
+      select: { id_typePaiement: true, annee_fiscale: true },
     });
 
-    console.log('Initial obligations created:', created.count);
+    const toCreate = obligations.filter(o =>
+      !existing.some(e => e.id_typePaiement === o.id_typePaiement && e.annee_fiscale === o.annee_fiscale)
+    );
+
+    for (const data of toCreate) {
+      await tx.obligationFiscale.create({ data });
+    }
+
+    console.log('Initial obligations created:', toCreate.length);
 
     // Fetch created surface tax obligations
     const createdSurfaceObligations = await tx.obligationFiscale.findMany({
@@ -203,7 +213,7 @@ async createRenewalObligations(
   const renewalStartYear = renewalStartDate.getFullYear();
   const renewalEndYear = renewalStartYear + Math.ceil(renewalDuration) - 1;
 
-  // Check if renewal obligations already exist for this period
+  // Check if renewal obligations already exist for this period (we will still create any missing ones)
   const existingRenewalObligations = await this.prisma.obligationFiscale.findMany({
     where: { 
       id_permis: permisId,
@@ -218,13 +228,11 @@ async createRenewalObligations(
   console.log('Existing renewal obligations:', existingRenewalObligations.length);
 
   if (existingRenewalObligations.length > 0) {
-    console.log('Renewal obligations already exist for this period, updating if needed');
-    
+    console.log('Renewal obligations found; updating TS details if needed');
     // Update any surface tax obligations
     const surfaceTaxObligations = existingRenewalObligations.filter(
       ob => ob.typePaiement.libelle === 'Taxe superficiaire'
     );
-    
     for (const obligation of surfaceTaxObligations) {
       await this.updateSurfaceTaxObligationDetails(
         obligation.id, 
@@ -234,7 +242,7 @@ async createRenewalObligations(
         renewalDuration
       );
     }
-    return existingRenewalObligations;
+    // Do not return here; proceed to create any missing obligations
   }
 
   // Calculate establishment fee for renewal
@@ -263,14 +271,26 @@ async createRenewalObligations(
 
   console.log('Creating renewal obligations:', obligations.length);
 
-  // Create obligations in transaction
+  // Create obligations in transaction (deduplicated)
   const createdObligations = await this.prisma.$transaction(async (tx) => {
-    // Create new obligations
-    const created = await tx.obligationFiscale.createMany({
-      data: obligations,
+    // Filter out obligations that already exist to avoid duplicates
+    const existing = await tx.obligationFiscale.findMany({
+      where: {
+        id_permis: permisId,
+        annee_fiscale: { in: obligations.map(o => o.annee_fiscale) },
+      },
+      select: { id_typePaiement: true, annee_fiscale: true },
     });
 
-    console.log('Renewal obligations created:', created.count);
+    const toCreate = obligations.filter(o =>
+      !existing.some(e => e.id_typePaiement === o.id_typePaiement && e.annee_fiscale === o.annee_fiscale)
+    );
+
+    for (const data of toCreate) {
+      await tx.obligationFiscale.create({ data });
+    }
+
+    console.log('Renewal obligations created:', toCreate.length);
 
     // Fetch created surface tax obligations
     const createdSurfaceObligations = await tx.obligationFiscale.findMany({
@@ -538,7 +558,7 @@ async createRenewalObligations(
     throw new HttpException('Permis not found', HttpStatus.NOT_FOUND);
   }
 
-  const requiresSurfaceTax = ['PEM', 'PXM', 'PEC', 'PXC'].includes(permis.typePermis.code_type!);
+  const requiresSurfaceTax = ['TEM', 'TXM', 'TEC', 'TXC'].includes(permis.typePermis.code_type!);
   if (!requiresSurfaceTax) {
     console.log('No surface tax required for permit type:', permis.typePermis.code_type);
     return [];

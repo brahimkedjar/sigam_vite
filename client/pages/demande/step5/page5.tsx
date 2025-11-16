@@ -93,6 +93,10 @@ export default function CadastrePage() {
   const [utmHemisphere, setUtmHemisphere] = useState<'N'>('N');
   const [activatedSteps, setActivatedSteps] = useState<Set<number>>(new Set());
   const [editableRowId, setEditableRowId] = useState<number | null>(null);
+  const lockPerimeter = useMemo(() => {
+    const code = (demandeSummary?.typePermis?.code_type || '').toUpperCase();
+    return code.startsWith('TX');
+  }, [demandeSummary]);
   // Source des coordonnées: inscription provisoire vs coordonnées validées
   // Source des coordonnées: inscription provisoire vs coordonnées validées
   const [coordSource, setCoordSource] = useState<'provisoire' | 'validees'>('provisoire');
@@ -339,6 +343,7 @@ export default function CadastrePage() {
   };
 
   const [existingPolygons, setExistingPolygons] = useState<{idProc: number; num_proc: string; coordinates: [number, number][]}[]>([]);
+  // Show other procedures' polygons for context, including the prior exploration/prospection
   const filteredExistingPolygons = useMemo(() => {
     if (!idProc) return existingPolygons;
     return existingPolygons.filter(p => p.idProc !== idProc);
@@ -429,6 +434,13 @@ export default function CadastrePage() {
       return;
     }
 
+    // For exploitation (TX*), the perimeter is inherited; skip empietement reporting
+    if (lockPerimeter) {
+      setOverlapDetected(false);
+      setMiningTitleOverlaps([]);
+      return;
+    }
+
     try {
       const overlappingTitles = await mapRef.current.queryMiningTitles();
       if (overlappingTitles === null) {
@@ -498,6 +510,11 @@ export default function CadastrePage() {
   };
 
   const saveCoordinatesToBackend = async () => {
+    if (lockPerimeter) {
+      setError("Le périmètre d’exploitation doit rester identique au titre précédent.");
+      setTimeout(() => setError(null), 4000);
+      return;
+    }
     if (!idProc) {
       setError("ID procédure manquant !");
       setTimeout(() => setError(null), 4000);
@@ -531,6 +548,13 @@ export default function CadastrePage() {
       setTimeout(() => setError(null), 4000);
     }
   };
+
+  // If perimeter should be locked (exploitation), ensure drawing is disabled
+  useEffect(() => {
+    if (lockPerimeter) {
+      try { setIsDrawing(false); } catch {}
+    }
+  }, [lockPerimeter]);
 
   const validateCoordinate = (point: Point): boolean => {
     switch (point.system) {
@@ -737,10 +761,11 @@ export default function CadastrePage() {
   };
 
   const handleMapClick = useCallback((x: number, y: number) => {
+    if (lockPerimeter) return; // Disable drawing for exploitation titles
     if (isDrawing) {
       addPoint({ x, y });
     }
-  }, [isDrawing, addPoint]);
+  }, [isDrawing, addPoint, lockPerimeter]);
 
   // Update the existing checkForOverlaps function to include mining titles
   const checkForOverlaps = useCallback(() => {
@@ -1036,10 +1061,10 @@ export default function CadastrePage() {
                               <option value="provisoire">Inscription provisoire</option>
                               <option value="validees">Coordonnées validées</option>
                             </select>
-                            <button className={styles['add-btn']} onClick={() => addPoint()}>
+                            <button className={styles['add-btn']} onClick={() => addPoint()} disabled={lockPerimeter}>
                               <FiPlus /> Ajouter
                             </button>
-                            <button className={styles['add-btn']} onClick={saveCoordinatesToBackend}>
+                            <button className={styles['add-btn']} onClick={saveCoordinatesToBackend} disabled={lockPerimeter}>
                               <FiSave /> Enregistrer les coordonnées
                             </button>
                             <button className={styles['add-btn']} onClick={() => setRefetchTrigger(prev => prev + 1)}>

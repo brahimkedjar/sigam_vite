@@ -6,7 +6,10 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class GeneratePermisService {
   constructor(private prisma: PrismaService) {}
 
-  async generatePermisFromDemande(demandeId: number) {
+  async generatePermisFromDemande(
+    demandeId: number,
+    options?: { codeNumber?: number | string }
+  ) {
   const demande = await this.prisma.demande.findUnique({
     where: { id_demande: demandeId },
     include: {
@@ -46,14 +49,28 @@ export class GeneratePermisService {
     select: { id: true },
   });
 
-  // Generate code_permis as "<TYPE> <N>" using global sequential count on permis
+  // Generate code_permis as "<TYPE> <N>"
   const codeType = demande.typePermis.code_type;
-  let pSeq = await this.prisma.permis.count();
   let code_permis: string;
-  do {
-    pSeq += 1;
-    code_permis = `${codeType} ${pSeq}`;
-  } while (await this.prisma.permis.findFirst({ where: { code_permis } }));
+
+  // If caller provided a fixed designation number, use it directly
+  if (options?.codeNumber !== undefined && options?.codeNumber !== null && `${options.codeNumber}`.trim() !== '') {
+    const fixedNum = `${options.codeNumber}`.trim();
+    code_permis = `${codeType} ${fixedNum}`;
+
+    // Ensure we don't duplicate an existing permis code
+    const exists = await this.prisma.permis.findFirst({ where: { code_permis } });
+    if (exists) {
+      throw new Error(`Un permis avec le code ${code_permis} existe déjà.`);
+    }
+  } else {
+    // Fallback: use global sequential count across permis
+    let pSeq = await this.prisma.permis.count();
+    do {
+      pSeq += 1;
+      code_permis = `${codeType} ${pSeq}`;
+    } while (await this.prisma.permis.findFirst({ where: { code_permis } }));
+  }
 
   const newPermis = await this.prisma.permis.create({
     data: {

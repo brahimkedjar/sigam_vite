@@ -29,8 +29,8 @@ async renameTemplate(
 }
 
   @Post('generate/:id')
-  async generatePermis(@Param('id') id: string) {
-    return this.service.generatePermisFromDemande(parseInt(id));
+  async generatePermis(@Param('id') id: string, @Body() body?: { codeNumber?: number | string }) {
+    return this.service.generatePermisFromDemande(parseInt(id), { codeNumber: body?.codeNumber });
   }
 
   @Get('summary/:id')
@@ -76,11 +76,59 @@ async deleteTemplate(@Param('id') id: string) {
   return this.service.deleteTemplate(id);
 }
 
+  // List prior titres (APM/TEM/TEC) with current detenteur
+  @Get('prior-titres')
+  async listPriorTitres() {
+    const prior = await this.prisma.permis.findMany({
+      where: {
+        // APM (prospection), TEM/TEC (exploration)
+        typePermis: {
+          is: { code_type: { in: ['APM', 'TEM', 'TEC'] } },
+        },
+      },
+      include: {
+        typePermis: true,
+        detenteur: true,
+        commune: true,
+      },
+      orderBy: { id: 'desc' },
+    });
+
+    return prior.map((p) => {
+      const match = (p.code_permis || '').match(/(\d+)$/);
+      const codeNumber = match ? match[1] : null;
+      return {
+        id: p.id,
+        code_permis: p.code_permis,
+        type_code: p.typePermis?.code_type ?? null,
+        type_lib: p.typePermis?.lib_type ?? null,
+        detenteur: p.detenteur
+          ? {
+              id_detenteur: p.detenteur.id_detenteur,
+              nom: p.detenteur.nom_societeFR ?? null,
+            }
+          : null,
+        communeId: p.id_commune ?? null,
+        codeNumber,
+      };
+    });
+  }
+
 
 @Post('save-permis')
-async savePermis(@Body() body: any) {
-  // First create the permis
-  const permis = await this.service.generatePermisFromDemande(body.id_demande);
+async savePermis(@Body() body: { id_demande: number; codeNumber?: number | string }) {
+  // If codeNumber not provided, try to use demande.designation_number persisted at step 1
+  let fixedNumber = body.codeNumber;
+  if (!fixedNumber) {
+    try {
+      const d = await this.prisma.demande.findUnique({
+        where: { id_demande: body.id_demande },
+        select: { designation_number: true }
+      });
+      if (d?.designation_number) fixedNumber = d.designation_number;
+    } catch {}
+  }
+  const permis = await this.service.generatePermisFromDemande(body.id_demande, { codeNumber: fixedNumber });
   
   return { 
     id: permis.id,

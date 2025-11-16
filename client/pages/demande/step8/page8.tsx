@@ -230,11 +230,45 @@ const phases: Phase[] = procedureData?.ProcedurePhase
     }
   };
 const handleSavePermis = async (permisData: any): Promise<{id: number, code_permis: string}> => {
+  // Resolve prior code number robustly so TXM/TXC keeps the same designation
+  const resolveCodeNumber = async (): Promise<string | undefined> => {
+    try {
+      // 1) Direct stored value
+      const stored = localStorage.getItem('prior_code_number');
+      if (stored && stored.trim()) return stored.trim();
+
+      // 2) Parse from prior code like "APM 2"
+      const priorCode = localStorage.getItem('prior_code_permis');
+      const m = priorCode?.trim().match(/(\d+)$/);
+      if (m && m[1]) return m[1];
+
+      // 3) Fetch prior permis info and parse
+      const priorPermisId = localStorage.getItem('prior_permis_id');
+      if (priorPermisId && apiURL) {
+        try {
+          const pr = await axios.get(`${apiURL}/Permisdashboard/${priorPermisId}`, { withCredentials: true });
+          const code = pr.data?.code_permis || pr.data?.code || pr.data?.permis?.code_permis || '';
+          const mm = String(code).match(/(\d+)$/);
+          if (mm && mm[1]) return mm[1];
+        } catch {}
+      }
+    } catch {}
+    return undefined;
+  };
+
   try {
-    const response = await axios.post(`${apiURL}/api/permis/save-permis`, {
+    const payload: any = {
       id_demande: parseInt(idDemande!)
-    });
-    
+    };
+
+    const codeNumber = await resolveCodeNumber();
+    if (codeNumber) payload.codeNumber = codeNumber;
+
+    const response = await axios.post(`${apiURL}/api/permis/save-permis`, payload, { withCredentials: true });
+
+    // Clear only after a successful save
+    try { if (codeNumber) localStorage.removeItem('prior_code_number'); } catch {}
+
     return response.data;
   } catch (error) {
     console.error('Failed to save permis', error);
