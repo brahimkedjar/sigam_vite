@@ -7,11 +7,11 @@ const prisma = new PrismaClient();
 
 function parseDate(dateStr: string | undefined): Date | null {
   if (!dateStr || dateStr === "None" || dateStr === "NaT" || dateStr.trim() === "") {
-    console.log('Inside parseDate, invalid or empty input:', dateStr);
+    // console.log('Inside parseDate, invalid or empty input:', dateStr);
     return null;
   }
 
-  console.log('Inside parseDate, input:', dateStr);
+  // console.log('Inside parseDate, input:', dateStr);
 
   let date: Date | null = null;
 
@@ -114,6 +114,8 @@ export async function main() {
         id_wilaya: parseId(row.id_wilaya),
         id_commune: parseId(row.id_commune),
         id_daira: parseId(row.id_daira),
+        id_typeProc: parseId(row.id_typeProc),
+        id_typePermis: parseId(row.id_typePermis),
         // id_pays: row.id_pays ? parseInt(row.id_pays, 10) : null,
         lieu_ditFR: row.lieu_DitFR || null,
         lieu_dit_ar: row.lieu_DitAR || null,

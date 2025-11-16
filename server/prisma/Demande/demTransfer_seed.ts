@@ -108,7 +108,7 @@ export async function main() {
     .on('data', (row: any) => {
       totalRows++;
       rows.push({
-        id_transfert: parseInt(row.id_renonciation, 10),
+        id_transfert: parseInt(row.id_transfert, 10),
         id_demande: parseInt(row.id_demande, 10),
         dossier_octroyable: parseBoolean(row.dossier_octroyable),
         transfer_obtenu: parseBoolean(row.transfer_obtenu),

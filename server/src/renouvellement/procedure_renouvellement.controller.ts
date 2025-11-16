@@ -51,11 +51,15 @@ export class ProcedureRenouvellementController {
       where: { id: body.permisId },
       include: {
         typePermis: true,
-        procedures: {
+        permisProcedure: {
           include: {
-            demandes: {
+            procedure: {
               include: {
-                renouvellement: true,
+                demandes: {
+                  include: {
+                    renouvellement: true,
+                  },
+                },
               },
             },
           },
@@ -67,8 +71,13 @@ export class ProcedureRenouvellementController {
       throw new NotFoundException('Permis non trouvé');
     }
 
-    const renewalCount = permit.procedures.reduce((count, procedure) => {
-      return count + procedure.demandes.filter((demande) => demande.renouvellement).length;
+    const procedures = permit.permisProcedure
+      ?.map((relation) => relation.procedure)
+      .filter((procedure): procedure is NonNullable<typeof procedure> => !!procedure) ?? [];
+
+    const renewalCount = procedures.reduce((count, procedure) => {
+      const demandes = procedure.demandes || [];
+      return count + demandes.filter((demande) => demande.renouvellement).length;
     }, 0);
 
     if (renewalCount >= permit.typePermis.nbr_renouv_max!) {

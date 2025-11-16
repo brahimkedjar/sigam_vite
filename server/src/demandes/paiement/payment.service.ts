@@ -788,16 +788,34 @@ async createRenewalObligations(
   }
 
   async getProcedureWithPermis(procedureId: number) {
-    return this.prisma.procedure.findUnique({
+    const procedure = await this.prisma.procedure.findUnique({
       where: { id_proc: procedureId },
       include: {
-        permis: {
+        permisProcedure: {
           include: {
-            typePermis: true,
+            permis: {
+              include: {
+                typePermis: true,
+              },
+            },
           },
         },
       },
     });
+
+    if (!procedure) {
+      return null;
+    }
+
+    const permisList = procedure.permisProcedure
+      .map(rel => rel.permis)
+      .filter((p): p is NonNullable<typeof p> => !!p);
+
+    const { permisProcedure, ...rest } = procedure as any;
+    return {
+      ...rest,
+      permis: permisList,
+    };
   }
 
   async getObligationsForPermis(permisId: number): Promise<ObligationResponseDto[]> {
@@ -944,27 +962,31 @@ async createRenewalObligations(
   }
 
   async getPermisWithDetails(permisId: number) {
-    return this.prisma.permis.findUnique({
+    const permis = await this.prisma.permis.findUnique({
       where: { id: permisId },
       include: {
         typePermis: { include: { taxe: true } },
         detenteur: true,
         commune: true,
         statut: true,
-        procedures: {
+        permisProcedure: {
           include: {
-            demandes: {
+            procedure: {
               include: {
-                typeProcedure: true,
-                typePermis: true,
-                expertMinier: true,
-                wilaya: true,
-                daira: true,
-                commune: true,
+                demandes: {
+                  include: {
+                    typeProcedure: true,
+                    typePermis: true,
+                    expertMinier: true,
+                    wilaya: true,
+                    daira: true,
+                    commune: true,
+                  },
+                },
+                ProcedureEtape: true,
+                ProcedurePhase: true,
               },
             },
-            ProcedureEtape: true,
-            ProcedurePhase: true,
           },
         },
         ObligationFiscale: {
@@ -977,6 +999,20 @@ async createRenewalObligations(
         RapportActivite: true,
       },
     });
+
+    if (!permis) {
+      return null;
+    }
+
+    const procedures = permis.permisProcedure
+      .map(rel => rel.procedure)
+      .filter((proc): proc is NonNullable<typeof proc> => !!proc);
+
+    const { permisProcedure, ...rest } = permis as any;
+    return {
+      ...rest,
+      procedures,
+    };
   }
   async checkAllObligationsPaid(permisId: number): Promise<{
   isPaid: boolean;

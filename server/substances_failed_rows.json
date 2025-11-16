@@ -1,0 +1,1172 @@
+[
+  {
+    "row": {
+      "id_sub": 1,
+      "nom_subFR": "Fer",
+      "nom_subAR": "الحديد",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 2,
+      "nom_subFR": "Manganèse",
+      "nom_subAR": "المنغنيز",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 3,
+      "nom_subFR": "Chrome",
+      "nom_subAR": "الكروم",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 4,
+      "nom_subFR": "Titane",
+      "nom_subAR": "التيتان",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 5,
+      "nom_subFR": "Nickel",
+      "nom_subAR": "النيكل",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 6,
+      "nom_subFR": "Cobalt",
+      "nom_subAR": "الكوبالت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 7,
+      "nom_subFR": "Magnésium",
+      "nom_subAR": "المنيزيوم",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 8,
+      "nom_subFR": "Aluminium",
+      "nom_subAR": "الألومنيوم",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 9,
+      "nom_subFR": "Béryllium",
+      "nom_subAR": "البرليوم",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 10,
+      "nom_subFR": "Lithium",
+      "nom_subAR": "الليثيوم",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 11,
+      "nom_subFR": "Plomb",
+      "nom_subAR": "الرصاص",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 12,
+      "nom_subFR": "Zinc",
+      "nom_subAR": "الزنك",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 13,
+      "nom_subFR": "Cuivre",
+      "nom_subAR": "النحاس",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 14,
+      "nom_subFR": "Antimoine",
+      "nom_subAR": "الاثـمد (الأنتموان)",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 15,
+      "nom_subFR": "Wolfram",
+      "nom_subAR": "الفلفرام",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 16,
+      "nom_subFR": "Etain",
+      "nom_subAR": "القصدير",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 17,
+      "nom_subFR": "Mercure",
+      "nom_subAR": "الزئبق",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 18,
+      "nom_subFR": "Arsenic",
+      "nom_subAR": "الأرسنيك",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 19,
+      "nom_subFR": "Molybdène",
+      "nom_subAR": "الموليبدان",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 20,
+      "nom_subFR": "Zirconium",
+      "nom_subAR": "الزركونيوم",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 21,
+      "nom_subFR": "Bismuth",
+      "nom_subAR": "البزموت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 22,
+      "nom_subFR": "Germanium",
+      "nom_subAR": "الجيرمانيوم",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 23,
+      "nom_subFR": "Cadmium",
+      "nom_subAR": "الكادميوم",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 24,
+      "nom_subFR": "Gallium",
+      "nom_subAR": "الغاليوم",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 25,
+      "nom_subFR": "Vanadium",
+      "nom_subAR": "الفاناديوم",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 26,
+      "nom_subFR": "Uranium",
+      "nom_subAR": "الأورانيوم",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 27,
+      "nom_subFR": "Thorium",
+      "nom_subAR": "الثوريوم",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 28,
+      "nom_subFR": "Autres éléments radioactifs",
+      "nom_subAR": "",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 29,
+      "nom_subFR": "Tantale",
+      "nom_subAR": "التنطال",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 30,
+      "nom_subFR": "Niobium",
+      "nom_subAR": "النيوبيوم",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 31,
+      "nom_subFR": "Sélénium",
+      "nom_subAR": "السلينيوم",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 32,
+      "nom_subFR": "Terres rares",
+      "nom_subAR": "التربة النادرة",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 33,
+      "nom_subFR": "Charbon",
+      "nom_subAR": "الفحم",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 34,
+      "nom_subFR": "Anthracite",
+      "nom_subAR": "الأنتراسيت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 35,
+      "nom_subFR": "Lignite",
+      "nom_subAR": "اللنيت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 36,
+      "nom_subFR": "Schistes bitumeux",
+      "nom_subAR": "الخث الحمري",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 37,
+      "nom_subFR": "Graphite",
+      "nom_subAR": "الغرافيت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 38,
+      "nom_subFR": "Sable pour verrerie et fonderie",
+      "nom_subAR": "الرمل الخاص بصناعة الزجاج و صهر المعادن",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 39,
+      "nom_subFR": "Diatomites (Kieselguhr)",
+      "nom_subAR": "الكسيلغور",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 40,
+      "nom_subFR": "Calcite",
+      "nom_subAR": "الكلسيت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 41,
+      "nom_subFR": "Dolomie",
+      "nom_subAR": "الدولوميت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 42,
+      "nom_subFR": "Amiante",
+      "nom_subAR": "الحرير الصخري",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 43,
+      "nom_subFR": "Talc",
+      "nom_subAR": "الطلق",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 44,
+      "nom_subFR": "Micas",
+      "nom_subAR": "الميكا",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 45,
+      "nom_subFR": "Pierre ponce (Pouzzolane)",
+      "nom_subAR": "الحجر الخفاف (البوزولان)",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 46,
+      "nom_subFR": "Terres décolorantes",
+      "nom_subAR": "التربة المنصلة",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 47,
+      "nom_subFR": "Bentonite",
+      "nom_subAR": "البنطانيت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 48,
+      "nom_subFR": "Ghassoul",
+      "nom_subAR": "الغاسول",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 49,
+      "nom_subFR": "Attapulgite",
+      "nom_subAR": "الأتابولجيت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 50,
+      "nom_subFR": "Perlites",
+      "nom_subAR": "البرليت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 51,
+      "nom_subFR": "Kaolin",
+      "nom_subAR": "الكولين",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 52,
+      "nom_subFR": "Pegmatite",
+      "nom_subAR": "البقماتيت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 53,
+      "nom_subFR": "Feldspath",
+      "nom_subAR": "صفاح الحقول (الفلدسبات)",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 54,
+      "nom_subFR": "Barytine",
+      "nom_subAR": "البارتين",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 55,
+      "nom_subFR": "Strontium (Célestine)",
+      "nom_subAR": "السلستين",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 56,
+      "nom_subFR": "Fluorine",
+      "nom_subAR": "الفليورين",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 57,
+      "nom_subFR": "Phosphate",
+      "nom_subAR": "الفوسفات",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 58,
+      "nom_subFR": "Sels de sodium",
+      "nom_subAR": "ملح الصوديوم",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 59,
+      "nom_subFR": "Sels de potassium",
+      "nom_subAR": "أملاح البوتاسيوم",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 60,
+      "nom_subFR": "Nitrates",
+      "nom_subAR": "النيترات",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 61,
+      "nom_subFR": "Autres sels",
+      "nom_subAR": "",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 62,
+      "nom_subFR": "Soufre",
+      "nom_subAR": "الكبريت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 63,
+      "nom_subFR": "Andalousite",
+      "nom_subAR": "الأندلوزيت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 64,
+      "nom_subFR": "Sillimanite",
+      "nom_subAR": "السليمانيت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 65,
+      "nom_subFR": "Disthène",
+      "nom_subAR": "الديستان",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 66,
+      "nom_subFR": "Quartz",
+      "nom_subAR": "الكورتز",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 67,
+      "nom_subFR": "Calcaire",
+      "nom_subAR": "الكلس",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 68,
+      "nom_subFR": "Grés",
+      "nom_subAR": "الصخر الرملي",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 69,
+      "nom_subFR": "Autres substances destinées pour l'agrégat",
+      "nom_subAR": "",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 70,
+      "nom_subFR": "Schistes",
+      "nom_subAR": "النضيد",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 71,
+      "nom_subFR": "Ardoise",
+      "nom_subAR": "الأردواز",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 72,
+      "nom_subFR": "Marbre",
+      "nom_subAR": "الرخام",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 73,
+      "nom_subFR": "Travertin",
+      "nom_subAR": "الترافرتان",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 74,
+      "nom_subFR": "Aragonite",
+      "nom_subAR": "الأراغونيت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 75,
+      "nom_subFR": "Calcaire ornemental",
+      "nom_subAR": "الكلس الموجه للزخرفة",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 76,
+      "nom_subFR": "Serpentinite",
+      "nom_subAR": "السربونتينيت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 77,
+      "nom_subFR": "Granite",
+      "nom_subAR": "الغرانيت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 78,
+      "nom_subFR": "Onyx",
+      "nom_subAR": "الأونكس",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 79,
+      "nom_subFR": "Autres pierres ornementales",
+      "nom_subAR": "",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 80,
+      "nom_subFR": "Gypse",
+      "nom_subAR": "الجبس",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 81,
+      "nom_subFR": "Anhydrite",
+      "nom_subAR": "الانهيدريت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 82,
+      "nom_subFR": "Argile",
+      "nom_subAR": "الصلصال",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 83,
+      "nom_subFR": "Marnes",
+      "nom_subAR": "التراب الأصفر",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 84,
+      "nom_subFR": "Tuf",
+      "nom_subAR": "الفليس ) التيف(",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 85,
+      "nom_subFR": "Sable de construction",
+      "nom_subAR": "الرمل الموجه للبناء",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 86,
+      "nom_subFR": "Or",
+      "nom_subAR": "الذهب",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 87,
+      "nom_subFR": "Argent",
+      "nom_subAR": "الفضة",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 88,
+      "nom_subFR": "Platinoïdes",
+      "nom_subAR": "البلاتينويد",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 89,
+      "nom_subFR": "Diamant",
+      "nom_subAR": "الألماس",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 90,
+      "nom_subFR": "Topaze",
+      "nom_subAR": "التوباز",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 91,
+      "nom_subFR": "Agate",
+      "nom_subAR": "الأغات",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 92,
+      "nom_subFR": "Grenat",
+      "nom_subAR": "العقيق (البجادي)",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 93,
+      "nom_subFR": "Rubis",
+      "nom_subAR": "اللعل",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 94,
+      "nom_subFR": "Saphir",
+      "nom_subAR": "السفير",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 95,
+      "nom_subFR": "Émeraude",
+      "nom_subAR": "الزمرد",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 96,
+      "nom_subFR": "Béryl",
+      "nom_subAR": "الخضر",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 97,
+      "nom_subFR": "Zircon",
+      "nom_subAR": "الزيركون",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 98,
+      "nom_subFR": "Corindon",
+      "nom_subAR": "الياقوت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 99,
+      "nom_subFR": "Autres pierres semi-précieuses",
+      "nom_subAR": "",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 100,
+      "nom_subFR": "Sable",
+      "nom_subAR": "الرمل",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 101,
+      "nom_subFR": "Sable quartzeux",
+      "nom_subAR": "الرمل الكوارتزي",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 102,
+      "nom_subFR": "Sel",
+      "nom_subAR": "الملح",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 104,
+      "nom_subFR": "Pas clasifiée",
+      "nom_subAR": "",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 106,
+      "nom_subFR": "Andesite",
+      "nom_subAR": "الأنديزيت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 108,
+      "nom_subFR": "Gneïss",
+      "nom_subAR": "القنيس",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 109,
+      "nom_subFR": "Granodiorite",
+      "nom_subAR": "غرانوديوريت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 110,
+      "nom_subFR": "Carbonate de Calcium",
+      "nom_subAR": "كربونات الكلسيوم",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 111,
+      "nom_subFR": "Basalte",
+      "nom_subAR": "البازلت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 112,
+      "nom_subFR": "Quartzite",
+      "nom_subAR": "الكورتزيت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 113,
+      "nom_subFR": "Albatre",
+      "nom_subAR": "الألباتر",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 114,
+      "nom_subFR": "Limon",
+      "nom_subAR": "الطمي",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 115,
+      "nom_subFR": "Conglomérat",
+      "nom_subAR": "الرواهص",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 116,
+      "nom_subFR": "Rhyolite",
+      "nom_subAR": "الريوليت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 117,
+      "nom_subFR": "Tout-Venant",
+      "nom_subAR": "خامات المواد المعدنية",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 118,
+      "nom_subFR": "Cipolin",
+      "nom_subAR": "سيبولين",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 119,
+      "nom_subFR": "Wallastonite",
+      "nom_subAR": "الوالاستونيت",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  },
+  {
+    "row": {
+      "id_sub": 121,
+      "nom_subFR": "Sable Siliceux",
+      "nom_subAR": "الرمل السيليسي",
+      "categorie_sub": "",
+      "id_redevance": null
+    },
+    "error": "\nInvalid `prisma.substance.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\substances_seed.ts:45:34\n\n  42 // insertion ligne par ligne pour identifier les erreurs\n  43 for (const row of substancesData) {\n  44   try {\n→ 45     await prisma.substance.create(\nUnique constraint failed on the fields: (`id_sub`)"
+  }
+]

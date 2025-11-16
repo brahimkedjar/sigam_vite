@@ -99,7 +99,7 @@ async getExistingPerimeters() {
 
     const grouped = raw.reduce((acc, entry) => {
       const id = entry.procedure.id_proc;
-      const code = entry.procedure.num_proc;
+      const code = entry.procedure.num_proc ?? '';
       if (!acc[id]) {
         acc[id] = {
           id_proc: id,

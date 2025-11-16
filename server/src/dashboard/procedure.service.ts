@@ -9,30 +9,33 @@ export class ProcedureService {
 async getAllProcedures() {
   return this.prisma.demande.findMany({
     include: {
-      typeProcedure: true,  // 🔑 directly from Demande now
+      typeProcedure: true,  // directement depuis Demande
       procedure: {
         include: {
-          permis: {
+          permisProcedure: {
             include: {
-              detenteur: true,
-              procedures: {
-                where: {
-                  demandes: {
-                    some: {
-                      typeProcedure: { libelle: 'demande' }
-                    }
-                  }
-                },
+              permis: {
                 include: {
-                  demandes: {
+                  detenteur: true,
+                  permisProcedure: {
                     include: {
-                      detenteur: true,
-                      typeProcedure: true, // also here for consistency
-                    }
-                  }
-                }
-              }
-            }
+                      procedure: {
+                        include: {
+                          demandes: {
+                            include: {
+                              typeProcedure: true,
+                              detenteurdemande: {
+                                include: { detenteur: true },
+                              },
+                            },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
           ProcedureEtape: {
             include: {
@@ -46,7 +49,9 @@ async getAllProcedures() {
           },
         },
       },
-      detenteur: true,
+      detenteurdemande: {
+        include: { detenteur: true },
+      },
     },
     orderBy: {
       date_demande: 'desc',
@@ -60,8 +65,10 @@ async getProcedureById(id: number) {
     include: {
       demandes: {
         include: {
-          detenteur: true,
-          typeProcedure: true, // 🔑 moved here instead of procedure
+          detenteurdemande: {
+            include: { detenteur: true },
+          },
+          typeProcedure: true,
         },
         take: 1, // first demande
       },
@@ -75,9 +82,13 @@ async getProcedureById(id: number) {
           },
         },
       },
-      permis: {
+      permisProcedure: {
         include: {
-          detenteur: true,
+          permis: {
+            include: {
+              detenteur: true,
+            },
+          },
         },
       },
     },
@@ -109,8 +120,10 @@ async getProceduresEnCours() {
           },
         },
       },
-      typeProcedure: true,   // ✅ now linked via demande
-      detenteur: true,
+      typeProcedure: true,
+      detenteurdemande: {
+        include: { detenteur: true },
+      },
     },
     orderBy: {
       date_demande: 'desc',
@@ -119,8 +132,6 @@ async getProceduresEnCours() {
 
   return data;
 }
-
-
 async deleteProcedureAndRelatedData(procedureId: number) { 
   return this.prisma.$transaction(async (prisma) => {
     // First get the demande for this procedure
@@ -130,10 +141,14 @@ async deleteProcedureAndRelatedData(procedureId: number) {
         typeProcedure: true,
         procedure: {
           include: {
-            permis: {
-              select: {
-                id: true,
-                nombre_renouvellements: true,
+            permisProcedure: {
+              include: {
+                permis: {
+                  select: {
+                    id: true,
+                    nombre_renouvellements: true,
+                  },
+                },
               },
             },
           },
@@ -146,17 +161,22 @@ async deleteProcedureAndRelatedData(procedureId: number) {
     }
 
     // If this is a renewal procedure, decrement the count
-    if (demande.typeProcedure?.libelle?.toLowerCase() === 'renouvellement' && 
-        demande.procedure!.permis.length > 0) {
-      const permisId = demande.procedure!.permis[0].id;
-      const currentCount = demande.procedure!.permis[0].nombre_renouvellements || 0;
+    if (
+      demande.typeProcedure?.libelle?.toLowerCase() === 'renouvellement' &&
+      demande.procedure?.permisProcedure?.length
+    ) {
+      const permisRecord = demande.procedure.permisProcedure[0].permis;
+      if (permisRecord) {
+        const permisId = permisRecord.id;
+        const currentCount = permisRecord.nombre_renouvellements || 0;
       
-      await prisma.permis.update({
-        where: { id: permisId },
-        data: {
-          nombre_renouvellements: Math.max(0, currentCount - 1),
-        },
-      });
+        await prisma.permis.update({
+          where: { id: permisId },
+          data: {
+            nombre_renouvellements: Math.max(0, currentCount - 1),
+          },
+        });
+      }
     }
 
     // Get all related demandes for this procedure
@@ -164,13 +184,17 @@ async deleteProcedureAndRelatedData(procedureId: number) {
       where: { id_proc: procedureId },
       select: {
         id_demande: true,
-        id_detenteur: true,
         id_expert: true,
+        detenteurdemande: {
+          select: { id_detenteur: true },
+        },
       },
     });
 
     const demandeIds = demandes.map(d => d.id_demande);
-    const detenteurIds = demandes.map(d => d.id_detenteur).filter(id => id !== null) as number[];
+    const detenteurIds = demandes
+      .flatMap(d => d.detenteurdemande.map(dd => dd.id_detenteur))
+      .filter((id): id is number => typeof id === 'number');
     const expertIds = demandes.map(d => d.id_expert).filter(id => id !== null) as number[];
 
     // NEW: Delete related records in correct order to avoid foreign key constraints
@@ -288,10 +312,10 @@ async deleteProcedureAndRelatedData(procedureId: number) {
     const personnePhysiqueIdsToDelete: number[] = [];
     
     for (const detenteurId of detenteurIds) {
-      const otherReferences = await prisma.demande.count({
+      const otherReferences = await prisma.detenteurDemande.count({
         where: { 
           id_detenteur: detenteurId,
-          id_proc: { not: procedureId }
+          demande: { id_proc: { not: procedureId } }
         }
       });
       
@@ -397,3 +421,5 @@ async terminerProcedure(idProc: number) {
 
 
 }
+
+

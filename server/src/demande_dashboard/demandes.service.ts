@@ -8,12 +8,28 @@ type SortOrder = 'asc' | 'desc';
 export class DemandesService {
   constructor(private prisma: PrismaService) {}
 
+  private extractDetenteur(demande: any) {
+    return demande.detenteurdemande?.[0]?.detenteur ?? null;
+  }
+
   private baseInclude = {
     wilaya: { select: { id_wilaya: true, nom_wilayaFR: true } },
     daira: { select: { id_daira: true, nom_dairaFR: true } },
     commune: { select: { id_commune: true, nom_communeFR: true } },
     procedure: { select: { id_proc: true, statut_proc: true, date_fin_proc: true } },
-    detenteur: { select: { id_detenteur: true, nom_societeFR: true, email: true, pays: { select: { id_pays: true, nom_pays: true } }, nationaliteRef: { select: { id_nationalite: true, libelle: true } } } },
+    detenteurdemande: {
+      include: {
+        detenteur: {
+          select: {
+            id_detenteur: true,
+            nom_societeFR: true,
+            email: true,
+            pays: { select: { id_pays: true, nom_pays: true } },
+            nationaliteRef: { select: { id_nationalite: true, libelle: true } },
+          },
+        },
+      },
+    },
     expertMinier: { select: { id_expert: true, nom_expert: true, num_agrement: true } },
     typePermis: { select: { id: true, code_type: true, lib_type: true } },
     typeProcedure: { select: { id: true, libelle: true } },
@@ -54,9 +70,16 @@ export class DemandesService {
     const q = search.trim();
     where.OR = [
       { code_demande: { contains: q, mode: 'insensitive' } },
-      { intitule_projet: { contains: q, mode: 'insensitive' } },
       { lieu_ditFR: { contains: q, mode: 'insensitive' } },
-      { detenteur: { nom_societeFR: { contains: q, mode: 'insensitive' } } },
+      {
+        detenteurdemande: {
+          some: {
+            detenteur: {
+              nom_societeFR: { contains: q, mode: 'insensitive' },
+            },
+          },
+        },
+      },
       { expertMinier: { nom_expert: { contains: q, mode: 'insensitive' } } },
     ];
   }
@@ -155,9 +178,6 @@ export class DemandesService {
   const avgInstruction = await this.prisma.demande.aggregate({
     _avg: {
       superficie: true,
-      capital_social_disponible: true,
-      budget_prevu: true,
-      AreaCat: true,
     },
     where: {
       date_instruction: { not: null },
@@ -193,7 +213,11 @@ export class DemandesService {
         wilaya: true,
         daira: true,
         commune: true,
-        detenteur: { include: { pays: true, nationaliteRef: true } },
+        detenteurdemande: {
+          include: {
+            detenteur: { include: { pays: true, nationaliteRef: true } },
+          },
+        },
         expertMinier: true,
         typePermis: true,
         typeProcedure: true,
@@ -249,23 +273,27 @@ export class DemandesService {
     'budget_prevu',
     'montant_produit',
   ];
-  const rows = all.items.map(d => ([
+  const rows = all.items.map(d => {
+    const detenteur = this.extractDetenteur(d);
+    const record = d as any;
+    return [
     d.id_demande,
     d.code_demande ?? '',
     d.date_demande ? new Date(d.date_demande).toISOString() : '',
     d.statut_demande ?? '',
-    d.intitule_projet ?? '',
+    record.intitule_projet ?? '',
     d.wilaya?.nom_wilayaFR ?? '',
     d.daira?.nom_dairaFR ?? '',
     d.commune?.nom_communeFR ?? '',
     d.typePermis?.lib_type ?? '',
     d.typeProcedure?.libelle ?? '',
-    d.detenteur?.nom_societeFR ?? '',
+    detenteur?.nom_societeFR ?? '',
     d.expertMinier?.nom_expert ?? '',
     d.superficie ?? '',
-    d.budget_prevu ?? '',
-    d.montant_produit ?? '',
-  ]).join(','));
+    record.budget_prevu ?? '',
+    record.montant_produit ?? '',
+  ].join(',');
+  });
   return [headers.join(','), ...rows].join('\n');
 }
 }

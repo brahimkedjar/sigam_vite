@@ -186,7 +186,7 @@ export class PermisDashboardService {
       take: 10,
       orderBy: { date_demande: 'desc' },
       include: {
-        detenteur: true,
+        detenteurdemande: { include: { detenteur: true } },
         procedure: true
       }
     });
@@ -211,7 +211,7 @@ export class PermisDashboardService {
         timestamp: demande.date_demande,
         status: 'info' as const,
         code: demande.code_demande,
-        user: demande.detenteur?.nom_societeFR
+        user: demande.detenteurdemande?.[0]?.detenteur?.nom_societeFR
       }))
     ];
 

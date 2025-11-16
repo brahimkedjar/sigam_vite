@@ -48,7 +48,9 @@ export class CdService {
           include: {
             demandes: {
               include: {
-                detenteur: true
+                detenteurdemande: {
+                  include: { detenteur: true },
+                },
               }
             }
           }

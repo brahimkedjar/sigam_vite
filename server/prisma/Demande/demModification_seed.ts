@@ -110,7 +110,7 @@ export async function main() {
       rows.push({
         id_demande: parseInt(row.id_demande, 10),
         id_modification: parseInt(row.id_modification, 10),
-        duree_trvx: row.duree_trvx || null,
+        duree_trvx: parseInt(row.duree_trvx, 10),
         qualite_signataire: row.qualite_signataire || null,
         date_demarrage_prevue: parseDate(row.date_demarrage_prevue) || null,
         dossier_recevable: parseBoolean(row.dossier_recevable),

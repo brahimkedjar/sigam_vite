@@ -28,13 +28,17 @@ export class TransfertService {
         },
         typePermis: true,
         statut: true,
-        procedures: {
-          orderBy: { date_debut_proc: 'desc' },
+        permisProcedure: {
           include: {
-            demandes: {
-              orderBy: { date_demande: 'desc' },
+            procedure: {
+              orderBy: { date_debut_proc: 'desc' },
               include: {
-                typeProcedure: true,
+                demandes: {
+                  orderBy: { date_demande: 'desc' },
+                  include: {
+                    typeProcedure: true,
+                  },
+                },
               },
             },
           },
@@ -46,15 +50,20 @@ export class TransfertService {
       throw new NotFoundException('Permis not found');
     }
 
-    const latestDemande = permis.procedures
-      ?.flatMap((procedure) => procedure.demandes ?? [])
+    const procedures =
+      permis.permisProcedure
+        ?.map((relation) => relation.procedure)
+        .filter((proc): proc is NonNullable<typeof proc> => !!proc) ?? [];
+
+    const latestDemande = procedures
+      .flatMap((procedure) => procedure.demandes ?? [])
       ?.sort((a, b) => {
         const dateA = a.date_demande ? new Date(a.date_demande).getTime() : 0;
         const dateB = b.date_demande ? new Date(b.date_demande).getTime() : 0;
         return dateB - dateA;
       })[0] ?? null;
 
-    return { permis, latestDemande };
+    return { permis: { ...permis, procedures }, latestDemande };
   }
 
   async searchDetenteurs(q?: string, take = 20, skip = 0) {
@@ -256,7 +265,7 @@ export class TransfertService {
         where: {
           typeProcedureId: typeProc.id,
           statut_proc: { in: [StatutProcedure.EN_COURS, StatutProcedure.EN_ATTENTE] },
-          permis: { some: { id: dto.permisId } },
+          permisProcedure: { some: { id_permis: dto.permisId } },
         },
       });
 
@@ -270,21 +279,34 @@ export class TransfertService {
           date_debut_proc: new Date(),
           statut_proc: StatutProcedure.EN_COURS,
           typeProcedureId: typeProc.id,
-          permis: { connect: { id: dto.permisId } },
+        },
+      });
+
+      await tx.permisProcedure.create({
+        data: {
+          id_permis: dto.permisId,
+          id_proc: newProcedure.id_proc,
         },
       });
 
       const newDemande = await tx.demande.create({
         data: {
           id_proc: newProcedure.id_proc,
-          id_detenteur: permis.id_detenteur,
           id_typeProc: typeProc.id,
           id_typePermis: permis.id_typePermis,
           code_demande: `TRF-DEMANDE-${Date.now()}`,
           date_demande: dto.date_demande ? new Date(dto.date_demande) : new Date(),
           statut_demande: StatutProcedure.EN_COURS,
-          intitule_projet: dto.motif_transfert || 'Transfert de detention',
-          description_travaux: dto.observations || '',
+          ...(permis.id_detenteur
+            ? {
+                detenteurdemande: {
+                  create: {
+                    id_detenteur: permis.id_detenteur,
+                    role_detenteur: 'ANCIEN',
+                  },
+                },
+              }
+            : {}),
         },
       });
 
@@ -362,10 +384,14 @@ export class TransfertService {
    * Retourne lhistorique des transferts associes a un permis donne.
    */
   async getHistoryByPermis(permisId: number) {
-    const procedures = await this.prisma.procedure.findMany({
-      where: { permis: { some: { id: permisId } } },
-      include: { demandes: true },
+    const relations = await this.prisma.permisProcedure.findMany({
+      where: { id_permis: permisId },
+      include: { procedure: { include: { demandes: true } } },
     });
+
+    const procedures = relations
+      .map((relation) => relation.procedure)
+      .filter((procedure): procedure is NonNullable<typeof procedure> => !!procedure);
 
     const demandeIds = procedures.flatMap((procedure) => procedure.demandes.map((demande) => demande.id_demande));
 

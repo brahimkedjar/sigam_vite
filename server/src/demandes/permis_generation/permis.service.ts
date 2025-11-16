@@ -15,7 +15,9 @@ export class GeneratePermisService {
       daira: true,
       commune: true, // Include commune
       procedure: true,
-      detenteur: true
+      detenteurdemande: {
+        include: { detenteur: true },
+      },
     }
   });
 
@@ -28,7 +30,8 @@ export class GeneratePermisService {
   if (!demande.procedure) {
     throw new Error("Procedure missing");
   }
-  if (!demande.detenteur) {
+  const detenteur = demande.detenteurdemande?.[0]?.detenteur;
+  if (!detenteur) {
     throw new Error("Detenteur missing");
   }
   if (!demande.commune) {
@@ -55,7 +58,7 @@ export class GeneratePermisService {
     data: {
       id_typePermis: demande.typePermis.id,
       id_commune: demande.commune.id_commune, // Changed to use commune ID
-      id_detenteur: demande.detenteur.id_detenteur,
+      id_detenteur: detenteur.id_detenteur,
       id_statut: defaultStatut?.id ?? undefined,
       code_permis: demande.code_demande || null,
       date_adjudication: null,
@@ -67,8 +70,8 @@ export class GeneratePermisService {
       superficie: demande.superficie || 0,
       utilisation: "",
       statut_juridique_terrain: demande.statut_juridique_terrain || "",
-      duree_prevue_travaux: demande.duree_travaux_estimee || null,
-      date_demarrage_travaux: demande.date_demarrage_prevue || null,
+      duree_prevue_travaux: null,
+      date_demarrage_travaux: null,
       statut_activites: demande.procedure.statut_proc || "",
       commentaires: null,
       nombre_renouvellements: 0,
@@ -80,10 +83,14 @@ export class GeneratePermisService {
     data: { permisId: newPermis.id },
   });
 
-  await this.prisma.procedure.update({
-    where: { id_proc: demande.id_proc || undefined},
-    data: { permis: { connect: { id: newPermis.id } } },
-  });
+  if (demande.procedure?.id_proc) {
+    await this.prisma.permisProcedure.create({
+      data: {
+        id_permis: newPermis.id,
+        id_proc: demande.procedure.id_proc,
+      },
+    });
+  }
 
   return newPermis;
 }
@@ -96,7 +103,9 @@ export class GeneratePermisService {
         wilaya: true,
         daira: true,
         commune: true,
-        detenteur: true,
+        detenteurdemande: {
+          include: { detenteur: true },
+        },
         procedure: true
       }
     });

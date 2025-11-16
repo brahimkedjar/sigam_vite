@@ -413,8 +413,19 @@ model TypePermis {
     taxe                 SuperficiaireBareme?    @relation(fields: [id_taxe], references: [id])
     Barems               BaremProduitetDroit[]
     PermisTemplate     PermisTemplate[]
+    combinaisionPermisProc combinaisonPermisProc[]
     @@map("typepermis")
 }
+ model combinaisonPermisProc {
+    id_combinaison  Int      @id @default(autoincrement())
+    id_typePermis  Int
+    id_typeProc  Int
+    typePermis     TypePermis @relation( fields: [id_typePermis], references: [id])
+    typeProc     TypeProcedure @relation( fields: [id_typeProc], references: [id])
+    relationPhaseTypeProc relationPhaseTypeProc[]
+    @@unique([id_typePermis, id_typeProc])
+    @@map("combinaison_typepermis")
+ }
 model PermisTemplate {
   id          Int      @id @default(autoincrement())
   name        String
@@ -436,7 +447,7 @@ model TypeProcedure {
   id          Int          @id @default(autoincrement())
   libelle     String?      // demande / extension / renouvellement / modification / fusion ...
   description String?
-  relationPhaseTypeProc relationPhaseTypeProc[]
+ combinaisionPermisProc combinaisonPermisProc[]
 
     // Each type has its own phases
   
@@ -484,7 +495,7 @@ model Permis {
     commune            Commune?             @relation(fields: [id_commune], references: [id_commune])
     detenteur          DetenteurMorale?     @relation(fields: [id_detenteur], references: [id_detenteur])
     statut             StatutPermis?        @relation(fields: [id_statut], references: [id])
-    procedures         Procedure[]          @relation("PermisProcedure")
+    permisProcedure    permisProcedure[]
     RapportActivite    RapportActivite[]
     CahierCharge       CahierCharge[]
     ObligationFiscale  ObligationFiscale[]
@@ -542,6 +553,7 @@ model EtapeProc {
 
   phase Phase @relation(fields: [id_phase], references: [id_phase])
   procedureEtapes ProcedureEtape[] // status of etapes in procedures
+  procedurePhaseEtapes procedurePhaseEtapes[]                
 
   @@map("etape_proc")
 }
@@ -554,6 +566,7 @@ model Phase {
 //   typeProcedureId Int?          
   relationPhaseTypeProc relationPhaseTypeProc[]
   etapes        EtapeProc[]
+    procedurePhaseEtapes procedurePhaseEtapes[]                
   procedurePhases ProcedurePhase[]
   
   @@map("phase")
@@ -562,12 +575,11 @@ model Phase {
 model relationPhaseTypeProc {
   id_relation Int      @id @default(autoincrement())
   id_phase        Int
-  id_typeProcedure Int
+  id_combinaison Int
   dureeEstimee Int?
 
   phase          Phase          @relation(fields: [id_phase], references: [id_phase])
-  typeProcedure TypeProcedure  @relation(fields: [id_typeProcedure], references: [id])
-
+  combinaison   combinaisonPermisProc @relation(fields: [id_combinaison], references: [id_combinaison])
   @@map("relation_phase_typeprocedure")
 }
 
@@ -602,41 +614,71 @@ model ProcedureEtape {
 model Procedure {
     id_proc         Int             @id @default(autoincrement())
     id_seance       Int?
-    num_proc        String          @unique
-    date_debut_proc DateTime
+    num_proc        String?          @unique
+    date_debut_proc DateTime?
     date_fin_proc   DateTime?
     statut_proc     StatutProcedure
     resultat        String?
     observations    String?
+    cause_blocage  String?
+    date_blocage   DateTime?
 
-    permis                   Permis[]                   @relation("PermisProcedure")
+    permisProcedure          permisProcedure[]  
+    procedurePhaseEtapes procedurePhaseEtapes[]                
     demandes                 Demande[]
     coordonnees              ProcedureCoord[]
     SubstanceAssocieeDemande SubstanceAssocieeDemande[]
     InteractionWali          InteractionWali[]
     ProcedureEtape           ProcedureEtape[]           // status of etapes
     ProcedurePhase           ProcedurePhase[] 
-    seance                   SeanceCDPrevue?            @relation("SeanceProcedures", fields: [id_seance], references: [id_seance])
+    seance                   SeanceCDPrevue?    @relation("SeanceProcedures", fields: [id_seance], references: [id_seance])
     //TypeProcedure            TypeProcedure?             @relation(fields: [typeProcedureId], references: [id])
     typeProcedureId          Int?
     inscriptionProvisoire    InscriptionProvisoire?
     @@map("procedure")
 }
 
+model procedurePhaseEtapes {
+    id_procPhaseEtape  Int      @id @default(autoincrement())
+    id_proc    Int
+    id_phase   Int
+    id_etape   Int?
+    statut_etape String?    
+    date_debut DateTime?
+    date_fin DateTime?    
+    link      String?
+
+    procedure Procedure @relation(fields: [id_proc], references: [id_proc])
+    phase      Phase      @relation(fields: [id_phase], references: [id_phase])
+    etape      EtapeProc?      @relation(fields: [id_etape], references: [id_etape])
+
+    // @@unique([id_proc, id_phase, id_etape])
+    @@map("procedure_phase_etapes")
+}
+
+model permisProcedure {
+    id_procedurePermis Int      @id @default(autoincrement())
+    id_permis Int
+    id_proc   Int
+
+    permis    Permis    @relation(fields: [id_permis], references: [id])
+    procedure Procedure @relation(fields: [id_proc], references: [id_proc])
+
+    @@unique([id_permis, id_proc])
+    @@map("permis_procedure")
+}
 model Demande {
     id_demande               Int            @id @default(autoincrement()) 
     id_proc                  Int?
-    id_detenteur             Int?
     id_wilaya                Int?
     id_daira                 Int?
     id_commune               Int?
     id_typeProc              Int?
     id_typePermis            Int?
     id_expert                Int?
-    code_demande             String?         @unique
+    code_demande             String?         //@unique
     date_demande             DateTime?      // @default(now())
     date_instruction         DateTime?
-    intitule_projet          String?
     date_fin_instruction     DateTime?
     date_refus               DateTime?
     lieu_ditFR               String?
@@ -645,24 +687,9 @@ model Demande {
     statut_juridique_terrain String?
     occupant_terrain_legal   String?
     destination              String?
-    locPointOrigine          String?
-    duree_travaux_estimee    String?
-    date_demarrage_prevue    DateTime?
     LocPointOrigine   String?
-    // nom_pre_signataire       String?
-    qualite_signataire       String?
-    montant_produit          String?
-    con_res_geo              String?
-    con_res_exp              String?
-    volume_prevu             String?
-    capital_social_disponible             Float?
-    budget_prevu             Float?
-description_travaux String?
-sources_financement  String?
     remarques                String?
-    date_fin_ramassage         DateTime?
     num_enregist             String?
-    AreaCat                  Float?                           
     Nom_Prenom_Resp_Enregist String?
     statut_demande           String     //StatutDemande?
     PP                     Boolean?
@@ -670,7 +697,7 @@ sources_financement  String?
     daira           Daira?                   @relation(fields: [id_daira], references: [id_daira])
     commune         Commune?                 @relation(fields: [id_commune], references: [id_commune])
     procedure       Procedure?                @relation(fields: [id_proc], references: [id_proc])
-    detenteur       DetenteurMorale?         @relation(fields: [id_detenteur], references: [id_detenteur])
+    detenteurdemande       detenteurDemande[]
     expertMinier    ExpertMinier?            @relation(fields: [id_expert], references: [id_expert])
     typePermis      TypePermis?               @relation(fields: [id_typePermis], references: [id])
     typeProcedure   TypeProcedure?            @relation(fields: [id_typeProc], references: [id])
@@ -691,6 +718,15 @@ sources_financement  String?
     inscriptionProvisoire InscriptionProvisoire?
 
     @@map("demande")
+}
+model detenteurDemande {
+    id_detenteurDemande Int      @id @default(autoincrement())
+    id_demande          Int
+    id_detenteur        Int
+    role_detenteur      String? 
+
+    demande   Demande        @relation(fields: [id_demande], references: [id_demande])
+    detenteur DetenteurMorale @relation(fields: [id_detenteur], references: [id_detenteur])
 }
 
 model ProcedureRenouvellement {
@@ -949,7 +985,7 @@ model DetenteurMorale {
     pays               Pays?                    @relation(fields: [id_pays], references: [id_pays])
     nationaliteRef     Nationalite?             @relation(fields: [id_nationalite], references: [id_nationalite])
     fonctions          FonctionPersonneMoral[]
-    demande            Demande[]
+    detenteurdemande       detenteurDemande[]
     registreCommerce   RegistreCommerce[]
     Permis             Permis[]
     transfertDetenteur TransfertDetenteur[]
@@ -1053,7 +1089,7 @@ enum EnumAvisWali {
 model InteractionWali {
     id_interaction   Int                 @id @default(autoincrement())
     id_procedure     Int
-    id_wilaya        Int
+    id_wilaya        Int?
     type_interaction EnumTypeInteraction?
     avis_wali        EnumAvisWali? 
     date_envoi DateTime?
@@ -1065,7 +1101,7 @@ model InteractionWali {
     is_relance Boolean @default(false) // to distinguish relances
 
     Procedure Procedure @relation(fields: [id_procedure], references: [id_proc])
-    Wilaya    Wilaya    @relation(fields: [id_wilaya], references: [id_wilaya])
+    Wilaya    Wilaya?    @relation(fields: [id_wilaya], references: [id_wilaya])
 }
 
 model Substance {

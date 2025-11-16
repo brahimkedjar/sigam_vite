@@ -14,40 +14,57 @@ type SubstancesCSV = {
 
 export async function main() {
   const substancesData: any[] = [];
-  const csvFilePath =
-    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_substances.csv";
+  const csvFilePath = "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_substances.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(
-        csv({
-          separator: ';',
-          mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/g, ""), 
-        })
-      )
+      csv({
+        separator: ';',
+        mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/g, ""),
+      })
+    )
     .on("data", (row: SubstancesCSV) => {
       substancesData.push({
-        id_sub: Number(row.id.trim()),
+        id_sub: Number(row.id?.trim()),
         nom_subFR: row.nom_subFR,
         nom_subAR: row.nom_subAR,
         categorie_sub: row.categorie_sub,
-        id_redevance: Number(row.id_redevance.trim()),
+          id_redevance: row.id_redevance && row.id_redevance.trim() !== '' 
+                ? Number(row.id_redevance.trim()) 
+                : null,
       });
     })
     .on("end", async () => {
       console.log("CSV loaded, inserting into database...");
 
-      try {
-        await prisma.substance.createMany({
-          data: substancesData,
-          skipDuplicates: true,
-        });
+      const failedRows: any[] = [];
 
-        console.log("Seed finished.");
-      } catch (error) {
-        console.error("Error inserting data:", error);
-      } finally {
-        await prisma.$disconnect();
+      // insertion ligne par ligne pour identifier les erreurs
+      for (const row of substancesData) {
+        try {
+          await prisma.substance.create({
+            data: row,
+          });
+        } catch (error: any) {
+          console.error("Error inserting row:", row);
+          console.error("Error message:", error.message);
+          failedRows.push({ row, error: error.message });
+        }
       }
+
+      if (failedRows.length > 0) {
+        console.log(`Total rows failed: ${failedRows.length}`);
+        fs.writeFileSync(
+          "substances_failed_rows.json",
+          JSON.stringify(failedRows, null, 2),
+          "utf-8"
+        );
+        console.log("Failed rows saved to substances_failed_rows.json");
+      } else {
+        console.log("All rows inserted successfully!");
+      }
+
+      await prisma.$disconnect();
     });
 }
 
@@ -56,6 +73,3 @@ main().catch(async (e) => {
   await prisma.$disconnect();
   process.exit(1);
 });
-
-
-// métalliques, non-métalliques, radioactives

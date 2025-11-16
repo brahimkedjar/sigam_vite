@@ -6,9 +6,8 @@ const prisma = new PrismaClient();
 
 type relationPhaseTypeProcCSV = {
   id_phase: string;
-  id_typeProc: string;
+  id_combinaison: string;
   dureeEstimee: string;
-
 };
 
 export async function main() {
@@ -18,16 +17,21 @@ export async function main() {
 
   fs.createReadStream(csvFilePath)
     .pipe(
-        csv({
-          separator: ';',
-          mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/g, ""), 
-        })
-      )
+      csv({
+        separator: ';',
+        mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/g, ""),
+      })
+    )
     .on("data", (row: relationPhaseTypeProcCSV) => {
+      const id_combinaison = row.id_combinaison?.trim();
+      
+      // ignorer si id_combinaison est vide ou null
+      if (!id_combinaison) return;
+
       relationPhaseTypeProcData.push({
         id_phase: Number(row.id_phase.trim()),
-        id_typeProcedure: Number(row.id_typeProc.trim()),
-        dureeEstimee: parseInt(row.dureeEstimee) || null,
+        id_combinaison: Number(id_combinaison),
+        dureeEstimee: Number(row.dureeEstimee.trim()),
       });
     })
     .on("end", async () => {

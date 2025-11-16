@@ -132,9 +132,9 @@ async getPermisByProcedure(@Param('idProc') idProc: string) { // Change to strin
     // Check if a permis already exists for this demande
     const permis = await this.prisma.permis.findFirst({
       where: { 
-        procedures: {
+        permisProcedure: {
           some: {
-            id_proc: procedureId // Use the converted number here too
+            id_proc: procedureId
           }
         }
       }

@@ -26,8 +26,15 @@ try {
   run('npx ts-node prisma/TableRef/dftypepermis_seed.ts');
   run('npx ts-node prisma/TableRef/substances_seed.ts');
   run('npx ts-node prisma/TableRef/phase_seed.ts');
+  run('npx ts-node prisma/TableRef/combinaisonPermisProc_seed.ts');
   run('npx ts-node prisma/TableRef/relationPhaseTypeProc_seed.ts');
-  run('npx ts-node prisma/etap_proc_seed.ts');
+  // run('npx ts-node prisma/etap_proc_seed.ts');
+  run('npx ts-node prisma/Procedure/phases_seed.ts');
+  run('npx ts-node prisma/Procedure/EtapeProc_seed.ts');
+  run('npx ts-node prisma/Procedure/procedure_seed.ts');
+  run('npx ts-node prisma/Procedure/substanceAssocieDemande_seed.ts');
+  run('npx ts-node prisma/Procedure/procedurePhaseEtapes_seed.ts');
+  run('npx ts-node prisma/Procedure/interactionWali_seed.ts');
   run('npx ts-node prisma/seed_documents.ts');
   run('npx ts-node prisma/Demande/demandeGeneral_seed.ts');
   run('npx ts-node prisma/Demande/demAnnulation_seed.ts');

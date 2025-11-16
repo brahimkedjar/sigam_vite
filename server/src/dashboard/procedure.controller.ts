@@ -30,20 +30,24 @@ async getDemandeByProcedure(
   @Param('id_proc', ParseIntPipe) id_proc: number
 ) {
   console.log(`GET /api/procedures/${id_proc}/demande`);
-  return this.prisma.demande.findFirst({
+  const demande = await this.prisma.demande.findFirst({
     where: { id_proc },
     include: {
-      detenteur: {
+      detenteurdemande: {
         include: {
-          statutJuridique: true,
-          registreCommerce: true,
-          fonctions: {
-            where: {
-              type_fonction: {
-                in: ['Representant', 'Actionnaire'],
+          detenteur: {
+            include: {
+              statutJuridique: true,
+              registreCommerce: true,
+              fonctions: {
+                where: {
+                  type_fonction: {
+                    in: ['Representant', 'Actionnaire'],
+                  },
+                },
+                include: { personne: true },
               },
             },
-            include: { personne: true },
           },
         },
       },
@@ -60,6 +64,17 @@ async getDemandeByProcedure(
       },
     },
   });
+
+  if (!demande) {
+    return null;
+  }
+
+  const primaryDetenteur = demande.detenteurdemande?.[0]?.detenteur ?? null;
+  const { detenteurdemande, ...rest } = demande as any;
+  return {
+    ...rest,
+    detenteur: primaryDetenteur,
+  };
 }
 
 

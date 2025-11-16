@@ -8,21 +8,27 @@ export class DemandeService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findById(id_demande: number) {
-  const demande = await this.prisma.demande.findUnique({
-    where: { id_demande },
-    include: {
-      procedure: true,            // keep procedure (without typeProcedure)
-      typeProcedure: true,        // now directly from Demande
-      detenteur: true,
-      expertMinier: true,
-    },
-  });
+    const demande = await this.prisma.demande.findUnique({
+      where: { id_demande },
+      include: {
+        procedure: true,            // keep procedure (without typeProcedure)
+        typeProcedure: true,        // now directly from Demande
+        detenteurdemande: {
+          include: { detenteur: true },
+        },
+        expertMinier: true,
+      },
+    });
 
-  if (!demande) {
-    throw new NotFoundException('Demande introuvable');
-  }
+    if (!demande) {
+      throw new NotFoundException('Demande introuvable');
+    }
 
-  return demande;
+    const primaryDetenteur = demande.detenteurdemande?.[0]?.detenteur ?? null;
+    return {
+      ...demande,
+      detenteur: primaryDetenteur,
+    };
 }
 
 
@@ -82,23 +88,38 @@ const finalCode =
   });
 
   // Create demande (with id_typeproc now)
-  return this.prisma.demande.create({
+  const demande = await this.prisma.demande.create({
     data: {
       id_proc: createdProc.id_proc,
       id_typeProc: typeProcedure.id,  
       code_demande: finalCode,
-      id_detenteur: data.id_detenteur,
       id_typePermis: data.id_typepermis,
       date_demande: data.date_demande,
       date_instruction: data.date_instruction,
       statut_demande: StatutDemande.EN_COURS,
+      ...(data.id_detenteur
+        ? {
+            detenteurdemande: {
+              create: {
+                id_detenteur: data.id_detenteur,
+                role_detenteur: 'principal',
+              },
+            },
+          }
+        : {}),
     },
     include: {
       procedure: true,  
       typeProcedure: true, 
-      detenteur: true,
+      detenteurdemande: { include: { detenteur: true } },
     },
   });
+
+  const primaryDetenteur = demande.detenteurdemande?.[0]?.detenteur ?? null;
+  return {
+    ...demande,
+    detenteur: primaryDetenteur,
+  };
 }
 
 
@@ -171,9 +192,6 @@ async update(id: number, updateDemandeDto: UpdateDemandeDto) {
       statut_juridique_terrain: updateDemandeDto.statut_juridique_terrain,
       occupant_terrain_legal: updateDemandeDto.occupant_terrain_legal,
       superficie: updateDemandeDto.superficie,
-      description_travaux: updateDemandeDto.description_travaux,
-      duree_travaux_estimee: updateDemandeDto.duree_travaux_estimee,
-      date_demarrage_prevue: updateDemandeDto.date_demarrage_prevue,
     },
   });
 }
