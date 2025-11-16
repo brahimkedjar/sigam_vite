@@ -1,42 +1,40 @@
 import * as fs from 'fs';
-import csv from 'csv-parser';
-import { Daira, PrismaClient } from "@prisma/client";
+import * as csv from 'csv-parser';
+import { TypeProcedure, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-type DairaCSV = {
-  id_daira: string;
-  id_wilaya: string;
-  nom_dairaFR: string;
-  nom_dairaAR: string;
+type typeProcedureCSV = {
+  id_typeProc: string;
+  libelle_type: string;
+  description: string;
 };
 
 export async function main() {
-  const dairaData: any[] = [];
+  const typeProcedureData: any[] = [];
   const csvFilePath =
-    "C:\\Users\\A\\Desktop\\cleaned_df\\df_daira.csv";
+    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_typeProcedures.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(
         csv({
           separator: ';',
-          mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/g, ""), // supprime BOM + espaces
+          mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/g, ""), 
         })
       )
-    .on("data", (row: DairaCSV) => {
-      dairaData.push({
-        id_daira: Number(row.id_daira?.trim()),
-        id_wilaya: Number(row.id_wilaya),
-        nom_dairaFR: row.nom_dairaFR,
-        nom_dairaAR: row.nom_dairaAR,
+    .on("data", (row: typeProcedureCSV) => {
+      typeProcedureData.push({
+        id: Number(row.id_typeProc.trim()),
+        libelle: row.libelle_type || null,
+        description: row.description || null,
       });
     })
     .on("end", async () => {
       console.log("CSV loaded, inserting into database...");
 
       try {
-        await prisma.daira.createMany({
-          data: dairaData,
+        await prisma.typeProcedure.createMany({
+          data: typeProcedureData,
           skipDuplicates: true,
         });
 

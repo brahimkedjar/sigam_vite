@@ -1,20 +1,18 @@
 import * as fs from 'fs';
 import * as csv from 'csv-parser';
-import { StatutJuridique, PrismaClient } from "@prisma/client";
+import { ExpertMinier, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-type StatutCSV = {
-  id_statutJuridique: string;
-  code_statut: string;
-  statut_ar: string;
-  statut_fr: string;
+type ExpertCSV = {
+  id_expert: string;
+  nom_expert: string;
 };
 
 export async function main() {
-  const statutData: any[] = [];
+  const expertData: any[] = [];
   const csvFilePath =
-    "C:\\Users\\A\\Desktop\\cleaned_df\\df_statut.csv";
+    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_expert.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(
@@ -23,20 +21,18 @@ export async function main() {
           mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/g, ""), 
         })
       )
-    .on("data", (row: StatutCSV) => {
-      statutData.push({
-        id_statutJuridique: Number(row.id_statutJuridique?.trim()),
-        code_statut: row.code_statut,
-        statut_ar: row.statut_ar,
-        statut_fr: row.statut_fr,
+    .on("data", (row: ExpertCSV) => {
+      expertData.push({
+        id_expert: Number(row.id_expert.trim()),
+        nom_expert: row.nom_expert,
       });
     })
     .on("end", async () => {
       console.log("CSV loaded, inserting into database...");
 
       try {
-        await prisma.statutJuridique.createMany({
-          data: statutData,
+        await prisma.expertMinier.createMany({
+          data: expertData,
           skipDuplicates: true,
         });
 

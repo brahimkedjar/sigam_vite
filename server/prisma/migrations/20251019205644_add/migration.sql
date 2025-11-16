@@ -135,9 +135,6 @@ CREATE TABLE "Antenne" (
     "id_antenne" SERIAL NOT NULL,
     "nom" TEXT NOT NULL,
     "localisation" TEXT,
-    "Email" TEXT,
-    "Telephone" TEXT,
-    "Responsable" TEXT,
 
     CONSTRAINT "Antenne_pkey" PRIMARY KEY ("id_antenne")
 );
@@ -390,16 +387,15 @@ CREATE TABLE "StatutPermis" (
 -- CreateTable
 CREATE TABLE "typepermis" (
     "id" SERIAL NOT NULL,
-    "id_taxe" INTEGER,
-    "lib_type" TEXT,
-    "code_type" TEXT,
-    "regime" TEXT,
-    "duree_initiale" DOUBLE PRECISION,
-    "nbr_renouv_max" INTEGER,
-    "duree_renouv" DOUBLE PRECISION,
-    "delai_renouv" INTEGER,
+    "id_taxe" INTEGER NOT NULL,
+    "lib_type" TEXT NOT NULL,
+    "code_type" TEXT NOT NULL,
+    "regime" TEXT NOT NULL,
+    "duree_initiale" DOUBLE PRECISION NOT NULL,
+    "nbr_renouv_max" INTEGER NOT NULL,
+    "duree_renouv" DOUBLE PRECISION NOT NULL,
+    "delai_renouv" INTEGER NOT NULL,
     "superficie_max" DOUBLE PRECISION,
-    "ref_legales" TEXT,
 
     CONSTRAINT "typepermis_pkey" PRIMARY KEY ("id")
 );
@@ -499,18 +495,10 @@ CREATE TABLE "phase" (
     "libelle" TEXT NOT NULL,
     "ordre" INTEGER NOT NULL,
     "description" TEXT,
+    "dureeEstimee" INTEGER,
+    "typeProcedureId" INTEGER,
 
     CONSTRAINT "phase_pkey" PRIMARY KEY ("id_phase")
-);
-
--- CreateTable
-CREATE TABLE "relation_phase_typeprocedure" (
-    "id_relation" SERIAL NOT NULL,
-    "id_phase" INTEGER NOT NULL,
-    "id_typeProcedure" INTEGER NOT NULL,
-    "dureeEstimee" INTEGER,
-
-    CONSTRAINT "relation_phase_typeprocedure_pkey" PRIMARY KEY ("id_relation")
 );
 
 -- CreateTable
@@ -576,7 +564,6 @@ CREATE TABLE "demande" (
     "locPointOrigine" TEXT,
     "duree_travaux_estimee" TEXT,
     "date_demarrage_prevue" TIMESTAMP(3),
-    "LocPointOrigine" TEXT,
     "qualite_signataire" TEXT,
     "montant_produit" TEXT,
     "con_res_geo" TEXT,
@@ -590,9 +577,7 @@ CREATE TABLE "demande" (
     "date_fin_ramassage" TIMESTAMP(3),
     "num_enregist" TEXT,
     "AreaCat" DOUBLE PRECISION,
-    "Nom_Prenom_Resp_Enregist" TEXT,
     "statut_demande" TEXT NOT NULL,
-    "PP" BOOLEAN,
 
     CONSTRAINT "demande_pkey" PRIMARY KEY ("id_demande")
 );
@@ -601,23 +586,6 @@ CREATE TABLE "demande" (
 CREATE TABLE "ProcedureRenouvellement" (
     "id_renouvellement" SERIAL NOT NULL,
     "id_demande" INTEGER NOT NULL,
-    "duree_trvx" INTEGER,
-    "qualite_signataire" TEXT,
-    "date_demarrage_prevue" TIMESTAMP(3),
-    "dossier_recevable" BOOLEAN,
-    "dossier_complet" BOOLEAN,
-    "rec_enquete_date" TIMESTAMP(3),
-    "rec_enquete_nomRespon" TEXT,
-    "obs_attestation" TEXT,
-    "ConResGeo" DOUBLE PRECISION,
-    "ConResExp" DOUBLE PRECISION,
-    "VolumePrevu" DOUBLE PRECISION,
-    "obs_sit_geo" TEXT,
-    "obs_empiet" TEXT,
-    "obs_emplacement" TEXT,
-    "obs_geom" TEXT,
-    "obs_superficie" TEXT,
-    "inscripProv" BOOLEAN,
     "num_decision" TEXT,
     "date_decision" TIMESTAMP(3),
     "date_debut_validite" TIMESTAMP(3),
@@ -625,33 +593,6 @@ CREATE TABLE "ProcedureRenouvellement" (
     "commentaire" TEXT,
 
     CONSTRAINT "ProcedureRenouvellement_pkey" PRIMARY KEY ("id_renouvellement")
-);
-
--- CreateTable
-CREATE TABLE "demInitial" (
-    "id_demInitial" SERIAL NOT NULL,
-    "id_demande" INTEGER NOT NULL,
-    "duree_trvx" INTEGER,
-    "qualite_signataire" TEXT,
-    "date_demarrage_prevue" TIMESTAMP(3),
-    "dossier_recevable" BOOLEAN,
-    "dossier_complet" BOOLEAN,
-    "rec_enquete_date" TIMESTAMP(3),
-    "rec_enquete_nomRespon" TEXT,
-    "obs_attestation" TEXT,
-    "ConResGeo" DOUBLE PRECISION,
-    "ConResExp" DOUBLE PRECISION,
-    "VolumePrevu" DOUBLE PRECISION,
-    "obs_sit_geo" TEXT,
-    "obs_empiet" TEXT,
-    "obs_emplacement" TEXT,
-    "obs_geom" TEXT,
-    "obs_superficie" TEXT,
-    "inscripProv" BOOLEAN,
-    "intitule_projet" TEXT,
-    "montant_produit" DOUBLE PRECISION,
-
-    CONSTRAINT "demInitial_pkey" PRIMARY KEY ("id_demInitial")
 );
 
 -- CreateTable
@@ -669,11 +610,10 @@ CREATE TABLE "demFermeture" (
 CREATE TABLE "demAnnulation" (
     "id_annulation" SERIAL NOT NULL,
     "id_demande" INTEGER NOT NULL,
-    "origin_cadastre" BOOLEAN,
-    "verif_doc" TEXT,
-    "permis_annule" BOOLEAN,
-    "date_vigueur" TIMESTAMP(3),
-    "DatePrepDocAnnulation" TIMESTAMP(3),
+    "num_decision" TEXT,
+    "date_constat" TIMESTAMP(3),
+    "date_annulation" TIMESTAMP(3),
+    "cause_annulation" TEXT,
     "statut_annulation" TEXT,
 
     CONSTRAINT "demAnnulation_pkey" PRIMARY KEY ("id_annulation")
@@ -695,27 +635,8 @@ CREATE TABLE "demSubstitution" (
 CREATE TABLE "demModification" (
     "id_modification" SERIAL NOT NULL,
     "id_demande" INTEGER NOT NULL,
-    "duree_trvx" INTEGER,
-    "qualite_signataire" TEXT,
-    "date_demarrage_prevue" TIMESTAMP(3),
-    "dossier_recevable" BOOLEAN,
-    "dossier_complet" BOOLEAN,
-    "rec_enquete_date" TIMESTAMP(3),
-    "rec_enquete_nomRespon" TEXT,
-    "obs_attestation" TEXT,
-    "ConResGeo" DOUBLE PRECISION,
-    "ConResExp" DOUBLE PRECISION,
-    "VolumePrevu" DOUBLE PRECISION,
-    "obs_sit_geo" TEXT,
-    "obs_empiet" TEXT,
-    "obs_emplacement" TEXT,
-    "obs_geom" TEXT,
-    "obs_superficie" TEXT,
-    "inscripProv" BOOLEAN,
-    "intitule_projet" TEXT,
-    "montant_produit" DOUBLE PRECISION,
-    "type_modification" TEXT,
-    "idDivisionEnCurso" INTEGER,
+    "type_modif" TEXT,
+    "statut_modification" TEXT,
 
     CONSTRAINT "demModification_pkey" PRIMARY KEY ("id_modification")
 );
@@ -738,7 +659,8 @@ CREATE TABLE "demCession" (
 CREATE TABLE "demRenonciation" (
     "id_renonciation" SERIAL NOT NULL,
     "id_demande" INTEGER NOT NULL,
-    "RenonOct" BOOLEAN,
+    "motif_renonciation" TEXT,
+    "rapport_technique" TEXT,
 
     CONSTRAINT "demRenonciation_pkey" PRIMARY KEY ("id_renonciation")
 );
@@ -769,8 +691,6 @@ CREATE TABLE "demTransfert" (
     "id_demande" INTEGER NOT NULL,
     "motif_transfert" TEXT,
     "observations" TEXT,
-    "dossier_octroyable" BOOLEAN,
-    "transfer_obtenu" BOOLEAN,
     "date_transfert" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "demTransfert_pkey" PRIMARY KEY ("id_transfert")
@@ -803,12 +723,25 @@ CREATE TABLE "demandeVerificationGeo" (
 );
 
 -- CreateTable
+CREATE TABLE "demandeObs" (
+    "id_demandeObs" SERIAL NOT NULL,
+    "id_demande" INTEGER NOT NULL,
+    "obs_situation_geo" TEXT,
+    "obs_empietement" TEXT,
+    "obs_emplacement" TEXT,
+    "obs_geom" TEXT,
+    "obs_superficie" TEXT,
+
+    CONSTRAINT "demandeObs_pkey" PRIMARY KEY ("id_demandeObs")
+);
+
+-- CreateTable
 CREATE TABLE "demandeMin" (
     "id_demMin" SERIAL NOT NULL,
     "id_demande" INTEGER NOT NULL,
     "min_label" TEXT,
     "min_teneur" DOUBLE PRECISION,
-    "ordre_mineral" INTEGER,
+    "ordre_mineral" TEXT,
 
     CONSTRAINT "demandeMin_pkey" PRIMARY KEY ("id_demMin")
 );
@@ -943,10 +876,11 @@ CREATE TABLE "InteractionWali" (
 -- CreateTable
 CREATE TABLE "substances" (
     "id_sub" SERIAL NOT NULL,
-    "nom_subFR" TEXT,
-    "nom_subAR" TEXT,
-    "categorie_sub" TEXT,
-    "id_redevance" INTEGER,
+    "nom_subFR" TEXT NOT NULL,
+    "nom_subAR" TEXT NOT NULL,
+    "categorie_sub" TEXT NOT NULL,
+    "famille_sub" TEXT NOT NULL,
+    "id_redevance" INTEGER NOT NULL,
 
     CONSTRAINT "substances_pkey" PRIMARY KEY ("id_sub")
 );
@@ -1391,9 +1325,6 @@ CREATE UNIQUE INDEX "demande_code_demande_key" ON "demande"("code_demande");
 CREATE UNIQUE INDEX "ProcedureRenouvellement_id_demande_key" ON "ProcedureRenouvellement"("id_demande");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "demInitial_id_demande_key" ON "demInitial"("id_demande");
-
--- CreateIndex
 CREATE UNIQUE INDEX "demFermeture_id_demande_key" ON "demFermeture"("id_demande");
 
 -- CreateIndex
@@ -1422,6 +1353,9 @@ CREATE UNIQUE INDEX "demTransfert_id_demande_key" ON "demTransfert"("id_demande"
 
 -- CreateIndex
 CREATE UNIQUE INDEX "demandeVerificationGeo_id_demande_key" ON "demandeVerificationGeo"("id_demande");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "demandeObs_id_demande_key" ON "demandeObs"("id_demande");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "demandeMin_id_demande_key" ON "demandeMin"("id_demande");
@@ -1565,7 +1499,7 @@ ALTER TABLE "dossier_fournis_document" ADD CONSTRAINT "dossier_fournis_document_
 ALTER TABLE "dossier_fournis_document" ADD CONSTRAINT "dossier_fournis_document_id_doc_fkey" FOREIGN KEY ("id_doc") REFERENCES "Document"("id_doc") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "typepermis" ADD CONSTRAINT "typepermis_id_taxe_fkey" FOREIGN KEY ("id_taxe") REFERENCES "superficiaire_bareme"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "typepermis" ADD CONSTRAINT "typepermis_id_taxe_fkey" FOREIGN KEY ("id_taxe") REFERENCES "superficiaire_bareme"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "permis_templates" ADD CONSTRAINT "permis_templates_permisId_fkey" FOREIGN KEY ("permisId") REFERENCES "permis"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -1595,10 +1529,7 @@ ALTER TABLE "codeAssimilation" ADD CONSTRAINT "codeAssimilation_id_permis_fkey" 
 ALTER TABLE "etape_proc" ADD CONSTRAINT "etape_proc_id_phase_fkey" FOREIGN KEY ("id_phase") REFERENCES "phase"("id_phase") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "relation_phase_typeprocedure" ADD CONSTRAINT "relation_phase_typeprocedure_id_phase_fkey" FOREIGN KEY ("id_phase") REFERENCES "phase"("id_phase") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "relation_phase_typeprocedure" ADD CONSTRAINT "relation_phase_typeprocedure_id_typeProcedure_fkey" FOREIGN KEY ("id_typeProcedure") REFERENCES "typeprocedure"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "phase" ADD CONSTRAINT "phase_typeProcedureId_fkey" FOREIGN KEY ("typeProcedureId") REFERENCES "typeprocedure"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "procedure_phase" ADD CONSTRAINT "procedure_phase_id_proc_fkey" FOREIGN KEY ("id_proc") REFERENCES "procedure"("id_proc") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -1641,9 +1572,6 @@ ALTER TABLE "demande" ADD CONSTRAINT "demande_id_typeProc_fkey" FOREIGN KEY ("id
 
 -- AddForeignKey
 ALTER TABLE "ProcedureRenouvellement" ADD CONSTRAINT "ProcedureRenouvellement_id_demande_fkey" FOREIGN KEY ("id_demande") REFERENCES "demande"("id_demande") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "demInitial" ADD CONSTRAINT "demInitial_id_demande_fkey" FOREIGN KEY ("id_demande") REFERENCES "demande"("id_demande") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "demFermeture" ADD CONSTRAINT "demFermeture_id_demande_fkey" FOREIGN KEY ("id_demande") REFERENCES "demande"("id_demande") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -1694,6 +1622,9 @@ ALTER TABLE "transfert_detenteur" ADD CONSTRAINT "transfert_detenteur_id_detente
 ALTER TABLE "demandeVerificationGeo" ADD CONSTRAINT "demandeVerificationGeo_id_demande_fkey" FOREIGN KEY ("id_demande") REFERENCES "demande"("id_demande") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "demandeObs" ADD CONSTRAINT "demandeObs_id_demande_fkey" FOREIGN KEY ("id_demande") REFERENCES "demande"("id_demande") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "demandeMin" ADD CONSTRAINT "demandeMin_id_demande_fkey" FOREIGN KEY ("id_demande") REFERENCES "demande"("id_demande") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -1727,7 +1658,7 @@ ALTER TABLE "InteractionWali" ADD CONSTRAINT "InteractionWali_id_procedure_fkey"
 ALTER TABLE "InteractionWali" ADD CONSTRAINT "InteractionWali_id_wilaya_fkey" FOREIGN KEY ("id_wilaya") REFERENCES "Wilaya"("id_wilaya") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "substances" ADD CONSTRAINT "substances_id_redevance_fkey" FOREIGN KEY ("id_redevance") REFERENCES "redevance_bareme"("id_redevance") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "substances" ADD CONSTRAINT "substances_id_redevance_fkey" FOREIGN KEY ("id_redevance") REFERENCES "redevance_bareme"("id_redevance") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "substance_associee_demande" ADD CONSTRAINT "substance_associee_demande_id_proc_fkey" FOREIGN KEY ("id_proc") REFERENCES "procedure"("id_proc") ON DELETE RESTRICT ON UPDATE CASCADE;

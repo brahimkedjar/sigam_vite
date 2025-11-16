@@ -1,100 +1,175 @@
-// etap_proc_seed.ts
+// seed.ts
 import { PrismaClient } from '@prisma/client';
 
-export const prisma = new PrismaClient();
+const prisma = new PrismaClient();
 
-export async function main() {
-  // 1) Ensure base procedure types
-  await prisma.typeProcedure.createMany({
+// seed.ts
+async function main() {
+ 
+  
+
+// await prisma.typeProcedure.createMany({
+//     data: [
+//       // Initial Requests
+//       { libelle: 'demande', description: 'Demande initiale de permis' },
+//       { libelle: 'renouvellement', description: 'Renouvellement de permis' },
+      
+//       // Modifications
+//       { libelle: 'extension', description: 'Extension de superficie ou durÃ©e' },
+//       { libelle: 'modification', description: 'Modification des conditions' },
+//       { libelle: 'fusion', description: 'Fusion de permis' },
+//       { libelle: 'division', description: 'Division de permis' },
+      
+//       // Transfers
+//       { libelle: 'transfert', description: 'Transfert de droits' },
+//       { libelle: 'cession', description: 'Cession partielle' },
+      
+//       // Termination
+//       { libelle: 'renonciation', description: 'Renonciation au permis' },
+//       { libelle: 'retrait', description: 'Retrait administratif' },
+      
+//       // Special Procedures
+//       { libelle: 'regularisation', description: 'ProcÃ©dure de rÃ©gularisation' },
+//       { libelle: 'recours', description: 'Recours administratif' },
+//       { libelle: 'arbitrage', description: 'Demande d\'arbitrage' }
+//     ],
+//     skipDuplicates: true
+//   });
+
+//   console.log('Seed data created successfully');
+  // console.log(`Created ${typePermis.count} TypePermis entries`);
+  // console.log(`Created ${typeProcedures.count} TypeProcedure entries`);
+ 
+
+  // First create BaremProduitetDroit entries
+  await prisma.baremProduitetDroit.createMany({
     data: [
-      { libelle: 'demande', description: 'Demande initiale de permis' },
-      { libelle: 'renouvellement', description: 'Renouvellement de permis' },
+      // Mining Prospection
+      { id: 1, montant_droit_etab: 30000, produit_attribution: 0 , typePermisId: 1, typeProcedureId: 1},
+      // Mining Exploration
+      { id: 2, montant_droit_etab: 50000, produit_attribution: 0  , typePermisId: 1, typeProcedureId: 2},
+      // Mining Exploitation
+      { id: 3, montant_droit_etab: 75000, produit_attribution: 1500000  , typePermisId: 1, typeProcedureId: 1},
+      // Small Mine
+      { id: 4, montant_droit_etab: 40000, produit_attribution: 1500000  , typePermisId: 1, typeProcedureId: 1},
+      // Quarry Research
+      { id: 5, montant_droit_etab: 100000, produit_attribution: 3000000 , typePermisId: 1, typeProcedureId: 1 },
+      // Quarry Exploitation
+      { id: 6, montant_droit_etab: 100000, produit_attribution: 3000000  , typePermisId: 1, typeProcedureId: 1},
+      // Artisanal Mine
+      { id: 7, montant_droit_etab: 40000, produit_attribution: 1500000 , typePermisId: 1, typeProcedureId: 1 },
+      // Artisanal Quarry
+      { id: 8, montant_droit_etab: 40000, produit_attribution: 3000000  , typePermisId: 1, typeProcedureId: 1},
+      // Collection Permit
+      { id: 9, montant_droit_etab: 30000, produit_attribution: 0  , typePermisId: 1, typeProcedureId: 1},
+      // Transport Permit
+      { id: 10, montant_droit_etab: 0, produit_attribution: 0 , typePermisId: 1, typeProcedureId: 1 }
     ],
-    skipDuplicates: true,
+    skipDuplicates: true
   });
 
+  // Create SuperficiaireBareme entries
+
+
+  // Create TypePaiement entries
+  await prisma.typePaiement.createMany({
+    data: [
+      {
+        libelle: 'Produit d\'attribution',
+        frequence: 'Unique',
+        details_calcul: 'Montant fixe selon le type de permis'
+      },
+      {
+        libelle: 'Droit d\'Ã©tablissement',
+        frequence: 'Unique',
+        details_calcul: 'Montant fixe selon le type de permis et la procÃ©dure'
+      },
+      {
+        libelle: 'Taxe superficiaire',
+        frequence: 'Annuel',
+        details_calcul: '(Droit fixe + (Droit proportionnel * superficie)) * 12 / 5'
+      },
+      {
+        libelle: 'Redevance miniÃ¨re',
+        frequence: 'Annuel',
+        details_calcul: 'Pourcentage de la production'
+      },
+      {
+        libelle: 'Frais de dossier',
+        frequence: 'Unique',
+        details_calcul: 'Montant fixe'
+      }
+    ],
+    skipDuplicates: true
+  });
+
+  console.log('Payment data seeded successfully');
+
+
+  // Get procedure types
   const types = await prisma.typeProcedure.findMany();
-  const demandeType = types.find((t) => t.libelle === 'demande');
-  const renouvellementType = types.find((t) => t.libelle === 'renouvellement');
-
-  // 2) Define phases (schema uses relationPhaseTypeProc pivot)
-  type PhaseDef = { libelle: string; ordre: number; description?: string | null };
-  const demandePhases: PhaseDef[] = [
-    { libelle: 'Enregistrement de la demande', ordre: 1 },
-    { libelle: 'Vérification cadastrale', ordre: 2 },
-    { libelle: 'Enquete Wali', ordre: 3 },
-    { libelle: 'Comité de direction', ordre: 4 },
-    { libelle: 'Génération du permis', ordre: 5 },
-    { libelle: 'Finalisation', ordre: 6 },
+  
+  // Create phases for each procedure type
+  const phasesData = [
+    // Demande phases
+    { libelle: "Enregistrement de la demande", ordre: 1, typeProcedureId: types.find(t => t.libelle === "demande")?.id },
+    { libelle: "VÃ©rification cadastrale", ordre: 2, typeProcedureId: types.find(t => t.libelle === "demande")?.id },
+    { libelle: "Enquete Wali", ordre: 3, typeProcedureId: types.find(t => t.libelle === "demande")?.id },
+    { libelle: "ComitÃ© de direction", ordre: 4, typeProcedureId: types.find(t => t.libelle === "demande")?.id },
+    { libelle: "GÃ©nÃ©ration du permis", ordre: 5, typeProcedureId: types.find(t => t.libelle === "demande")?.id },
+    { libelle: "Finalisation", ordre: 6, typeProcedureId: types.find(t => t.libelle === "demande")?.id },
+    
+    // Renouvellement phases (simpler workflow)
+    { libelle: "Soumission", ordre: 1, typeProcedureId: types.find(t => t.libelle === "renouvellement")?.id },
+    { libelle: "VÃ©rification", ordre: 2, typeProcedureId: types.find(t => t.libelle === "renouvellement")?.id },
+    { libelle: "Approbation", ordre: 3, typeProcedureId: types.find(t => t.libelle === "renouvellement")?.id },
+    
+    // Add phases for other types as needed...
   ];
-  const renouvellementPhases: PhaseDef[] = [
-    { libelle: 'Soumission', ordre: 1 },
-    { libelle: 'Vérification', ordre: 2 },
-    { libelle: 'Approbation', ordre: 3 },
+
+  await prisma.phase.createMany({
+    data: phasesData.filter(p => p.typeProcedureId !== undefined),
+    skipDuplicates: true
+  });
+
+  console.log("âœ… Phases crÃ©Ã©es pour chaque type de procÃ©dure.");
+
+  // Create etapes for each phase
+  const etapesData = [
+    // Demande - Phase 1 etapes
+    { id_etape: 1, lib_etape: "Documents", ordre_etape: 1, id_phase: 1 },
+      { id_etape: 2, lib_etape: "Identification", ordre_etape: 2, id_phase: 1 },
+      { id_etape: 3, lib_etape: "CapacitÃ©s", ordre_etape: 3, id_phase: 1 },
+      { id_etape: 4, lib_etape: "Substances & Travaux", ordre_etape: 4, id_phase: 1 },
+
+      // Phase 2
+      { id_etape: 5, lib_etape: "Cadastre", ordre_etape: 5, id_phase: 2 },
+
+      // Phase 3
+      { id_etape: 6, lib_etape: "Avis Wali", ordre_etape: 6, id_phase: 3 },
+
+      // Phase 4
+      { id_etape: 7, lib_etape: "ComitÃ© de direction", ordre_etape: 7, id_phase: 4 },
+
+      // Phase 5
+      { id_etape: 8, lib_etape: "GÃ©nÃ©ration du permis", ordre_etape: 8, id_phase: 5 },
+
+      // Phase 6
+      { id_etape: 9, lib_etape: "Paiement", ordre_etape: 9, id_phase: 6 },
   ];
 
-  const createdPhases: Record<string, number> = {};
+  await prisma.etapeProc.createMany({
+    data: etapesData,
+    skipDuplicates: true
+  });
 
-  async function ensurePhase(p: PhaseDef) {
-    let phase = await prisma.phase.findFirst({ where: { libelle: p.libelle, ordre: p.ordre } });
-    if (!phase) {
-      phase = await prisma.phase.create({ data: { libelle: p.libelle, ordre: p.ordre, description: p.description ?? null } });
-    }
-    createdPhases[`${p.libelle}|${p.ordre}`] = phase.id_phase;
-    return phase.id_phase;
-  }
-
-  // 3) Link phases to procedure types via relationPhaseTypeProc
-  if (demandeType) {
-    for (const p of demandePhases) {
-      const id_phase = await ensurePhase(p);
-      const exists = await prisma.relationPhaseTypeProc.findFirst({ where: { id_phase, id_typeProcedure: demandeType.id } });
-      if (!exists) {
-        await prisma.relationPhaseTypeProc.create({ data: { id_phase, id_typeProcedure: demandeType.id, dureeEstimee: null } });
-      }
-    }
-  }
-  if (renouvellementType) {
-    for (const p of renouvellementPhases) {
-      const id_phase = await ensurePhase(p);
-      const exists = await prisma.relationPhaseTypeProc.findFirst({ where: { id_phase, id_typeProcedure: renouvellementType.id } });
-      if (!exists) {
-        await prisma.relationPhaseTypeProc.create({ data: { id_phase, id_typeProcedure: renouvellementType.id, dureeEstimee: null } });
-      }
-    }
-  }
-
-  // 4) Seed etapes for DEMANDE phases; keep explicit ids (1..9) to match UI routing
-  if (demandeType) {
-    const getPhaseId = (libelle: string, ordre: number) => createdPhases[`${libelle}|${ordre}`];
-    const etapes = [
-      { id_etape: 1, lib_etape: 'Documents', ordre_etape: 1, id_phase: getPhaseId('Enregistrement de la demande', 1) },
-      { id_etape: 2, lib_etape: 'Identification', ordre_etape: 2, id_phase: getPhaseId('Enregistrement de la demande', 1) },
-      { id_etape: 3, lib_etape: 'Capacités', ordre_etape: 3, id_phase: getPhaseId('Enregistrement de la demande', 1) },
-      { id_etape: 4, lib_etape: 'Substances & Travaux', ordre_etape: 4, id_phase: getPhaseId('Enregistrement de la demande', 1) },
-      { id_etape: 5, lib_etape: 'Cadastre', ordre_etape: 5, id_phase: getPhaseId('Vérification cadastrale', 2) },
-      { id_etape: 6, lib_etape: 'Avis Wali', ordre_etape: 6, id_phase: getPhaseId('Enquete Wali', 3) },
-      { id_etape: 7, lib_etape: 'Comité de direction', ordre_etape: 7, id_phase: getPhaseId('Comité de direction', 4) },
-      { id_etape: 8, lib_etape: 'Génération du permis', ordre_etape: 8, id_phase: getPhaseId('Génération du permis', 5) },
-      { id_etape: 9, lib_etape: 'Paiement', ordre_etape: 9, id_phase: getPhaseId('Finalisation', 6) },
-    ].filter((e) => !!e.id_phase) as any[];
-
-    if (etapes.length) {
-      await prisma.etapeProc.createMany({ data: etapes, skipDuplicates: true });
-    }
-  }
-
-  console.log('etap_proc_seed completed.');
+  console.log("âœ… Ã‰tapes crÃ©Ã©es pour chaque phase.");
 }
 
-if (require.main === module) {
-  main()
-    .catch((e) => {
-      console.error('Seed etap_proc failed:', e);
-      process.exit(1);
-    })
-    .finally(async () => {
-      await prisma.$disconnect();
-    });
-}
 
+main()
+  .catch((e) => {
+    console.error("âŒ Erreur:", e);
+    process.exit(1);
+  })
+  .finally(() => prisma.$disconnect());

@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import csv from 'csv-parser';
+import * as csv from 'csv-parser';
 import { PrismaClient, Antenne } from '@prisma/client';
 
 const prisma = new PrismaClient();
