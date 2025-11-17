@@ -218,14 +218,24 @@ const ProgressStepper: React.FC<Props> = ({
     (phase: Phase): boolean => {
       if (!currentProcedureId || !filteredPhases.length) return false;
 
-      // When required documents are missing, allow navigation only within the current phase
+      const firstPhase = filteredPhases[0];
+      const firstPhaseCompleted = firstPhase ? isPhaseCompleted(firstPhase) : false;
+
+      // Une fois la première phase (recevabilité) terminée,
+      // on autorise la navigation libre vers toutes les autres phases.
+      if (firstPhaseCompleted) {
+        return true;
+      }
+
+      // Tant que la première phase n'est pas terminée,
+      // on garde le verrou basé sur les documents manquants.
       if (missingDocsInfo.lockPhase) {
         const anyInProgress = filteredPhases.some(isPhaseInProgress);
         if (anyInProgress) {
-          // Allow navigation within the current phase and back to any completed phases
+          // Autoriser la navigation dans la phase courante et vers les phases déjà terminées
           return isPhaseInProgress(phase) || isPhaseCompleted(phase);
         }
-        // If nothing started yet, allow the very first phase only
+        // Si rien n'a encore commencé, seule la toute première phase est accessible
         return firstPhaseId ? phase.id_phase === firstPhaseId : false;
       }
 
@@ -286,7 +296,13 @@ const ProgressStepper: React.FC<Props> = ({
             `${apiURL}/api/procedure-etape/start/${currentProcedureId}/${etape.id_etape}`
           );
         }
-        router.push(`/demande/step${etape.id_etape}/page${etape.id_etape}?id=${currentProcedureId}`);
+
+        // Use stable page route if provided by backend, fallback to legacy pattern
+        const route = etape.page_route && etape.page_route.trim().length > 0
+          ? `/${etape.page_route.replace(/^\/+/, '')}`
+          : `/demande/step${etape.id_etape}/page${etape.id_etape}`;
+
+        router.push(`${route}?id=${currentProcedureId}`);
       } catch (error) {
         console.error('Error handling step navigation:', error);
       } finally {

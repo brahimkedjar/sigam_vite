@@ -38,27 +38,25 @@ async updateDemande(
   }
 
   @Post()
-async createDemande(
-  @Body() body: {
-    id_typepermis: number;
-    objet_demande: string;
-    code_demande?: string;
-    id_detenteur?: number;
-    date_demande: string;
-    date_instruction: string;
-  }
-) {
-  const demande = await this.demandeService.createDemande({
-    id_typepermis: body.id_typepermis,
-    objet_demande: body.objet_demande,
-    code_demande: body.code_demande,
-    id_detenteur: body.id_detenteur,
-    date_demande: new Date(body.date_demande),
-    date_instruction: new Date(body.date_instruction)
-  });
+  async createDemande(
+    @Body() body: {
+      id_typepermis: number;
+      objet_demande: string;
+      code_demande?: string;
+      id_detenteur?: number;
+      date_demande: string;
+    }
+  ) {
+    const demande = await this.demandeService.createDemande({
+      id_typepermis: body.id_typepermis,
+      objet_demande: body.objet_demande,
+      code_demande: body.code_demande,
+      id_detenteur: body.id_detenteur,
+      date_demande: new Date(body.date_demande),
+    });
 
-  return demande;
-}
+    return demande;
+  }
 
 
   @Post('generate-code')

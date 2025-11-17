@@ -9,7 +9,7 @@ type etapeProcCSV = {
   lib_etape: string;
   ordre_etape: string;
   id_phase: string;
-
+  page_route?: string;
 };
 
 export async function main() {
@@ -30,7 +30,7 @@ export async function main() {
         id_phase: Number(row.id_phase.trim()),
         ordre_etape: Number(row.ordre_etape.trim()),
         lib_etape: row.lib_etape || null,
-
+        page_route: row.page_route?.trim() || null,
       });
     })
     .on("end", async () => {

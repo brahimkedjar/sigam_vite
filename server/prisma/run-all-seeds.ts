@@ -46,6 +46,9 @@ try {
   run('npx ts-node prisma/Demande/demandeMin_seed.ts');
   run('npx ts-node prisma/Demande/demandeVerificationGeo_seed.ts');
 
+  // After all seeds, resynchronise all PostgreSQL sequences with the current data
+  run('npx ts-node prisma/sync_sequences.ts');
+
   //run('npx ts-node prisma/seed_pays.ts');
 
   console.log('✅ Database reset and all seeds executed successfully!');

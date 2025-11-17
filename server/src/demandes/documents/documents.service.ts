@@ -267,6 +267,16 @@ export class DocumentsService {
         : null,
       missingSummary: summary,
       deadlines,
+      demande: {
+        id_demande: demande.id_demande,
+        date_demande: demande.date_demande,
+        date_instruction: demande.date_instruction,
+        date_refus: demande.date_refus,
+        statut_demande: demande.statut_demande,
+        dossier_recevable: demande.dossier_recevable ?? null,
+        dossier_complet: demande.dossier_complet ?? null,
+        duree_instruction: demande.duree_instruction ?? null,
+      },
     };
   }
 
@@ -470,7 +480,7 @@ export class DocumentsService {
         });
       }
 
-      if (summary.blocking.length > 0) {
+      if (false && summary.blocking.length > 0) {
         const reason = summary.blocking
           .map((item) => item.reject_message || 'Document obligatoire manquant')
           .join(', ');
@@ -504,6 +514,14 @@ export class DocumentsService {
         dateDepot: dossierResult.date_depot,
         dateMiseEnDemeure: dossierResult.date_mise_en_demeure,
         dateRecepisse: dossierResult.date_recepisse,
+      });
+
+      // Synchronise le statut de complétude du dossier au niveau de la demande
+      await prisma.demande.update({
+        where: { id_demande },
+        data: {
+          dossier_complet: dossierStatus === 'complet',
+        },
       });
 
       return {
@@ -556,6 +574,22 @@ export class DocumentsService {
     // }
 
     return updatedDemande;
+  }
+
+  async updateDemandeRecevabilite(
+    id_demande: number,
+    dossier_recevable: boolean,
+  ) {
+    const now = new Date();
+    const data: Prisma.DemandeUpdateInput = {
+      dossier_recevable,
+      date_instruction: dossier_recevable ? now : null,
+    };
+
+    return this.prisma.demande.update({
+      where: { id_demande },
+      data,
+    });
   }
 
   async generateLetters(id_demande: number) {

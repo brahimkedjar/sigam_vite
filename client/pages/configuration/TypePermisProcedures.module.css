@@ -1,0 +1,247 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #f5f7fb 0%, #edf1f7 100%);
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.header p {
+  margin: 0;
+  font-size: 13px;
+  color: #4b5563;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 1.2fr 1.8fr;
+  gap: 18px;
+  align-items: flex-start;
+}
+
+.card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 14px 16px 16px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.cardHeader h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.cardHeader span {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.searchInput {
+  width: 87%;
+  border-radius: 9999px;
+  border: 1px solid #d1d5db;
+  padding: 7px 12px;
+  font-size: 13px;
+  background-color: #f9fafb;
+  color: #111827;
+  margin-bottom: 10px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.2);
+  background-color: #ffffff;
+}
+
+.permisList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.permisItem {
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  padding: 8px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #ffffff;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.15s ease, transform 0.05s ease;
+}
+
+.permisItemSelected {
+  border-color: #2563eb;
+  background-color: #eff6ff;
+  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.2);
+  transform: translateY(-1px);
+}
+
+.permisMain {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.permisTitle {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.permisSubtitle {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.permisMeta {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 9999px;
+  font-size: 11px;
+  background-color: #e5e7eb;
+  color: #374151;
+}
+
+.proceduresHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.proceduresHeader span {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.procedureList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.procedureItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background-color: #ffffff;
+}
+
+.procedureText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.procedureTitle {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.procedureMeta {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.toggleWrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toggleLabel {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.toggle {
+  position: relative;
+  width: 40px;
+  height: 20px;
+  border-radius: 9999px;
+  background-color: #e5e7eb;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.toggleThumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease;
+}
+
+.toggleOn {
+  background-color: #22c55e;
+}
+
+.toggleOn .toggleThumb {
+  transform: translateX(20px);
+}
+
+.emptyState {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.error {
+  color: #b91c1c;
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.loading {
+  font-size: 13px;
+  color: #374151;
+}
+

@@ -7,6 +7,7 @@ export interface EtapeProc {
   id_phase: number;
   procedureEtapes: ProcedureEtape[];
   typeProcedures?: TypeProcedure[]; // Add this to link etapes to procedure types
+  page_route?: string | null; // Chemin de page front (ex: "demande/step1/page1")
 }
 
 export interface Phase {

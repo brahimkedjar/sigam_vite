@@ -67,6 +67,7 @@ import { ChatModule } from './chat/chat.module';
 import { PortailModule } from './portail/portail.module';
 import { ArticleSetsModule } from './article_sets/article-sets.module';
 import { InscriptionProvisoireModule } from './demandes/inscription_provisoire/inscription-provisoire.module';
+import { PhasesEtapesConfigModule } from './configurations/phases-etapes/phases-etapes.module';
 
 
 @Module({
@@ -89,7 +90,7 @@ import { InscriptionProvisoireModule } from './demandes/inscription_provisoire/i
     InteractionWaliModule,CapacitesModule,SubstancesModule,DocumentsModule,DemandeSummaryControllerModule,SubstancesconfModule,
     StatutsJuridiquesconfconfModule,WilayasconfModule,DairasconfModule,CommunesconfModule,AntennesconfModule,DetenteurMorale_confModule,
     TypePermis_confModule,StatutPermis_confModule,Permis_confModule,Antenne_confModule,DemandesDashboardModule,TransfertModule,
-    NotificationsModule,ChatModule,PortailModule,ArticleSetsModule,InscriptionProvisoireModule],
+    NotificationsModule,ChatModule,PortailModule,ArticleSetsModule,InscriptionProvisoireModule,PhasesEtapesConfigModule],
   controllers: [DemandesController],
   providers: [DemandeService,
     //{

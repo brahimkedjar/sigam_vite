@@ -1,278 +1,379 @@
-'use client';
+﻿"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import styles from './demande2.module.css';
-import InfosGenerales from './InfosGenerales';
-import RepresentantLegal from './RepresentantLegal';
-import Actionnaires from './Actionnaires';
-import DetailsRC from './DetailsRC';
-import axios from 'axios';
-import { FiX, FiFileText, FiChevronRight, FiChevronLeft, FiEdit, FiLoader, FiSearch } from 'react-icons/fi';
-import { useSearchParams } from '@/src/hooks/useSearchParams';
-import Navbar from '../../navbar/Navbar';
-import Sidebar from '../../sidebar/Sidebar';
-import { BsSave } from 'react-icons/bs';
-import TauxWarningModal from '../../../src/hooks/taux_warning';
-import { useViewNavigator } from '../../../src/hooks/useViewNavigator';
-import ProgressStepper from '../../../components/ProgressStepper';
-import { STEP_LABELS } from '../../../src/constants/steps';
-import { useActivateEtape } from '@/src/hooks/useActivateEtape';
+import { useEffect, useState, useCallback, useRef } from "react";
+import axios from "axios";
+import { useRouter } from "next/router";
+import { useSearchParams } from "@/src/hooks/useSearchParams";
+import {
+  FiUpload,
+  FiCheck,
+  FiX,
+  FiChevronLeft,
+  FiChevronRight,
+  FiFileText,
+  FiAlertCircle,
+  FiCheckCircle,
+  FiAlertTriangle
+} from "react-icons/fi";
+import styles from "./documents.module.css";
+import Navbar from "../../navbar/Navbar";
+import Sidebar from "../../sidebar/Sidebar";
+import { CgFileDocument } from "react-icons/cg";
+import { BsSave } from "react-icons/bs";
+import { useAuthStore } from "../../../src/store/useAuthStore";
+import ProgressStepper from "../../../components/ProgressStepper";
+import { STEP_LABELS } from "../../../src/constants/steps";
+import { useViewNavigator } from "../../../src/hooks/useViewNavigator";
 import router from 'next/router';
-import { Phase, Procedure, ProcedureEtape, ProcedurePhase, StatutProcedure } from '@/src/types/procedure';
+import { toast } from "react-toastify";
+import { useLoading } from '@/components/globalspinner/LoadingContext';
+import { Phase, Procedure, ProcedureEtape, ProcedurePhase, StatutProcedure } from "@/src/types/procedure";
+import { useActivateEtape } from "@/src/hooks/useActivateEtape";
 
-// Type definitions
-type StatutJuridique = {
-  id_statutJuridique: number;
-  code_statut: string;
-  statut_fr: string;
-  statut_ar: string;
+type Document = {
+  id_doc: number;
+  nom_doc: string;
+  description: string;
+  format: string;
+  taille_doc: string;
+  statut?: string;
+  file_url?: string;
+  is_required?: boolean;
+  missing_action?: string;
+  reject_message?: string;
 };
 
-type Pays = {
-  id_pays: number;
-  nom_pays: string;
-  nationalite: string;
+type DossierFournis = {
+  id_dossierFournis: number;
+  statut_dossier: string;
+  remarques?: string;
+  date_depot: string;
 };
 
-type Nationalite = {
-  id_nationalite: number;
-  libelle: string;
+type MissingSummary = {
+  requiredMissing: Array<{
+    id_doc: number;
+    nom_doc: string;
+    missing_action?: string;
+    reject_message?: string;
+  }>;
+  blocking: Array<{
+    id_doc: number;
+    nom_doc: string;
+    reject_message?: string;
+  }>;
+  blockingNext: Array<{
+    id_doc: number;
+    nom_doc: string;
+  }>;
+  warnings: Array<{
+    id_doc: number;
+    nom_doc: string;
+  }>;
 };
 
-type AccordionItem = {
-  id: string;
-  title: string;
-  color: 'blue' | 'green' | 'orange' | 'purple';
+type DocStatus = "present" | "manquant" | "attente";
+type DocumentWithStatus = Document & { statut: DocStatus };
+
+type DemandeMeta = {
+  id_demande: number;
+  date_demande: string | null;
+  date_instruction: string | null;
+  date_refus: string | null;
+  statut_demande: string | null;
+  dossier_recevable: boolean | null;
+  dossier_complet: boolean | null;
+  duree_instruction: number | null;
 };
 
-type Actionnaire = {
-  id?: number;
-  nom: string;
-  prenom: string;
-  lieu_naissance: string;
-  qualification: string;
-  numero_carte: string;
-  taux_participation: string;
-  id_pays: number | null;
-  id_nationalite?: number | null;
-};
-
-type SocieteData = {
-  infos: {
-    nom_fr: string;
-    nom_ar: string;
-    statut_id: number;
-    tel: string;
-    email: string;
-    fax: string;
-    adresse: string;
-    id_pays: number | null;
-    id_nationalite?: number | null;
-  };
-  repLegal: {
-    nom: string;
-    prenom: string;
-    nom_ar: string;
-    prenom_ar: string;
-    tel: string;
-    email: string;
-    fax: string;
-    qualite: string;
-    nin: string;
-    taux_participation: string;
-    id_pays: number | null;
-    id_nationalite?: number | null;
-  };
-  rcDetails: {
-    numero_rc: string;
-    date_enregistrement: string;
-    capital_social: string;
-    nis: string;
-    adresse_legale: string;
-    nif: string;
-  };
-  actionnaires: Actionnaire[];
-};
-
-const initialData: SocieteData = {
-  infos: {
-    nom_fr: '',
-    nom_ar: '',
-    statut_id: 0,
-    tel: '',
-    email: '',
-    fax: '',
-    adresse: '',
-    id_pays: 0,
-    id_nationalite: null
-  },
-  repLegal: {
-    nom: '',
-    prenom: '',
-    nom_ar: '',
-    prenom_ar: '',
-    tel: '',
-    email: '',
-    fax: '',
-    qualite: '',
-    nin: '',
-    taux_participation: '',
-    id_pays: 0,
-    id_nationalite: null
-  },
-  rcDetails: {
-    numero_rc: '',
-    date_enregistrement: '',
-    capital_social: '',
-    nis: '',
-    adresse_legale: '',
-    nif: '',
-  },
-  actionnaires: []
-};
-
-type DetenteurOption = {
-  id_detenteur: number;
-  nom_societeFR: string;
-  nom_societeAR: string;
-  telephone: string;
-  email: string;
-};
-
-export default function Step2() {
-  // State management
-  const [codeDemande, setCodeDemande] = useState<string | null>(null);
+export default function Step5_Documents() {
+  const { resetLoading } = useLoading();
+  const searchParams = useSearchParams();
+  const [loadingState, setLoadingState] = useState<string>("Initializing...");
   const [idDemande, setIdDemande] = useState<string | null>(null);
-  const [detenteurId, setDetenteurId] = useState<number | null>(null);
-  const [statutProc, setStatutProc] = useState<string | undefined>(undefined);
-  const [statutsJuridiques, setStatutsJuridiques] = useState<StatutJuridique[]>([]);
-  const [tauxSummary, setTauxSummary] = useState({
-    total: 0,
-    rep: 0,
-    actionnaires: 0,
-  });
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [toastType, setToastType] = useState<'success' | 'error' | null>(null);
-  const [disabledSections, setDisabledSections] = useState({
-    infos: false,
-    repLegal: false,
-    rcDetails: false,
-    actionnaires: false,
-  });
-  const [isModifying, setIsModifying] = useState({
-    infos: false,
-    repLegal: false,
-    rcDetails: false,
-    actionnaires: false,
-  });
+  const [codeDemande, setCodeDemande] = useState<string | null>(null);
+  const [documents, setDocuments] = useState<DocumentWithStatus[]>([]);
+  const [statusMap, setStatusMap] = useState<Record<number, DocStatus>>({});
+  const [fileUrls, setFileUrls] = useState<Record<number, string>>({});
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [savingEtape, setSavingEtape] = useState(false);
   const [etapeMessage, setEtapeMessage] = useState<string | null>(null);
-  const [openSection, setOpenSection] = useState<string | null>(null);
-  const [formData, setFormData] = useState<SocieteData>(initialData);
-  const [isSaving, setIsSaving] = useState<Record<string, boolean>>({});
-  const [showTauxModal, setShowTauxModal] = useState(false);
-  const [paysOptions, setPaysOptions] = useState<Pays[]>([]);
-  const [nationalitesOptions, setNationalitesOptions] = useState<Nationalite[]>([]);
-  const [detenteurOptions, setDetenteurOptions] = useState<DetenteurOption[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
-  const [showDetenteurDropdown, setShowDetenteurDropdown] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadingMessage, setLoadingMessage] = useState('Chargement des données...');
-  const [checkInterval, setCheckInterval] = useState<NodeJS.Timeout | null>(null);
-  // Missing docs alert for first-phase reminder
-  const [missingDocsAlert, setMissingDocsAlert] = useState<{ missing: string[]; deadline?: string | null } | null>(null);
-  const [tick, setTick] = useState(0);
+  const [currentDossier, setCurrentDossier] = useState<DossierFournis | null>(null);
+  const [remarques, setRemarques] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [rejectionReason, setRejectionReason] = useState("");
+  const { auth, isLoaded, hasPermission } = useAuthStore();
+  const [showCahierForm, setShowCahierForm] = useState(false);
+  const [selectedCahierDoc, setSelectedCahierDoc] = useState<DocumentWithStatus | null>(null);
   const { currentView, navigateTo } = useViewNavigator("nouvelle-demande");
- 
-  const computeRemaining = (deadline?: string | null) => {
-    if (!deadline) return null;
-    const d = new Date(deadline).getTime();
-    const now = Date.now();
-    const diff = d - now;
-    if (diff <= 0) return 'Délai expiré';
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    return `${days}j ${hours}h restants`;
-  };
-
-  useEffect(() => {
-    const interval = setInterval(() => setTick((t) => t + 1), 60000);
-    return () => clearInterval(interval);
-  }, []);
-  
-  const [isPageReady, setIsPageReady] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [activatedSteps, setActivatedSteps] = useState<Set<number>>(new Set());
+  const [statutProc, setStatutProc] = useState<string | undefined>(undefined);
+  const apiURL = process.env.NEXT_PUBLIC_API_URL;
+  const [showCheckAllModal, setShowCheckAllModal] = useState(false);
   const [procedureData, setProcedureData] = useState<Procedure | null>(null);
   const [currentEtape, setCurrentEtape] = useState<{ id_etape: number } | null>(null);
   const [procedureTypeId, setProcedureTypeId] = useState<number | undefined>();
   const [refetchTrigger, setRefetchTrigger] = useState(0);
   const [hasActivatedStep1, setHasActivatedStep1] = useState(false); 
   const [idProc, setIdProc] = useState<number | undefined>(undefined);
+  const [isPageReady, setIsPageReady] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [missingSummary, setMissingSummary] = useState<MissingSummary | undefined>(undefined);
+  const [deadlines, setDeadlines] = useState<{ miseEnDemeure: string | null; instruction: string | null } | null>(null);
+  const [demandeMeta, setDemandeMeta] = useState<DemandeMeta | null>(null);
+  const [letterPreview, setLetterPreview] = useState<{ type: string; content: string; deadline?: string | null; numero_recepisse?: string | null } | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Hooks
-  const searchParams = useSearchParams();
-  const apiURL = process.env.NEXT_PUBLIC_API_URL;
-
+  // Clear any stuck global spinner when landing here
   useEffect(() => {
-    if (!idDemande) { setMissingDocsAlert(null); return; }
-    const controller = new AbortController();
-    const load = async () => {
-      try {
-        const res = await axios.get(`${apiURL}/api/procedure/${idDemande}/documents`, { signal: controller.signal });
-        const miss = (res.data?.missingSummary?.requiredMissing ?? []).map((d: any) => d.nom_doc);
-        const deadline = res.data?.deadlines?.miseEnDemeure ?? null;
-        if (Array.isArray(miss) && miss.length > 0) {
-          setMissingDocsAlert({ missing: miss, deadline });
-        } else {
-          setMissingDocsAlert(null);
-        }
-      } catch (e) {
-        if (!axios.isCancel(e)) setMissingDocsAlert(null);
-      }
-    };
-    load();
-    return () => controller.abort();
-  }, [idDemande, apiURL, tick]);
+    try { resetLoading(); } catch {}
+  }, [resetLoading]);
 
+  // Vérifier si des documents obligatoires manquent et bloquent la navigation
+  const hasBlockingMissingDocs = missingSummary && missingSummary.blocking.length > 0;
+  const hasBlockingNextMissingDocs = missingSummary && missingSummary.blockingNext.length > 0;
+
+  const computeBusinessDeadlineInfo = () => {
+    if (!demandeMeta?.duree_instruction) {
+      return null;
+    }
+
+    const total = demandeMeta.duree_instruction;
+
+    // Point de départ = début de procédure, sinon date_demande.
+    const startRaw = (procedureData as any)?.date_debut_proc || demandeMeta.date_demande;
+    if (!startRaw) return null;
+    const start = new Date(startRaw);
+    start.setHours(0, 0, 0, 0);
+
+    const addBusinessDays = (base: Date, businessDays: number) => {
+      const result = new Date(base);
+      let added = 0;
+      while (added < businessDays) {
+        result.setDate(result.getDate() + 1);
+        const day = result.getDay();
+        if (day !== 0 && day !== 6) {
+          added += 1;
+        }
+      }
+      return result;
+    };
+
+    const countBusinessDaysBetween = (from: Date, to: Date) => {
+      const d1 = new Date(from);
+      const d2 = new Date(to);
+      d1.setHours(0, 0, 0, 0);
+      d2.setHours(0, 0, 0, 0);
+      if (d2 < d1) return 0;
+
+      let days = 0;
+      const cursor = new Date(d1);
+      while (cursor <= d2) {
+        const day = cursor.getDay();
+        if (day !== 0 && day !== 6) {
+          days += 1;
+        }
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      return days;
+    };
+
+    const deadline = addBusinessDays(start, total);
+
+    // Si dossier recevable => timer arrêté à date_instruction.
+    if (demandeMeta.dossier_recevable && demandeMeta.date_instruction) {
+      const closure = new Date(demandeMeta.date_instruction);
+      const used = countBusinessDaysBetween(start, closure);
+      const remaining = Math.max(total - used, 0);
+      return {
+        mode: 'recevable' as const,
+        used,
+        remaining,
+        total,
+        deadline,
+        closure,
+      };
+    }
+
+    // Si demande rejetée => timer arrêté à date_refus.
+    if (demandeMeta.statut_demande === 'REJETEE' && demandeMeta.date_refus) {
+      const closure = new Date(demandeMeta.date_refus);
+      const used = countBusinessDaysBetween(start, closure);
+      const remaining = Math.max(total - used, 0);
+      return {
+        mode: 'rejetee' as const,
+        used,
+        remaining,
+        total,
+        deadline,
+        closure,
+      };
+    }
+
+    // Dossier encore en cours d'instruction : on affiche le temps restant dynamique.
+    const now = new Date();
+    const nowFloor = new Date(now);
+    nowFloor.setHours(0, 0, 0, 0);
+
+    if (nowFloor >= deadline) {
+      return {
+        mode: 'ongoing' as const,
+        used: total,
+        remaining: 0,
+        total,
+        deadline,
+        closure: null,
+      };
+    }
+
+    const remaining = countBusinessDaysBetween(nowFloor, deadline);
+    const used = Math.max(total - remaining, 0);
+
+    return {
+      mode: 'ongoing' as const,
+      used,
+      remaining,
+      total,
+      deadline,
+      closure: null,
+    };
+  };
+
+    // Persist the deadline into localStorage payload for cross-step alerts
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!idProc || !missingSummary) return;
+    try {
+      const key = 'sigam_missing_required_docs';
+      const raw = window.localStorage.getItem(key);
+      let store: Record<string, any> = {};
+      if (raw) {
+        try { store = JSON.parse(raw) || {}; } catch { store = {}; }
+      }
+      const existing = store[idProc] || {};
+        store[idProc] = {
+          ...existing,
+          missing: missingSummary.requiredMissing.map(d => d.nom_doc),
+          procedureId: idProc,
+          demandeId: idDemande,
+          phase: 'FIRST',
+          // Keep allowed prefixes if already computed elsewhere
+          allowedPrefixes: existing.allowedPrefixes || undefined,
+          // Utilise le délai d'instruction (10 jours ouvrables) si disponible,
+          // sinon garde le comportement précédent basé sur la mise en demeure.
+          deadline: deadlines?.instruction || deadlines?.miseEnDemeure || null,
+          updatedAt: new Date().toISOString(),
+        };
+      window.localStorage.setItem(key, JSON.stringify(store));
+      window.dispatchEvent(new CustomEvent('sigam:missing-docs', { detail: store[idProc] }));
+    } catch {}
+  }, [idProc, idDemande, missingSummary, deadlines]);
+
+  // Stocker les documents manquants dans le localStorage pour le ProgressStepper et ClientLayout
+  useEffect(() => {
+  if (missingSummary && idProc) {
+    // Construire dynamiquement les prxes autoriss pour toutes les tapes de la premire phase
+    const firstPhase = (procedureData?.ProcedurePhase || [])
+      .map((pp: ProcedurePhase) => pp.phase)
+      .sort((a: Phase, b: Phase) => a.ordre - b.ordre)[0];
+
+    const allowedPrefixes = firstPhase?.etapes?.map(e => `/demande/step${e.id_etape}`) || ['/demande/step1'];
+
+    const missingDocsPayload = {
+      missing: missingSummary.requiredMissing.map(doc => doc.nom_doc),
+      procedureId: idProc,
+      demandeId: idDemande,
+      phase: 'FIRST',
+      allowedPrefixes,
+      updatedAt: new Date().toISOString()
+    };
+
+    // Stocker dans localStorage
+    if (typeof window !== 'undefined') {
+      const existing = window.localStorage.getItem('sigam_missing_required_docs');
+      
+      // Déclarer le type correctement
+      let procedures: Record<number, any> = {};
+      
+      if (existing) {
+        try {
+          const parsed = JSON.parse(existing);
+          // S'assurer que c'est un objet avec des clés numériques
+          if (parsed && typeof parsed === 'object') {
+            procedures = parsed;
+          }
+        } catch (e) {
+          console.warn('Erreur de parsing du localStorage:', e);
+          procedures = {};
+        }
+      }
+
+      procedures[idProc] = missingDocsPayload;
+      window.localStorage.setItem('sigam_missing_required_docs', JSON.stringify(procedures));
+      
+      // Déclencher un événement personnalisé pour notifier le ProgressStepper
+      window.dispatchEvent(new CustomEvent('sigam:missing-docs', { 
+        detail: missingDocsPayload 
+      }));
+    }
+  }
+}, [missingSummary, idProc, idDemande]);
+
+  // Nettoyer le localStorage quand la procédure est terminée
+  useEffect(() => {
+    if (statutProc === 'TERMINEE' && idProc && typeof window !== 'undefined') {
+      const existing = window.localStorage.getItem('sigam_missing_required_docs');
+      if (existing) {
+        try {
+          const procedures = JSON.parse(existing);
+          delete procedures[idProc];
+          window.localStorage.setItem('sigam_missing_required_docs', JSON.stringify(procedures));
+        } catch (e) {
+          // Ignorer les erreurs de parsing
+        }
+      }
+    }
+  }, [statutProc, idProc]);
 
   // Check if all required data is available
   const checkRequiredData = useCallback(() => {
     if (!idProc) return false;
     if (!procedureData) return false;
     if (!idDemande) return false;
+    if (documents.length === 0) return false;
     return true;
-  }, [idProc, procedureData, idDemande]);
+  }, [idProc, procedureData, idDemande, documents]);
 
   // Set up interval to check for required data
   useEffect(() => {
     if (checkRequiredData()) {
       setIsPageReady(true);
-      setIsLoading(false);
-      if (checkInterval) {
-        clearInterval(checkInterval);
-        setCheckInterval(null);
-      }
+      setLoadingState(""); // Clear loading state when ready
     }
-  }, [checkRequiredData, checkInterval]);
+  }, [checkRequiredData]);
 
   // Get idProc from URL parameters
   useEffect(() => {
     const idProcStr = searchParams?.get('id');
     if (!idProcStr) {
-      setLoadingMessage("ID de procédure non trouvé dans les paramétres");
+      setLoadingState("ID de procédure non trouvé dans les paramétres");
+      setError("ID de procédure non trouvé dans les paramétres");
       return;
     }
 
     const parsedId = parseInt(idProcStr, 10);
     if (isNaN(parsedId)) {
-      setLoadingMessage("ID de procédure invalide");
+      setLoadingState("ID de procédure invalide");
+      setError("ID de procédure invalide");
       return;
     }
 
     setIdProc(parsedId);
-    setLoadingMessage("Chargement des données de la procédure...");
+    setLoadingState("Chargement des données de la procédure...");
+    setError(null); // Clear error once idProc is set
   }, [searchParams]);
 
   // Fetch procedure data when idProc is available
@@ -280,8 +381,11 @@ export default function Step2() {
     if (!idProc) return;
 
     const fetchProcedureData = async () => {
+      abortControllerRef.current = new AbortController();
       try {
-        const response = await axios.get<Procedure>(`${apiURL}/api/procedure-etape/procedure/${idProc}`);
+        const response = await axios.get<Procedure>(`${apiURL}/api/procedure-etape/procedure/${idProc}`, {
+          signal: abortControllerRef.current.signal,
+        });
         setProcedureData(response.data);
         
         if (response.data.demandes && response.data.demandes.length > 0) {
@@ -293,199 +397,132 @@ export default function Step2() {
           setCurrentEtape({ id_etape: activeEtape.id_etape });
         }
         
-        setLoadingMessage("Données de procédure chargées, récupération de la demande...");
+        setLoadingState("Données de procédure chargées, récupération de la demande...");
+        setError(null);
       } catch (error) {
+        if (axios.isCancel(error)) return;
         console.error('Error fetching procedure data:', error);
-        setLoadingMessage("Erreur lors du chargement des données de procédure");
+        setLoadingState("Erreur lors du chargement des données de procédure");
+        setError("Erreur lors du chargement des données de procédure");
       }
     };
 
     fetchProcedureData();
-  }, [idProc, apiURL]);
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [idProc, apiURL, refetchTrigger]);
 
   // Fetch demande data when procedure data is available
   useEffect(() => {
     if (!idProc || !procedureData) return;
 
-    const fetchDemandeFromProc = async () => {
+    const fetchDemandeData = async () => {
+      abortControllerRef.current = new AbortController();
       try {
-        const res = await axios.get(`${apiURL}/api/procedures/${idProc}/demande`);
-        const demande = res.data;
-
-        setCodeDemande(demande.code_demande);
-        setIdDemande(demande.id_demande.toString());
+        const res = await axios.get(`${apiURL}/api/procedures/${idProc}/demande`, {
+          signal: abortControllerRef.current.signal,
+        });
+        setIdDemande(res.data.id_demande.toString());
+        setCodeDemande(res.data.code_demande);
         setStatutProc(res.data.procedure.statut_proc);
-
-        // Check if demande already has a detenteur associated
-        if (demande.detenteur) {
-          const fonctions = demande.detenteur.fonctions;
-          const representant = fonctions.find((f: { type_fonction: string; }) => f.type_fonction === "Representant");
-          const actionnaires = fonctions.filter((f: { type_fonction: string; }) => f.type_fonction === "Actionnaire");
-          
-          setDetenteurId(demande.detenteur.id_detenteur);
-          setSearchQuery(demande.detenteur.nom_societeFR || '');
-          
-          // Get the first element of registreCommerce array (or empty object if none)
-          const rcData = demande.detenteur.registreCommerce && demande.detenteur.registreCommerce.length > 0 
-            ? demande.detenteur.registreCommerce[0] 
-            : {};
-          
-          setFormData({
-            infos: {
-              nom_fr: demande.detenteur.nom_societeFR,
-              nom_ar: demande.detenteur.nom_societeAR,
-              statut_id: demande.detenteur.id_statutJuridique || 0,
-              tel: demande.detenteur.telephone,
-              email: demande.detenteur.email,
-              fax: demande.detenteur.fax,
-              adresse: demande.detenteur.adresse_siege,
-              id_pays: demande.detenteur.id_pays,
-              id_nationalite: (demande.detenteur as any).id_nationalite ?? null,
-            },
-            repLegal: representant ? {
-              nom: representant.personne.nomFR,
-              prenom: representant.personne.prenomFR,
-              nom_ar: representant.personne.nomAR,
-              prenom_ar: representant.personne.prenomAR,
-              tel: representant.personne.telephone,
-              email: representant.personne.email,
-              fax: representant.personne.fax,
-              qualite: representant.personne.qualification,
-              nin: representant.personne.num_carte_identite,
-              taux_participation: representant.taux_participation.toString(),
-              id_pays: representant.personne.id_pays,
-              id_nationalite: (representant.personne as any).id_nationalite ?? null,
-            } : initialData.repLegal,
-            rcDetails: {
-              numero_rc: rcData.numero_rc || '',
-              date_enregistrement: formatDate(rcData.date_enregistrement),
-              capital_social: rcData.capital_social?.toString() || '',
-              nis: rcData.nis || '',
-              adresse_legale: rcData.adresse_legale || '',
-              nif: rcData.nif || '',
-            },
-            actionnaires: actionnaires.map((a: any) => ({
-              nom: a.personne.nomFR,
-              prenom: a.personne.prenomFR,
-              lieu_naissance: a.personne.lieu_naissance,
-              qualification: a.personne.qualification,
-              numero_carte: a.personne.num_carte_identite,
-              taux_participation: a.taux_participation.toString(),
-              id_pays: a.personne.id_pays,
-              id_nationalite: a.personne.id_nationalite ?? null
-            }))
-          });
-
-          setDisabledSections({
-            infos: true,
-            repLegal: !!representant,
-            rcDetails: !!rcData.numero_rc,
-            actionnaires: actionnaires.length > 0,
-          });
-        } else {
-          // No detenteur associated yet, reset form
-          setFormData(initialData);
-          setDetenteurId(null);
-          setSearchQuery('');
-          setDisabledSections({
-            infos: false,
-            repLegal: false,
-            rcDetails: false,
-            actionnaires: false,
-          });
-        }
-        
-        setLoadingMessage("Doneées de demande chargées, chargement des options...");
+        setLoadingState("Données de demande chargées, récupération des documents...");
+        setError(null);
       } catch (err) {
-        console.error("Erreur lors de la récupération de la demande par id_proc:", err);
-        setLoadingMessage("Erreur lors de la récupération de la demande");
+        if (axios.isCancel(err)) return;
+        console.error("Erreur lors de la récupération de la demande", err);
+        setLoadingState("Erreur lors de la récupération de la demande");
+        setError("Erreur lors de la récupération de la demande");
       }
     };
 
-    fetchDemandeFromProc();
+    fetchDemandeData();
+
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
   }, [idProc, procedureData, apiURL]);
 
-  // Fetch additional data (countries, legal statuses) when idDemande is available
+  // Fetch documents when idDemande is available
   useEffect(() => {
     if (!idDemande) return;
 
-    const fetchAdditionalData = async () => {
+    const fetchDocuments = async () => {
+      setIsLoading(true);
+      abortControllerRef.current = new AbortController();
       try {
-        // Fetch countries
-        const paysResponse = await axios.get<Pays[]>(`${apiURL}/statuts-juridiques/pays`);
-        setPaysOptions(paysResponse.data);
+          const res = await axios.get(`${apiURL}/api/procedure/${idDemande}/documents`, {
+            signal: abortControllerRef.current.signal,
+          });
+        setDocuments(res.data.documents);
+        setMissingSummary(res.data.missingSummary);
+          setDeadlines(res.data.deadlines);
+          if (res.data.demande) {
+            setDemandeMeta(res.data.demande);
+          }
+
+        const initialStatus: Record<number, DocStatus> = {};
+        const initialFileUrls: Record<number, string> = {};
+
+        res.data.documents.forEach((doc: DocumentWithStatus) => {
+          initialStatus[doc.id_doc!] = doc.statut! || 'attente';
+          if (doc.file_url!) {
+            initialFileUrls[doc.id_doc!] = doc!.file_url!;
+          }
+        });
+
+        setStatusMap(initialStatus);
+        setFileUrls(initialFileUrls);
+
+        if (res.data.dossierFournis) {
+          setCurrentDossier(res.data.dossierFournis);
+          setRemarques(res.data.dossierFournis.remarques || "");
+        }
         
-        // Fetch legal statuses
-        const statutsResponse = await axios.get<StatutJuridique[]>(`${apiURL}/api/statuts-juridiques`);
-        setStatutsJuridiques(statutsResponse.data);
-        const natsResponse = await axios.get<Nationalite[]>(`${apiURL}/statuts-juridiques/nationalites`);
-        setNationalitesOptions(natsResponse.data);
-        
-        setLoadingMessage("Options chargées, vérification des données...");
-      } catch (error) {
-        console.error("Error fetching additional data:", error);
-        setLoadingMessage("Erreur lors du chargement des options");
+        setLoadingState(""); // Clear loading state
+        setError(null);
+      } catch (err) {
+        if (axios.isCancel(err)) return;
+        console.error("Erreur lors du chargement des documents", err);
+        setLoadingState("Erreur lors du chargement des documents");
+        setError("Erreur lors du chargement des documents");
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchAdditionalData();
-  }, [idDemande, apiURL]);
-
-  // Set up interval to check for required data if not all available
-  useEffect(() => {
-    if (!checkRequiredData() && !checkInterval) {
-      const interval = setInterval(() => {
-        setRefetchTrigger(prev => prev + 1);
-      }, 500); // Check every 500ms
-      setCheckInterval(interval);
-    }
+    fetchDocuments();
 
     return () => {
-      if (checkInterval) {
-        clearInterval(checkInterval);
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
       }
     };
-  }, [checkRequiredData, checkInterval]);
+  }, [idDemande, apiURL, refetchTrigger]);
 
-  // Search for detenteurs
-  useEffect(() => {
-    const fetchDetenteurs = async () => {
-      if (searchQuery.length < 2) {
-        setDetenteurOptions([]);
-        return;
-      }
-      
-      setIsSearching(true);
-      try {
-        const response = await axios.get(`${apiURL}/api/detenteur-morale/search`, {
-          params: { q: searchQuery }
-        });
-        setDetenteurOptions(response.data);
-      } catch (error) {
-        console.error("Error fetching detenteurs:", error);
-        setDetenteurOptions([]);
-      } finally {
-        setIsSearching(false);
-      }
-    };
-
-    const debounceTimer = setTimeout(fetchDetenteurs, 300);
-    return () => clearTimeout(debounceTimer);
-  }, [searchQuery, apiURL]);
-
-  // Activate step 1 when all data is ready
   useActivateEtape({
     idProc,
     etapeNum: 1,
     shouldActivate: currentStep === 1 && !activatedSteps.has(1) && isPageReady,
-    onActivationSuccess: () => {
+    onActivationSuccess: (stepStatus: string) => {
+      if (stepStatus === 'TERMINEE') {
+        setActivatedSteps(prev => new Set(prev).add(1));
+        setHasActivatedStep1(true);
+        return;
+      }
+
       setActivatedSteps(prev => new Set(prev).add(1));
       if (procedureData) {
         const updatedData = { ...procedureData };
         
         if (updatedData.ProcedureEtape) {
           const stepToUpdate = updatedData.ProcedureEtape.find(pe => pe.id_etape === 1);
-          if (stepToUpdate) {
+          if (stepToUpdate && stepStatus === 'EN_ATTENTE') {
             stepToUpdate.statut = 'EN_COURS' as StatutProcedure;
           }
           setCurrentEtape({ id_etape: 1 });
@@ -495,7 +532,7 @@ export default function Step2() {
           const phaseContainingStep1 = updatedData.ProcedurePhase.find(pp => 
             pp.phase?.etapes?.some(etape => etape.id_etape === 1)
           );
-          if (phaseContainingStep1) {
+          if (phaseContainingStep1 && stepStatus === 'EN_ATTENTE') {
             phaseContainingStep1.statut = 'EN_COURS' as StatutProcedure;
           }
         }
@@ -514,165 +551,423 @@ export default function Step2() {
         .sort((a: Phase, b: Phase) => a.ordre - b.ordre)
     : [];
 
-  // Helper functions
-  const formatDate = (isoDate?: string) => {
-    if (!isoDate) return '';
-    return new Date(isoDate).toISOString().split('T')[0];
+  const handleOpenCahierForm = (doc: DocumentWithStatus) => {
+    setSelectedCahierDoc(doc);
+    setShowCahierForm(true);
   };
 
-  const handleDetenteurSelect = async (detenteurId: number) => {
+  const CahierFormModal = () => (
+    <div className={styles['modal-overlay']}>
+      <div className={styles['modal-content']}>
+        <div className={styles['modal-header']}>
+          <h3>Remplir Cahier des Charges</h3>
+          <button
+            onClick={() => setShowCahierForm(false)}
+            className={styles['modal-close']}
+          >
+            &times;
+          </button>
+        </div>
+        <div className={styles['modal-body']}>
+          <iframe
+            src={`/demande/step10/page10?id=${idProc}`}
+            className={styles['cahier-iframe']}
+          />
+        </div>
+      </div>
+    </div>
+  );
+
+  const CheckAllModal = () => (
+    <div className={styles['modal-overlay']}>
+      <div className={styles['modal-content']}>
+        <div className={styles['modal-header']}>
+          <h3>Vérifier tous les documents</h3>
+          <button
+            onClick={() => setShowCheckAllModal(false)}
+            className={styles['modal-close']}
+          >
+            &times;
+          </button>
+        </div>
+        <div className={styles['modal-body']}>
+          <p>Êtes-vous sûr de vouloir marquer tous les documents comme présents ?</p>
+          <div className={styles['modal-actions']}>
+            <button 
+              className={styles['btn']} 
+              onClick={() => setShowCheckAllModal(false)}
+            >
+              Annuler
+            </button>
+            <button 
+              className={`${styles['btn']} ${styles['btn-primary']}`}
+              onClick={handleCheckAllPresent}
+            >
+              Confirmer
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const MissingDocsModal = () => {
+    if (!missingSummary) return null;
+
+    return (
+      <div className={styles['modal-overlay']}>
+        <div className={styles['modal-content']}>
+          <div className={styles['modal-header']}>
+            <h3>
+              <FiAlertTriangle className={styles['warning-icon']} />
+              Documents obligatoires manquants
+            </h3>
+            {/* <button
+              onClick={() => setShowMissingDocsModal(false)}
+              className={styles['modal-close']}
+            >
+              &times;
+            </button> */}
+          </div>
+          <div className={styles['modal-body']}>
+            <div className={styles['missing-docs-section']}>
+              {hasBlockingMissingDocs && (
+                <div className={styles['blocking-docs']}>
+                  <h4>❌ Documents causant un rejet immédiat:</h4>
+                  <ul>
+                    {missingSummary.blocking.map((doc, index) => (
+                      <li key={index}>
+                        <strong>{doc.nom_doc}</strong>
+                        {doc.reject_message && <span> - {doc.reject_message}</span>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {hasBlockingNextMissingDocs && (
+                <div className={styles['blocking-next-docs']}>
+                  <h4>⚠️ Documents bloquant la progression:</h4>
+                  <ul>
+                    {missingSummary.blockingNext.map((doc, index) => (
+                      <li key={index}>{doc.nom_doc}</li>
+                    ))}
+                  </ul>
+                  {deadlines?.miseEnDemeure && (
+                    <p className={styles['deadline-info']}>
+                      Délai pour compléter: 30 jours (jusqu'au {new Date(deadlines.miseEnDemeure).toLocaleDateString()})
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {missingSummary.warnings.length > 0 && (
+                <div className={styles['warning-docs']}>
+                  <h4>ℹ️ Documents avec avertissement:</h4>
+                  <ul>
+                    {missingSummary.warnings.map((doc, index) => (
+                      <li key={index}>{doc.nom_doc}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            <div className={styles['modal-actions']}>
+              <button 
+                className={`${styles['btn']} ${styles['btn-primary']}`}
+                onClick={handlecompris}
+              >
+                Compris
+              </button>
+              {hasBlockingNextMissingDocs && idDemande && (
+                <a
+                  href={`${apiURL}/api/demande/${idDemande}/mise-en-demeure.pdf`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${styles['btn']} ${styles['btn-primary']}`}
+                  style={{ marginLeft: '8px' }}
+                >
+                  Télécharger la mise en demeure (PDF)
+                </a>
+              )}
+              {hasBlockingNextMissingDocs && (
+                <button
+                  className={`${styles['btn']} ${styles['btn-outline']}`}
+                  onClick={async () => {
+                    if (!idDemande) return;
+                    try {
+                      let res;
+                      try {
+                        res = await axios.get(`${apiURL}/api/demande/${idDemande}/letters`);
+                      } catch (err: any) {
+                        if (err?.response?.status === 404) {
+                          res = await axios.get(`${apiURL}/api/procedure/${idDemande}/letters`);
+                        } else {
+                          throw err;
+                        }
+                      }
+                      if (res.data?.letters?.miseEnDemeure) {
+                        setLetterPreview({
+                          type: 'MISE_EN_DEMEURE',
+                          content: res.data.letters.miseEnDemeure.content,
+                          deadline: res.data.letters.miseEnDemeure.deadline || null,
+                        });
+                      }
+                    } catch (e) {
+                      console.error('Erreur génération lettre mise en demeure', e);
+                    }
+                  }}
+                >
+                  Prévisualiser la mise en demeure
+                </button>
+              )}
+              {hasBlockingMissingDocs && (
+                <button
+                  className={`${styles['btn']} ${styles['btn-outline']}`}
+                  onClick={async () => {
+                    if (!idDemande) return;
+                    try {
+                      let res;
+                      try {
+                        res = await axios.get(`${apiURL}/api/demande/${idDemande}/letters`);
+                      } catch (err: any) {
+                        if (err?.response?.status === 404) {
+                          res = await axios.get(`${apiURL}/api/procedure/${idDemande}/letters`);
+                        } else {
+                          throw err;
+                        }
+                      }
+                      if (res.data?.letters?.rejet) {
+                        setLetterPreview({
+                          type: 'REJET',
+                          content: res.data.letters.rejet.content,
+                        });
+                      }
+                    } catch (e) {
+                      console.error('Erreur génération lettre de rejet', e);
+                    }
+                  }}
+                >
+                  Prévisualiser le rejet
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const LetterPreviewModal = () => {
+    if (!letterPreview) return null;
+    return (
+      <div className={styles['modal-overlay']}>
+        <div className={styles['modal-content']}>
+          <div className={styles['modal-header']}>
+            <h3>Courrier: {letterPreview.type}</h3>
+            <button onClick={() => setLetterPreview(null)} className={styles['modal-close']}>&times;</button>
+          </div>
+          <div className={styles['modal-body']}>
+            <pre style={{ whiteSpace: 'pre-wrap' }}>{letterPreview.content}</pre>
+          </div>
+          <div className={styles['modal-actions']}>
+            <button className={`${styles['btn']} ${styles['btn-primary']}`} onClick={() => setLetterPreview(null)}>
+              Fermer
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const handleCheckAllPresent = () => {
+    const newStatusMap: Record<number, DocStatus> = {};
+    documents.forEach(doc => {
+      newStatusMap[doc.id_doc] = "present";
+    });
+    setStatusMap(newStatusMap);
+    setShowCheckAllModal(false);
+    setSuccess("Tous les documents ont été marqués comme présents");
+  };
+
+  const submitDossier = async () => {
+    setIsSubmitting(true);
+    setError(null);
+    setSuccess(null);
+
+    const payload = {
+      documents: Object.entries(statusMap).map(([id, status]) => ({
+        id_doc: Number(id),
+        status,
+        file_url: fileUrls[Number(id)] || null
+      })),
+      remarques
+    };
+
     try {
-      // Fetch complete detenteur data
-      const response = await axios.get(`${apiURL}/api/detenteur-morale/${detenteurId}`);
-      const detenteur = response.data;
-      
-      // Update form data with the selected detenteur's information
-      setFormData({
-        infos: {
-          nom_fr: detenteur.nom_societeFR || '',
-          nom_ar: detenteur.nom_societeAR || '',
-          statut_id: detenteur.id_statutJuridique || 0,
-          tel: detenteur.telephone || '',
-          email: detenteur.email || '',
-          fax: detenteur.fax || '',
-          adresse: detenteur.adresse_siege || '',
-          id_pays: detenteur.id_pays || 0,
-        },
-        repLegal: initialData.repLegal,
-        rcDetails: initialData.rcDetails,
-        actionnaires: []
-      });
-      
-      setDetenteurId(detenteurId);
-      setSearchQuery(detenteur.nom_societeFR || '');
-      setShowDetenteurDropdown(false);
-      
-      // Associate the detenteur with the current demande
-      if (idDemande) {
-        try {
-          await axios.put(`${apiURL}/api/demande/${idDemande}/associate-detenteur`, {
-            id_detenteur: detenteurId
-          });
-          console.log("Detenteur associated with demande successfully");
-        } catch (error) {
-          console.error("Error associating detenteur with demande:", error);
-        }
-      }
-      
-      // Fetch and set representant legal
-      try {
-        const repResponse = await axios.get(`${apiURL}/api/representant-legal/${detenteurId}`);
-        if (repResponse.data) {
-          const rep = repResponse.data;
-          setFormData(prev => ({
-            ...prev,
-            repLegal: {
-              nom: rep.personne?.nomFR || '',
-              prenom: rep.personne?.prenomFR || '',
-              nom_ar: rep.personne?.nomAR || '',
-              prenom_ar: rep.personne?.prenomAR || '',
-              tel: rep.personne?.telephone || '',
-              email: rep.personne?.email || '',
-              fax: rep.personne?.fax || '',
-              qualite: rep.personne?.qualification || '',
-              nin: rep.personne?.num_carte_identite || '',
-              taux_participation: rep.taux_participation?.toString() || '',
-              id_pays: rep.personne?.id_pays || 0
-            }
-          }));
-        }
-      } catch (error) {
-        console.log("No representant legal found for this detenteur");
-      }
-      
-      // Fetch and set registre commerce
-      try {
-        const rcResponse = await axios.get(`${apiURL}/api/registre-commerce/${detenteurId}`);
-        if (rcResponse.data) {
-          const rc = rcResponse.data;
-          setFormData(prev => ({
-            ...prev,
-            rcDetails: {
-              numero_rc: rc.numero_rc || '',
-              date_enregistrement: formatDate(rc.date_enregistrement),
-              capital_social: rc.capital_social?.toString() || '',
-              nis: rc.nis || '',
-              adresse_legale: rc.adresse_legale || '',
-              nif: rc.nif || '',
-            }
-          }));
-        }
-      } catch (error) {
-        console.log("No registre commerce found for this detenteur");
-      }
-      
-      // Fetch and set actionnaires
-      try {
-        const actionnairesResponse = await axios.get(`${apiURL}/api/actionnaires/${detenteurId}`);
-        if (actionnairesResponse.data) {
-          const actionnaires = actionnairesResponse.data;
-          setFormData(prev => ({
-            ...prev,
-            actionnaires: actionnaires.map((a: any) => ({
-              nom: a.personne?.nomFR || '',
-              prenom: a.personne?.prenomFR || '',
-              lieu_naissance: a.personne?.lieu_naissance || '',
-              qualification: a.personne?.qualification || '',
-              numero_carte: a.personne?.num_carte_identite || '',
-              taux_participation: a.taux_participation?.toString() || '',
-              id_pays: a.personne?.id_pays || 0,
-              id_nationalite: a.personne?.id_nationalite ?? null
-            }))
-          }));
-        }
-      } catch (error) {
-        console.log("No actionnaires found for this detenteur");
-      }
-      
-      // Disable all sections since we're using existing data
-      setDisabledSections({
-        infos: true,
-        repLegal: true,
-        rcDetails: true,
-        actionnaires: true,
-      });
-      
-      setToastType('success');
-      setToastMessage('Détenteur sélectionné et associé avec succés');
-      
-    } catch (error) {
-      console.error("Error loading detenteur data:", error);
-      setToastType('error');
-      setToastMessage('Erreur lors du chargement des données du détenteur');
+      const response = await axios.post(
+        `${apiURL}/api/demande/${idDemande}/dossier-fournis`,
+        payload
+      );
+
+      setMissingSummary(response.data.missingSummary);
+      setDeadlines(response.data.deadlines);
+      setSuccess("Dossier mis à jour avec succés");
+      setRefetchTrigger(prev => prev + 1);
+      return response.data;
+    } catch (err) {
+      console.error("Erreur lors de la soumission du dossier", err);
+      setError("Erreur lors de la soumission du dossier");
+      return null;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Event handlers
-  const handleNext = () => {
-    const tauxRep = parseFloat(formData.repLegal.taux_participation || '0');
-    const tauxActionnaires = formData.actionnaires.reduce((acc, a) => acc + parseFloat(a.taux_participation || '0'), 0);
-    const totalTaux = tauxRep + tauxActionnaires;
+  const approveDemande = async () => {
+    try {
+      await axios.put(
+        `${apiURL}/api/demande/${idDemande}/status`,
+        { statut_demande: 'ACCEPTEE' }
+      );
+      setSuccess("Demande approuvée avec succés");
+      setRefetchTrigger(prev => prev + 1);
+    } catch (err) {
+      console.error("Erreur lors de l'approbation", err);
+      setError("Erreur lors de l'approbation");
+    }
+  };
 
-    if (totalTaux !== 100) {
-      setTauxSummary({ total: totalTaux, rep: tauxRep, actionnaires: tauxActionnaires });
-      setShowTauxModal(true);
+  const rejectDemande = async () => {
+    if (!rejectionReason) {
+      toast.warning("⚠️ Veuillez spécifier un motif de rejet");
       return;
     }
 
-    if (idProc) {
-      router.push(`/demande/step2/page2?id=${idProc}`)
-    } else {
-      alert("ID procédure manquant.");
+    try {
+      await axios.put(`${apiURL}/api/demande/${idDemande}/status`, {
+        statut_demande: 'REJETEE',
+        motif_rejet: rejectionReason,
+      });
+
+      toast.success("✅ Demande rejetée avec succés");
+      setRefetchTrigger(prev => prev + 1);
+    } catch (err) {
+      console.error("Erreur lors du rejet", err);
+      toast.error("❌ Erreur lors du rejet");
     }
   };
 
-  const handlePrevious = () => {
-    router.push(`/demande/step1_typepermis/page1_typepermis?id=${idProc}`)
+  const handleMiseEnDemeure = async () => {
+    if (!idDemande) return;
+    try {
+      const result = await submitDossier();
+      if (!result) return;
+      toast.success('Mise en demeure lancée. Le délai de 30 jours est démarré.');
+      // Ouvrir directement le PDF de mise en demeure
+      if (apiURL) {
+        window.open(`${apiURL}/api/demande/${idDemande}/mise-en-demeure.pdf`, '_blank');
+      }
+    } catch (err) {
+      console.error('Erreur lors de la mise en demeure', err);
+      toast.error("Erreur lors du lancement de la mise en demeure.");
+    }
   };
 
+  const handleFileUpload = async (id: number, file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await axios.post(
+        `${apiURL}/api/demande/${idDemande}/document/${id}/upload`,
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      );
+
+      setFileUrls(prev => ({ ...prev, [id]: res.data.fileUrl }));
+      toggleStatus(id, "present");
+      return res.data.fileUrl;
+    } catch (err) {
+      console.error("Erreur lors de l'upload du fichier", err);
+      setError("Erreur lors de l'upload du fichier");
+      return null;
+    }
+  };
+
+  const toggleStatus = (id: number, status: DocStatus) => {
+    setStatusMap(prev => ({ ...prev, [id]: status }));
+  };
+
+  const countByStatus = (status: DocStatus) =>
+    Object.values(statusMap).filter((s) => s === status).length;
+
+  const total = documents.length;
+  const presents = countByStatus("present");
+  const manquants = countByStatus("manquant");
+  const attente = countByStatus("attente");
+
+  const hasRequiredMissingClient = documents.some((doc) => {
+    if (!doc.is_required) return false;
+    const status = statusMap[doc.id_doc];
+    return status !== 'present';
+  });
+
+  // Vérifier si la navigation est bloquée
+  const isNavigationBlocked = false;
+
+  // Debounced navigation handlers
+  const debounce = (func: () => void, delay: number) => {
+    let timeoutId: NodeJS.Timeout;
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        func();
+      }, delay);
+    };
+  };
+
+  const handleNext = useCallback(
+    debounce(async () => {
+      if (isNavigating) return;
+
+      // Bloquer la navigation si au moins un document obligatoire est manquant
+      const hasRequiredMissing = documents.some((doc) => {
+        if (!doc.is_required) return false;
+        const status = statusMap[doc.id_doc];
+        return status !== 'present';
+      });
+
+      if (hasRequiredMissing) {
+        toast.warning(
+          "Des documents obligatoires sont manquants. Impossible de passer à l'étape suivante.",
+        );
+        return;
+      }
+
+      try {
+        setIsNavigating(true);
+        await router.push(`/demande/step2/page2?id=${idProc}`);
+      } catch (err) {
+        console.error('Erreur lors de la navigation vers l’étape suivante', err);
+      } finally {
+        setIsNavigating(false);
+      }
+    }, 300),
+    [documents, statusMap, router, idProc, isNavigating]
+  );
+
+  const handlecompris = async () => {
+    router.push(`/demande/step2/page2?id=${idProc}`);
+  };
+  const handleBack =async () => {
+      router.push(`/demande/step1_typepermis/page1_typepermis?id=${idProc}`)
+  }
+
   const handleSaveEtape = async () => {
-    if (!idProc) {
-      setEtapeMessage("ID procedure introuvable !");
+    if (statutProc === 'TERMINEE') {
+      setEtapeMessage("Procédure déjà terminée.");
       return;
     }
 
@@ -680,8 +975,10 @@ export default function Step2() {
     setEtapeMessage(null);
 
     try {
-      await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/1`);
-      setEtapeMessage("étape 2 enregistrée avec succés !");
+      await submitDossier();
+      await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/${currentStep}`);
+      setEtapeMessage(`Étape ${currentStep} enregistrée avec succès !`);
+      setRefetchTrigger(prev => prev + 1);
     } catch (err) {
       console.error(err);
       setEtapeMessage("Erreur lors de l'enregistrement de l'étape.");
@@ -690,557 +987,547 @@ export default function Step2() {
     }
   };
 
-  const handleInfosChange = (data: SocieteData['infos']) => {
-    setFormData(prev => ({ ...prev, infos: data }));
+  // Afficher les documents manquants obligatoires
+  const MissingDocsAlert = () => {
+    if (!missingSummary || missingSummary.requiredMissing.length === 0) return null;
+
+    // return (
+    //   <div className={styles['missing-docs-alert']}>
+    //     <div className={styles['alert-header']}>
+    //       <FiAlertTriangle className={styles['alert-icon']} />
+    //       <h4>Documents obligatoires manquants</h4>
+    //       <button 
+    //         onClick={() => setShowMissingDocsModal(true)}
+    //         className={styles['details-btn']}
+    //       >
+    //         Voir les détails
+    //       </button>
+    //     </div>
+        
+    //     {hasBlockingMissingDocs && (
+    //       <p className={styles['blocking-alert']}>
+    //         ❌ Des documents causant un rejet immédiat sont manquants
+    //       </p>
+    //     )}
+        
+    //     {hasBlockingNextMissingDocs && (
+    //       <p className={styles['blocking-next-alert']}>
+    //         ⚠️ Des documents bloquant la progression sont manquants
+    //       </p>
+    //     )}
+    //   </div>
+    // );
   };
-
-  const handleRepLegalChange = (data: SocieteData['repLegal']) => {
-    setFormData(prev => ({ ...prev, repLegal: data }));
-  };
-
-  const handleRcDetailsChange = (data: SocieteData['rcDetails']) => {
-    setFormData(prev => ({ ...prev, rcDetails: data }));
-  };
-
-  const handleActionnairesChange = (data: SocieteData['actionnaires']) => {
-    setFormData(prev => ({ ...prev, actionnaires: data }));
-  };
-
-  const toggle = (id: string) => {
-    setOpenSection(openSection === id ? null : id);
-  };
-
-  const handleSaveSection = async (section: keyof SocieteData) => {
-    setIsSaving(prev => ({ ...prev, [section]: true }));
-    setToastMessage(null);
-
-    try {
-      let response;
-
-      switch (section) {
-        case 'infos':
-          if (detenteurId) {
-            response = await axios.put(`${apiURL}/api/detenteur-morale/${detenteurId}`, formData.infos);
-          } else {
-            response = await axios.post(`${apiURL}/api/detenteur-morale`, formData.infos);
-            const newId = response.data?.id_detenteur;
-            if (newId) {
-              setDetenteurId(newId);
-              if (idDemande) {
-                await axios.put(`${apiURL}/api/demande/${idDemande}/link-detenteur`, {
-                  id_detenteur: newId
-                });
-              }
-            }
-          }
-          break;
-
-        case 'repLegal':
-          if (!detenteurId) throw new Error("Détenteur non défini !");
-          if (!formData.repLegal.nin) throw new Error("NIN du représentant légal est requis");
-
-          try {
-            response = await axios.put(
-              `${apiURL}/api/representant-legal/${formData.repLegal.nin}`,
-              {
-                ...formData.repLegal,
-                id_detenteur: detenteurId,
-              }
-            );
-          } catch (err: any) {
-            if (axios.isAxiosError(err) && err.response?.status === 404) {
-              response = await axios.post(
-                `${apiURL}/api/representant-legal`,
-                {
-                  ...formData.repLegal,
-                  id_detenteur: detenteurId
-                }
-              );
-            } else {
-              throw err;
-            }
-          }
-          break;
-
-        case 'rcDetails':
-          if (!detenteurId) throw new Error("Détenteur non défini !");
-
-          try {
-            response = await axios.put(
-              `${apiURL}/api/registre-commerce/${detenteurId}`,
-              {
-                ...formData.rcDetails,
-                id_detenteur: detenteurId
-              }
-            );
-          } catch (err: any) {
-            if (axios.isAxiosError(err) && err.response?.status === 404) {
-              response = await axios.post(
-                `${apiURL}/api/registre-commerce`,
-                {
-                  ...formData.rcDetails,
-                  id_detenteur: detenteurId
-                }
-              );
-            } else {
-              throw err;
-            }
-          }
-          break;
-
-        case 'actionnaires':
-          if (!detenteurId) throw new Error("Détenteur non défini !");
-          // Validate actionnaires before sending
-          const invalidActionnaires = formData.actionnaires.filter(a => !a.id_pays || !a.id_nationalite);
-          if (invalidActionnaires.length > 0) {
-            console.error('Actionnaires missing country:', invalidActionnaires);
-            throw new Error("Tous les actionnaires doivent avoir un pays sélectionné");
-          }
-
-          response = await axios.put(
-            `${apiURL}/api/actionnaires/${detenteurId}`,
-            {
-              actionnaires: formData.actionnaires.map(a => ({ nom: a.nom, prenom: a.prenom, qualification: a.qualification, numero_carte: a.numero_carte, taux_participation: a.taux_participation, lieu_naissance: a.lieu_naissance, id_pays: a.id_pays as number, id_nationalite: a.id_nationalite as number })),
-              id_detenteur: detenteurId
-            }
-          );
-          break;
-      }
-
-      setToastType('success');
-      setToastMessage(`? Section "${section}" enregistrée avec succés.`);
-      setDisabledSections(prev => ({ ...prev, [section]: true }));
-      setIsModifying(prev => ({ ...prev, [section]: false }));
-
-    } catch (error: any) {
-      console.error('=== FRONTEND: SAVE SECTION ERROR ===');
-      console.error('Error details:', error);
-
-      let message = 'Erreur inconnue';
-      if (axios.isAxiosError(error)) {
-        console.error('Axios error response:', error.response?.data);
-        message = error.response?.data?.message || error.message;
-      } else if (error.message) {
-        message = error.message;
-      }
-
-      setToastType('error');
-      setToastMessage(`? ${message}`);
-    } finally {
-      setIsSaving(prev => ({ ...prev, [section]: false }));
-    }
-  };
-
-  const handleModifySection = (section: keyof SocieteData) => {
-    setDisabledSections(prev => ({ ...prev, [section]: false }));
-    setIsModifying(prev => ({ ...prev, [section]: true }));
-  };
-
-  const handleDeleteActionnaires = async () => {
-    if (!detenteurId) return;
-
-    try {
-      await axios.delete(`${apiURL}/api/actionnaires/${detenteurId}`);
-      setFormData(prev => ({ ...prev, actionnaires: [] }));
-      setToastType('success');
-      setToastMessage('Actionnaires supprimés avec succés');
-    } catch (error) {
-      setToastType('error');
-      setToastMessage('Erreur lors de la suppression des actionnaires');
-    }
-  };
-
-  // Accordion items
-  const accordions: AccordionItem[] = [
-    { id: 'infos', title: 'Informations générales de la société', color: 'blue' },
-    { id: 'repLegal', title: 'Représentant légal de la société', color: 'orange' },
-    { id: 'rcDetails', title: 'Détails du Registre de Commerce', color: 'green' },
-    { id: 'actionnaires', title: 'Actionnaires de la société', color: 'purple' },
-  ];
 
   // Show loading state until all required data is available
   if (!isPageReady) {
     return (
       <div className="loading-container">
         <div className="spinner"></div>
-        <p>{loadingMessage}</p>
+        <p>{loadingState}</p>
         {!idProc && <p>En attente de l'ID de procédure...</p>}
         {idProc && !procedureData && <p>Chargement des données de procédure...</p>}
         {procedureData && !idDemande && <p>Chargement des données de demande...</p>}
-        {idDemande && (!paysOptions.length || !statutsJuridiques.length) && <p>Chargement des options...</p>}
+        {idDemande && documents.length === 0 && <p>Chargement des documents...</p>}
       </div>
     );
   }
 
   return (
-    <div className={styles.appContainer}>
+    <div className={styles['app-container']}>
       <Navbar />
-      <div className={styles.appContent}>
+      <div className={styles['app-content']}>
         <Sidebar currentView={currentView} navigateTo={navigateTo} />
-        <main className={styles.mainContent}>
-          {missingDocsAlert && (
-            <div style={{
-              background: 'rgba(220,38,38,0.1)',
-              border: '1px solid rgba(220,38,38,0.4)',
-              padding: '10px 12px',
-              borderRadius: 6,
-              marginBottom: 12,
-              color: '#991b1b',
-              fontWeight: 600,
-            }}>
-              Documents obligatoires manquants: {missingDocsAlert.missing.join(', ')}
-              {missingDocsAlert.deadline && (
-                <span style={{ marginLeft: 8, fontWeight: 500 }}>
-                  ? {computeRemaining(missingDocsAlert.deadline)}
-                </span>
-              )}
-            </div>
-          )}
-          <div className={styles.breadcrumb}>
+        <main className={styles['main-content']}>
+          <div className={styles['breadcrumb']}>
             <span>SIGAM</span>
-            <FiChevronRight className={styles.breadcrumbArrow} />
-            <span>Identification</span>
+            <FiChevronRight className={styles['breadcrumb-arrow']} />
+            <span>Documents</span>
           </div>
 
-          <div className={styles.demandeContainer}>
-            {/* Progress Steps */}
-            {procedureData && (
-              <ProgressStepper
-                phases={phases}
-                currentProcedureId={idProc}
-                currentEtapeId={currentStep}
-                procedurePhases={procedureData.ProcedurePhase || []}
-                procedureTypeId={procedureTypeId}
-              />
-            )}
-            <div className={styles.contentWrapper}>
-              <h2 className={styles.pageTitle}>
-                <span className={styles.stepNumber}>étape 1</span>
-                Identification de la société
+          <div className={styles['documents-container']}>
+            <div className={styles['content-wrapper']}>
+                {/* Progress Steps */}
+                {procedureData && (
+                  <ProgressStepper
+                    phases={phases}
+                    currentProcedureId={idProc}
+                    currentEtapeId={currentStep}
+                    procedurePhases={procedureData.ProcedurePhase || []}
+                    procedureTypeId={procedureTypeId}
+                  />
+                )}
+
+                {demandeMeta && (
+                  <div className={styles['instruction-deadline-banner']}>
+                    <div className={styles['recevabilite-row']}>
+                      <label className={styles['recevabilite-label']}>
+                        <input
+                          type="checkbox"
+                          checked={!!demandeMeta.dossier_recevable}
+                          onChange={async (e) => {
+                            if (!apiURL || !idDemande) return;
+                            const value = e.target.checked;
+                            try {
+                              await axios.put(
+                                `${apiURL}/api/demande/${idDemande}/recevabilite`,
+                                { dossier_recevable: value },
+                                { withCredentials: true }
+                              );
+                              setDemandeMeta((prev) =>
+                                prev
+                                  ? {
+                                      ...prev,
+                                      dossier_recevable: value,
+                                      date_instruction: value ? new Date().toISOString() : null,
+                                    }
+                                  : prev,
+                              );
+                            } catch (err) {
+                              console.error('Erreur lors de la mise à jour de la recevabilité', err);
+                              toast.error("Erreur lors de la mise à jour de la recevabilité du dossier.");
+                            }
+                          }}
+                        />
+                        Dossier recevable
+                      </label>
+
+                      {demandeMeta.dossier_recevable && (
+                        <span className={styles['recevabilite-indicator']}>
+                          <FiCheckCircle className={styles['recevabilite-icon']} />
+                          <span>Dossier marqué recevable</span>
+                        </span>
+                      )}
+                    </div>
+
+                    <div className={styles['instruction-deadline-text']}>
+                      {(() => {
+                        const info = computeBusinessDeadlineInfo();
+                        if (!info) {
+                          return <p>Délai d'instruction : non défini.</p>;
+                        }
+                        return (
+                          <p>
+                            Délai d'instruction : il reste{' '}
+                            <strong>{info.remaining}</strong> jour(s) ouvrable(s) sur{' '}
+                            <strong>{info.total}</strong> (jusqu'au{' '}
+                            {info.deadline.toLocaleDateString('fr-FR')}).
+                          </p>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                )}
+
+                <h2 className={styles['page-title']}>
+                <CgFileDocument className={styles['title-icon']} />
+                Documents requis
               </h2>
-              <p className={styles.pageSubtitle}>
-                Informations légales compl?tes de l'entité morale demandant le permis minier
-              </p>
+
+              {error && (
+                <div className={styles['error-message']}>
+                  <FiAlertCircle className={styles['error-icon']} />
+                  <p>{error}</p>
+                </div>
+              )}
+
+              {success && (
+                <div className={styles['success-message']}>
+                  <FiCheck className={styles['success-icon']} />
+                  <p>{success}</p>
+                </div>
+              )}
+
+              {/* Alert pour documents manquants */}
+              <MissingDocsAlert />
 
               {codeDemande && idDemande && (
-                <div className={styles.infoCard}>
-                  <div className={styles.infoHeader}>
-                    <h4 className={styles.infoTitle}>
-                      <FiFileText className={styles.infoIcon} />
+                <div className={styles['info-card']}>
+                  <div className={styles['info-header']}>
+                    <h4 className={styles['info-title']}>
+                      <FiFileText className={styles['info-icon']} />
                       Informations Demande
                     </h4>
                   </div>
-                  <div className={styles.infoContent}>
-                    <div className={styles.infoRow}>
-                      <span className={styles.infoLabel}>Code Demande :</span>
-                      <span className={styles.infoValue}>{codeDemande}</span>
+                  <div className={styles['info-content']}>
+                    <div className={styles['info-row']}>
+                      <span className={styles['info-label']}>Code Demande :</span>
+                      <span className={styles['info-value']}>{codeDemande}</span>
                     </div>
-                    <div className={styles.infoRow}>
-                      <span className={styles.infoLabel}>ID Demande :</span>
-                      <span className={styles.infoValue}>{idDemande}</span>
+                    <div className={styles['info-row']}>
+                      <span className={styles['info-label']}>ID Demande :</span>
+                      <span className={styles['info-value']}>{idDemande}</span>
                     </div>
                   </div>
                 </div>
               )}
-              
-              <div className={styles.detenteurSearchSection}>
-                <h3 className={styles.searchTitle}>Sélectionner un détenteur existant</h3>
-                <div className={styles.searchContainer}>
-                  <div className={styles.searchInputWrapper}>
-                    <FiSearch className={styles.searchIcon} />
-                    <input
-                      type="text"
-                      placeholder="Rechercher un détenteur par nom..."
-                      value={searchQuery}
-                      onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                        setShowDetenteurDropdown(true);
-                      }}
-                      onFocus={() => setShowDetenteurDropdown(true)}
-                      className={styles.searchInput}
-                    />
-                    {isSearching && <FiLoader className={styles.searchSpinner} />}
+
+              {!currentDossier && missingSummary && (
+                <div className={styles['dossier-status-section']}>
+                  <div className={styles['dossier-status']}>
+                    <span>Statut du dossier: </span>
+                    <strong className={
+                      missingSummary.requiredMissing.length === 0
+                        ? styles['status-complete']
+                        : styles['status-incomplete']
+                    }>
+                      {missingSummary.requiredMissing.length === 0 ? 'Complet' : 'Incomplet'}
+                    </strong>
                   </div>
-                  
-                  {showDetenteurDropdown && detenteurOptions.length > 0 && (
-                    <div className={styles.dropdown}>
-                      {detenteurOptions.map(detenteur => (
-                        <div
-                          key={detenteur.id_detenteur}
-                          className={styles.dropdownItem}
-                          onClick={() => handleDetenteurSelect(detenteur.id_detenteur)}
+
+                  <div className={styles['demande-actions']}>
+                    {missingSummary.requiredMissing.length > 0 && missingSummary.blockingNext.length > 0 && (
+                      <button
+                        className={styles['mise-en-demeure-btn']}
+                        onClick={handleMiseEnDemeure}
+                        disabled={statutProc === 'TERMINEE' || !statutProc || isNavigating}
+                      >
+                        Mise en demeure (30 jours pour compléter)
+                      </button>
+                    )}
+                    <div className={styles['reject-section']}>
+                      <input
+                        disabled={statutProc === 'TERMINEE'}
+                        type="text"
+                        value={rejectionReason}
+                        onChange={(e) => setRejectionReason(e.target.value)}
+                        placeholder="Motif de rejet"
+                        className={styles['reject-input']}
+                      />
+                      <button
+                        className={styles['reject-btn']}
+                        onClick={rejectDemande}
+                        disabled={statutProc === 'TERMINEE' || !statutProc || isNavigating}
+                      >
+                        Rejeter la demande
+                      </button>
+                    </div>
+                    <button
+                      className={styles['approve-btn']}
+                      onClick={approveDemande}
+                      disabled={statutProc === 'TERMINEE' || !statutProc || isNavigating || hasBlockingMissingDocs}
+                    >
+                      Demande Acceptée
+                    </button>
+                  </div>
+
+                  {missingSummary.requiredMissing.length === 0 && (
+                    <div style={{ marginTop: '8px' }}>
+                      <button
+                        className={`${styles['btn']} ${styles['btn-outline']}`}
+                        onClick={async () => {
+                          if (!idDemande) return;
+                          try {
+                            let res;
+                            try {
+                              res = await axios.get(`${apiURL}/api/demande/${idDemande}/letters`);
+                            } catch (err: any) {
+                              if (err?.response?.status === 404) {
+                                res = await axios.get(`${apiURL}/api/procedure/${idDemande}/letters`);
+                              } else {
+                                throw err;
+                              }
+                            }
+                            if (res.data?.letters?.recepisse) {
+                              setLetterPreview({
+                                type: 'RECEPISSE',
+                                content: res.data.letters.recepisse.content,
+                                numero_recepisse: res.data.letters.recepisse.numero_recepisse || null,
+                              });
+                            }
+                          } catch (e) {
+                            console.error('Erreur génération récépissé', e);
+                          }
+                        }}
+                      >
+                        Prévisualiser le récépissé
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              
+<div style={{ marginTop: '8px' }}>
+               
+                    
+                        <a
+                          href={`${apiURL}/api/demande/${idDemande}/recepisse.pdf`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`${styles['btn']} ${styles['btn-primary']}`}
+                          style={{ marginBottom: '8px' }}
                         >
-                          <div className={styles.detenteurName}>{detenteur.nom_societeFR}</div>
-                          <div className={styles.detenteurDetails}>
-                            {detenteur.nom_societeAR && <span>{detenteur.nom_societeAR}</span>}
-                            {detenteur.telephone && <span>Tél: {detenteur.telephone}</span>}
-                            {detenteur.email && <span>Email: {detenteur.email}</span>}
+                          Télécharger le récépissé (PDF)
+                        </a>
+                      
+                    </div>
+              {missingSummary && missingSummary.requiredMissing.length > 0 && (
+                <div className={styles['missing-summary']}>
+                  <h3>Pièces manquantes du dossier</h3>
+                  <ul className={styles['missing-list']}>
+                    {missingSummary.requiredMissing.map((item, idx) => (
+                      <li key={idx} className={styles['missing-item']}>
+                        <strong>{item.nom_doc}</strong>
+                        {item.missing_action && (
+                          <span className={styles['missing-action']}>
+                            {item.missing_action === 'REJECT' ? ' — Rejet immédiat' : item.missing_action === 'BLOCK_NEXT' ? ' — Bloquant' : ' — Avertissement'}
+                          </span>
+                        )}
+                        {item.reject_message && <em className={styles['missing-reason']}> — {item.reject_message}</em>}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className={styles['proc-info']}>
+                    <div>Code demande: <strong>{codeDemande ?? idDemande}</strong></div>
+                    {procedureData?.demandes?.[0]?.typeProcedure?.libelle && (
+                      <div>Type procédure: <strong>{procedureData.demandes[0].typeProcedure.libelle}</strong></div>
+                    )}
+                    {procedureData?.demandes?.[0]?.typePermis?.lib_type && (
+                      <div>Type permis: <strong>{procedureData.demandes[0].typePermis.lib_type}</strong></div>
+                    )}
+                  </div>
+
+                  {deadlines?.miseEnDemeure && (
+                    <div className={styles['deadline-hint']}>
+                      Échéance de mise en demeure: {new Date(deadlines.miseEnDemeure).toLocaleDateString()} (30 jours)
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {isLoading && documents.length === 0 ? (
+                <div className={styles['loading-state']}>
+                  <div className={styles['spinner']}></div>
+                  <p>Chargement des documents...</p>
+                </div>
+              ) : (
+                <>
+                  <div className={styles['documents-overview']}>
+                    <div className={styles['overview-card']}>
+                      <h3 className={styles['overview-title']}>Documents requis</h3>
+                      <div className={styles['overview-value']}>{total}</div>
+                    </div>
+                    <button
+                      className={styles['check-all-btn']}
+                      onClick={() => setShowCheckAllModal(true)}
+                      disabled={statutProc === 'TERMINEE' || !statutProc || isNavigating}
+                    >
+                      <FiCheckCircle className={styles['btn-icon']} />
+                      Tout marquer comme présent
+                    </button>
+                  </div>
+
+                  <div className={styles['documents-list']}>
+                    {documents.map((doc) => {
+                      const status = statusMap[doc.id_doc];
+                      const fileUrl = fileUrls[doc.id_doc];
+                      const isRequired = doc.is_required;
+
+                      return (
+                        <div key={doc.id_doc} className={`${styles['document-card']} ${styles[status]} ${isRequired ? styles['required'] : ''}`}>
+                          <div className={styles['document-header']}>
+                            <h4 className={styles['document-title']}>
+                              {doc.nom_doc}
+                              {isRequired && <span className={styles['required-badge']}>Obligatoire</span>}
+                            </h4>
+                            <span className={styles['document-status']}>
+                              {status === "present" ? "Présent" : status === "manquant" ? "Manquant" : "EN_ATTENTE"}
+                            </span>
+                          </div>
+                          <div className={styles['document-details']}>
+                            <div className={styles['document-description']}>{doc.description}</div>
+                            <div className={styles['document-meta']}>
+                              <span className={styles['document-format']}>{doc.format}</span>
+                              <span className={styles['document-size']}>{doc.taille_doc}</span>
+                            </div>
+                            {fileUrl && (
+                              <div className={styles['document-file']}>
+                                <a
+                                  href={fileUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={styles['file-link']}
+                                >
+                                  Voir le fichier joint
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                          <div className={styles['document-actions']}>
+                            <button
+                              disabled={statutProc === 'TERMINEE' || !statutProc || isNavigating}
+                              className={`${styles['status-btn']} ${status === "present" ? styles['active'] : ""}`}
+                              onClick={() => toggleStatus(doc.id_doc, "present")}
+                            >
+                              <FiCheck className={styles['btn-icon']} />
+                              Présent
+                            </button>
+                            <button
+                              disabled={statutProc === 'TERMINEE' || !statutProc || isNavigating}
+                              className={`${styles['status-btn']} ${status === "manquant" ? styles['active'] : ""}`}
+                              onClick={() => toggleStatus(doc.id_doc, "manquant")}
+                            >
+                              <FiX className={styles['btn-icon']} />
+                              Manquant
+                            </button>
+                            <div className={styles['upload-section']}>
+                              <label
+                                htmlFor={`file-upload-${doc.id_doc}`}
+                                className={`${styles['upload-btn']} ${styles['btn-outline']} ${statutProc === 'TERMINEE' || !statutProc || isNavigating ? styles['disabled'] : ''}`}
+                              >
+                                <FiUpload className={styles['btn-icon']} />
+                                {fileUrl ? "Modifier" : "Upload"}
+                              </label>
+                            </div>
+
+                            {doc.nom_doc === "Cahier des charges renseigné" && (
+                              <button
+                                className={styles['cahier-btn']}
+                                onClick={() => handleOpenCahierForm(doc)}
+                                disabled={isNavigating}
+                              >
+                                Remplir cahier de charge
+                              </button>
+                            )}
                           </div>
                         </div>
-                      ))}
+                      );
+                    })}
+                  </div>
+
+                  <div className={styles['progress-section']}>
+                    <h3 className={styles['section-title']}>État d'avancement</h3>
+
+                    <div className={styles['stats-grid']}>
+                      <div className={styles['stat-card']}>
+                        <div className={styles['stat-value']}>{total}</div>
+                        <div className={styles['stat-label']}>Total</div>
+                      </div>
+                      <div className={`${styles['stat-card']} ${styles['present']}`}>
+                        <div className={styles['stat-value']}>{presents}</div>
+                        <div className={styles['stat-label']}>Présents</div>
+                      </div>
+                      <div className={`${styles['stat-card']} ${styles['missing']}`}>
+                        <div className={styles['stat-value']}>{manquants}</div>
+                        <div className={styles['stat-label']}>Manquants</div>
+                      </div>
                     </div>
-                  )}
-                  
-                  {showDetenteurDropdown && searchQuery.length >= 2 && detenteurOptions.length === 0 && !isSearching && (
-                    <div className={styles.dropdown}>
-                      <div className={styles.noResults}>Aucun détenteur trouvé</div>
+
+                    <div className={styles['completion-bar']}>
+                      <div className={styles['completion-track']}>
+                        <div
+                          className={styles['completion-progress']}
+                          style={{ width: `${((presents / total) * 100)}%` }}
+                        ></div>
+                      </div>
+                      <div className={styles['completion-text']}>
+                        {presents === total ? (
+                          <span className={styles['complete']}>Tous les documents sont présents!</span>
+                        ) : (
+                          <span className={styles['incomplete']}>
+                            {attente > 0 ? "Veuillez vérifier tous les documents" : "Documents en cours de vérification"}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  )}
+                  </div>
+                  {currentDossier && (
+                <div className={styles['dossier-status-section']}>
+                  <div className={styles['dossier-status']}>
+                    <span>Statut du dossier: </span>
+                    <strong className={
+                      currentDossier.statut_dossier === 'complet'
+                        ? styles['status-complete']
+                        : styles['status-incomplete']
+                    }>
+                      {currentDossier.statut_dossier === 'complet' ? 'Complet' : 'Incomplet'}
+                    </strong>
+                  </div>
+
+                  <div className={styles['demande-actions']}>
+                    <div className={styles['reject-section']}>
+                      <input
+                        disabled={statutProc === 'TERMINEE'}
+                        type="text"
+                        value={rejectionReason}
+                        onChange={(e) => setRejectionReason(e.target.value)}
+                        placeholder="Motif de rejet"
+                        className={styles['reject-input']}
+                      />
+                      <button
+                        className={styles['reject-btn']}
+                        onClick={rejectDemande}
+                        disabled={statutProc === 'TERMINEE' || !statutProc || isNavigating}
+                      >
+                        Rejeter la demande
+                      </button>
+                    </div>
+                    <button
+                      className={styles['approve-btn']}
+                      onClick={approveDemande}
+                      disabled={statutProc === 'TERMINEE' || !statutProc || isNavigating || hasBlockingMissingDocs}
+                    >
+                      Demande Acceptée
+                    </button>
+                  </div>
                 </div>
-              </div>
-              
-              {detenteurId && (
-                <button
-                  className={styles.clearButton}
-                  onClick={() => {
-                    setSearchQuery('');
-                    setDetenteurId(null);
-                    setFormData(initialData);
-                    setDisabledSections({
-                      infos: false,
-                      repLegal: false,
-                      rcDetails: false,
-                      actionnaires: false,
-                    });
-                  }}
-                >
-                  <FiX /> Effacer la sélection
-                </button>
+                
+              )}
+                </>
               )}
 
-              {accordions.map(({ id, title, color }) => (
-                <div
-                  className={`${styles.accordion} ${openSection === id ? styles.active : ''}`}
-                  key={id}
+              <div className={styles['navigation-buttons']}>
+                <button
+                  className={`${styles['btn']} ${styles['btn-outline']}`}
+                  onClick={handleBack}
+                  disabled={isLoading || isSubmitting || statutProc === 'TERMINEE' || isNavigating}
                 >
-                  <div
-                    className={`${styles.accordionHeader} ${styles[color]}`}
-                    onClick={() => toggle(id)}
-                  >
-                    <span>{title}</span>
-                    <span className={styles.accordionIcon}>{openSection === id ? '⏶' : '⏷'}</span>
-                  </div>
-
-          {openSection === id && (
-            <div className={styles.accordionBody}>
-              {id === 'infos' && (
-                <>
-                  <InfosGenerales
-                    data={formData.infos}
-                    onChange={handleInfosChange}
-                    statutsJuridiques={statutsJuridiques}
-                    paysOptions={paysOptions}
-                    nationalitesOptions={nationalitesOptions}
-                    disabled={disabledSections.infos && !isModifying.infos}
-                  />
-                          <div className={styles.sectionButtons}>
-                            {(!disabledSections.infos || isModifying.infos) ? (
-                              <button
-                                className={styles.btnSave}
-                                onClick={() => handleSaveSection('infos')}
-                                disabled={isSaving.infos || statutProc === 'TERMINEE' || !statutProc}
-                              >
-                                {isSaving.infos ? (
-                                  <>
-                                    <FiLoader className={styles.spinner} /> Sauvegarde...
-                                  </>
-                                ) : (
-                                  <>
-                                    <BsSave /> Sauvegarder
-                                  </>
-                                )}
-                              </button>
-                            ) : (
-                              <button
-                                className={styles.btnModify}
-                                disabled={statutProc === 'TERMINEE' || !statutProc}
-                                onClick={() => handleModifySection('infos')}
-                              >
-                                <FiEdit /> Modifier
-                              </button>
-                            )}
-                          </div>
-                        </>
-                      )}
-
-                      {id === 'repLegal' && (
-                        <>
-                      <RepresentantLegal
-                        data={formData.repLegal}
-                        onChange={handleRepLegalChange}
-                        paysOptions={paysOptions}
-                        nationalitesOptions={nationalitesOptions}
-                        disabled={disabledSections.repLegal && !isModifying.repLegal}
-                      />
-                          <div className={styles.sectionButtons}>
-                            {(!disabledSections.repLegal || isModifying.repLegal) ? (
-                              <button
-                                className={styles.btnSave}
-                                onClick={() => handleSaveSection('repLegal')}
-                                disabled={isSaving.repLegal || statutProc === 'TERMINEE' || !statutProc}
-                              >
-                                {isSaving.repLegal ? (
-                                  <>
-                                    <FiLoader className={styles.spinner} /> Sauvegarde...
-                                  </>
-                                ) : (
-                                  <>
-                                    <BsSave /> Sauvegarder
-                                  </>
-                                )}
-                              </button>
-                            ) : (
-                              <button
-                                className={styles.btnModify}
-                                disabled={statutProc === 'TERMINEE' || !statutProc}
-                                onClick={() => handleModifySection('repLegal')}
-                              >
-                                <FiEdit /> Modifier
-                              </button>
-                            )}
-                          </div>
-                        </>
-                      )}
-
-                      {id === 'rcDetails' && (
-                        <>
-                          <DetailsRC
-                            data={formData.rcDetails}
-                            onChange={handleRcDetailsChange}
-                            disabled={disabledSections.rcDetails && !isModifying.rcDetails}
-                          />
-                          <div className={styles.sectionButtons}>
-                            {(!disabledSections.rcDetails || isModifying.rcDetails) ? (
-                              <button
-                                className={styles.btnSave}
-                                onClick={() => handleSaveSection('rcDetails')}
-                                disabled={isSaving.rcDetails || statutProc === 'TERMINEE' || !statutProc}
-                              >
-                                {isSaving.rcDetails ? (
-                                  <>
-                                    <FiLoader className={styles.spinner} /> Sauvegarde...
-                                  </>
-                                ) : (
-                                  <>
-                                    <BsSave /> Sauvegarder
-                                  </>
-                                )}
-                              </button>
-                            ) : (
-                              <button
-                                className={styles.btnModify}
-                                disabled={statutProc === 'TERMINEE' || !statutProc}
-                                onClick={() => handleModifySection('rcDetails')}
-                              >
-                                <FiEdit /> Modifier
-                              </button>
-                            )}
-                          </div>
-                        </>
-                      )}
-
-                      {id === 'actionnaires' && (
-                        <>
-                          <Actionnaires
-                            data={formData.actionnaires}
-                            onChange={handleActionnairesChange}
-                            paysOptions={paysOptions}
-                            nationalitesOptions={nationalitesOptions}
-                            disabled={disabledSections.actionnaires && !isModifying.actionnaires}
-                          />
-                          <div className={styles.sectionButtons}>
-                            {formData.actionnaires.length > 0 && (
-                              <>
-                                {(!disabledSections.actionnaires || isModifying.actionnaires) ? (
-                                  <button
-                                    className={styles.btnSave}
-                                    onClick={() => handleSaveSection('actionnaires')}
-                                    disabled={isSaving.actionnaires || statutProc === 'TERMINEE' || !statutProc}
-                                  >
-                                    {isSaving.actionnaires ? (
-                                      <>
-                                        <FiLoader className={styles.spinner} /> Sauvegarde...
-                                      </>
-                                    ) : (
-                                      <>
-                                        <BsSave /> Sauvegarder
-                                      </>
-                                    )}
-                                  </button>
-                                ) : (
-                                  <button
-                                    className={styles.btnModify}
-                                    disabled={statutProc === 'TERMINEE' || !statutProc}
-                                    onClick={() => handleModifySection('actionnaires')}
-                                  >
-                                    <FiEdit /> Modifier
-                                  </button>
-                                )}
-
-                                <button
-                                  className={styles.btnDelete}
-                                  disabled={statutProc === 'TERMINEE' || !statutProc}
-                                  onClick={handleDeleteActionnaires}
-                                  style={{ marginLeft: '10px', backgroundColor: '#dc3545', color: '#fff' }}
-                                >
-                                  <FiX /> Supprimer les actionnaires
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))}
-
-              <div className={styles.stepButtons}>
-                <button className={styles.btnPrevious} onClick={handlePrevious}>
-                  <FiChevronLeft className={styles.btnIcon} /> Précédente
+                  <FiChevronLeft className={styles['btn-icon']} />
+                  Précédent
                 </button>
 
                 <button
-                  className={styles.btnSave}
+                  className={styles['btnSave']}
                   onClick={handleSaveEtape}
-                  disabled={savingEtape || statutProc === 'TERMINEE' || !statutProc}
+                  disabled={savingEtape || isSubmitting || statutProc === 'TERMINEE' }
                 >
-                  <BsSave className={styles.btnIcon} /> {savingEtape ? 'Sauvegarde en cours...' : "Sauvegarder l'étape"}
+                  <BsSave className={styles['btnIcon']} />
+                  {savingEtape ? "Sauvegarde en cours..." : "Sauvegarder l'étape"}
                 </button>
-                <button className={styles.btnNext} onClick={handleNext}>
-                  Suivante <FiChevronRight className={styles.btnIcon} />
+
+                <button
+                  className={`${styles['btn']} ${styles['btn-primary']}`}
+                  onClick={handleNext}
+                  disabled={isLoading || isSubmitting || isNavigating || hasRequiredMissingClient}
+                >
+                  {isSubmitting ? (
+                    <span className={styles['btn-loading']}>
+                      <span className={styles['spinner-small']}></span>
+                      {isSubmitting ? "Soumission..." : "Vérification..."}
+                    </span>
+                  ) : (
+                    <>
+                      Suivant
+                      <FiChevronRight className={styles['btn-icon']} />
+                    </>
+                  )}
                 </button>
               </div>
-              <div className={styles.etapeSaveSection}>
-                {etapeMessage && (
-                  <div className={styles.etapeMessage}>
-                    {etapeMessage}
-                  </div>
-                )}
-              </div>
+
+              {etapeMessage && (
+                <div className={styles['etapeMessage']}>
+                  {etapeMessage}
+                </div>
+              )}
             </div>
+            {showCahierForm && <CahierFormModal />}
+            {showCheckAllModal && <CheckAllModal />}
+            {letterPreview && <LetterPreviewModal />}
           </div>
-
-          {toastMessage && (
-            <div className={`${styles.toast} ${toastType === 'success' ? styles.toastSuccess : styles.toastError}`}>
-              {toastMessage}
-              <button onClick={() => setToastMessage(null)} className={styles.toastClose}>×</button>
-            </div>
-          )}
-
-          {showTauxModal && (
-            <TauxWarningModal
-              total={tauxSummary.total}
-              tauxRep={tauxSummary.rep}
-              tauxActionnaires={tauxSummary.actionnaires}
-              onClose={() => setShowTauxModal(false)}
-            />
-          )}
         </main>
       </div>
     </div>
   );
 }
-
-
-

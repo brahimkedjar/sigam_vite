@@ -19,7 +19,7 @@
 .panelContainer {
   display: flex;
   flex-direction: column;
-  max-width: 1200px;
+  max-width: 95%;
   margin: 20px auto;
   background: #ffffff;
   border-radius: 8px;

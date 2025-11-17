@@ -31,6 +31,17 @@ export class DocumentsController {
     );
   }
 
+  @Put('demande/:id_demande/recevabilite')
+  async updateDemandeRecevabilite(
+    @Param('id_demande', ParseIntPipe) id_demande: number,
+    @Body() body: { dossier_recevable: boolean },
+  ) {
+    return this.service.updateDemandeRecevabilite(
+      id_demande,
+      body.dossier_recevable,
+    );
+  }
+
  @Put('demande/:id_demande/status')
 async updateDemandeStatus(
   @Param('id_demande', ParseIntPipe) id_demande: number,

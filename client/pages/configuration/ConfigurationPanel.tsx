@@ -6,6 +6,8 @@ import TaxeSuperficiaireDroit from './TaxeSuperficiaireDroit';
 import Substances from './Substances';
 import StatutsJuridiques from './StatutsJuridiques';
 import AdminLocations from './AdminLocations';
+import PhasesEtapes from './PhasesEtapes';
+import TypePermisProcedures from './TypePermisProcedures';
 import Navbar from '../navbar/Navbar';
 import Sidebar from '../sidebar/Sidebar';
 import { useViewNavigator } from '@/src/hooks/useViewNavigator';
@@ -22,6 +24,8 @@ const tabs: Tab[] = [
   { id: 'zones-exclusion', label: 'Zones d\'exclusion' },
   { id: 'loc-adm', label: 'Locations' },
   { id: 'statuts-juridiques', label: 'Statuts juridiques' },
+  { id: 'phases-etapes', label: 'Phases / étapes' },
+  { id: 'permis-procedures', label: 'Procédures par permis' },
 ];
 
 const ConfigurationPanel: React.FC = () => {
@@ -42,6 +46,10 @@ const ConfigurationPanel: React.FC = () => {
         return <div className={styles.contentPlaceholder}><AdminLocations/></div>;
       case 'statuts-juridiques':
         return <div className={styles.contentPlaceholder}><StatutsJuridiques/></div>;
+      case 'phases-etapes':
+        return <div className={styles.contentPlaceholder}><PhasesEtapes/></div>;
+      case 'permis-procedures':
+        return <div className={styles.contentPlaceholder}><TypePermisProcedures/></div>;
       default:
         return null;
     }

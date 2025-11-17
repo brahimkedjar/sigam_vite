@@ -414,7 +414,6 @@ export default function DemandeStart() {
           id_typepermis: permis.id,
           objet_demande: 'Instruction initialisee',
           date_demande: dateSoumission.toISOString(),
-          date_instruction: new Date().toISOString(),
           ...(id_detenteur ? { id_detenteur } : {}),
           ...(id_sourceProc ? { id_sourceProc } : {}),
           ...(designation_number ? { designation_number } : {}),

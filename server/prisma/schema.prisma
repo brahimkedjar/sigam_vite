@@ -550,6 +550,7 @@ model EtapeProc {
   duree_etape Int?     // en jours
   ordre_etape Int      // ordre a l'interieur d'une phase
   id_phase    Int
+  page_route  String?  // Chemin de la page front associée (ex: "demande/step1/page1")
 
   phase Phase @relation(fields: [id_phase], references: [id_phase])
   procedureEtapes ProcedureEtape[] // status of etapes in procedures
@@ -693,6 +694,9 @@ model Demande {
     Nom_Prenom_Resp_Enregist String?
     statut_demande           String     //StatutDemande?
     PP                     Boolean?
+    dossier_recevable        Boolean?
+    dossier_complet          Boolean?
+    duree_instruction        Int?
     wilaya          Wilaya?                  @relation(fields: [id_wilaya], references: [id_wilaya])
     daira           Daira?                   @relation(fields: [id_daira], references: [id_daira])
     commune         Commune?                 @relation(fields: [id_commune], references: [id_commune])

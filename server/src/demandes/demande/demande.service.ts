@@ -33,13 +33,12 @@ export class DemandeService {
 
 
   async createDemande(data: {
-  id_typepermis: number;
-  objet_demande: string;
-  code_demande?: string;
-  id_detenteur?: number;
-  date_demande: Date;
-  date_instruction: Date;
-}) {
+    id_typepermis: number;
+    objet_demande: string;
+    code_demande?: string;
+    id_detenteur?: number;
+    date_demande: Date;
+  }) {
   // Get type permis details
   const typePermis = await this.prisma.typePermis.findUnique({
     where: { id: data.id_typepermis }
@@ -91,11 +90,11 @@ const finalCode =
   const demande = await this.prisma.demande.create({
     data: {
       id_proc: createdProc.id_proc,
-      id_typeProc: typeProcedure.id,  
+      id_typeProc: typeProcedure.id,
       code_demande: finalCode,
       id_typePermis: data.id_typepermis,
       date_demande: data.date_demande,
-      date_instruction: data.date_instruction,
+      duree_instruction: 10,
       statut_demande: StatutDemande.EN_COURS,
       ...(data.id_detenteur
         ? {
@@ -109,8 +108,8 @@ const finalCode =
         : {}),
     },
     include: {
-      procedure: true,  
-      typeProcedure: true, 
+      procedure: true,
+      typeProcedure: true,
       detenteurdemande: { include: { detenteur: true } },
     },
   });
