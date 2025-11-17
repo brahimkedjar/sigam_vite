@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import * as csv from 'csv-parser';
+import csv = require('csv-parser');
 import {  PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -15,7 +15,7 @@ type WilayaCSV = {
 
 export async function main() {
   const wilayaData: any[] = [];
-  const csvFilePath = "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_wilaya.csv";
+  const csvFilePath = "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_wilaya.csv";
 
   // Check if file exists before trying to read it
   if (!fs.existsSync(csvFilePath)) {

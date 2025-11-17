@@ -31,7 +31,6 @@ export class TransfertService {
         permisProcedure: {
           include: {
             procedure: {
-              orderBy: { date_debut_proc: 'desc' },
               include: {
                 demandes: {
                   orderBy: { date_demande: 'desc' },
@@ -416,7 +415,6 @@ export class TransfertService {
     });
   }
 }
-
 
 
 

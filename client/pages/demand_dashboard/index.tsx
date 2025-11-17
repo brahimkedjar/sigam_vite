@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState } from 'react';
 import Head from 'next/head';
 import axios from 'axios';
 import styles from './demandes.module.css';
@@ -48,7 +48,7 @@ type Stats = {
   avgInstructionDays: number | null;
 };
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:3001';
 
 export default function DemandesPage() {
   const [data, setData] = useState<ApiList | null>(null);
@@ -219,7 +219,7 @@ export default function DemandesPage() {
               <select value={statut} onChange={e => { setPage(1); setStatut(e.target.value); }}>
                 <option value="">Tous statuts</option>
                 <option value="ACCEPTEE">Acceptée</option>
-                <option value="rejetée">Rejetée</option>
+                <option value="rejetÃ©e">Rejetée</option>
                 <option value="EN_COURS">En cours</option>
               </select>
             </div>
@@ -237,7 +237,7 @@ export default function DemandesPage() {
             </div>
             
             <div className={styles.filterGroup}>
-              <label>ID Demande</label> {/* Changed from Type Procédure to ID Demande */}
+              <label>ID Demande</label> {/* Changed from Type ProcÃ©dure to ID Demande */}
               <input type="number" min={1} placeholder="ID Demande"
                 value={demandeId} onChange={e => { setPage(1); setDemandeId(e.target.value); }} />
             </div>
@@ -275,16 +275,16 @@ export default function DemandesPage() {
                 <thead>
                   <tr>
                     <th onClick={() => handleSort('id_demande')}>
-                      ID {sortBy === 'id_demande' && (sortOrder === 'asc' ? '↑' : '↓')}
+                      ID {sortBy === 'id_demande' && (sortOrder === 'asc' ? 'â†‘' : 'â†“')}
                     </th>
                     <th onClick={() => handleSort('code_demande')}>
-                      Code {sortBy === 'code_demande' && (sortOrder === 'asc' ? '↑' : '↓')}
+                      Code {sortBy === 'code_demande' && (sortOrder === 'asc' ? 'â†‘' : 'â†“')}
                     </th>
                     <th onClick={() => handleSort('date_demande')}>
-                      Date {sortBy === 'date_demande' && (sortOrder === 'asc' ? '↑' : '↓')}
+                      Date {sortBy === 'date_demande' && (sortOrder === 'asc' ? 'â†‘' : 'â†“')}
                     </th>
                     <th onClick={() => handleSort('statut_demande')}>
-                      Statut {sortBy === 'statut_demande' && (sortOrder === 'asc' ? '↑' : '↓')}
+                      Statut {sortBy === 'statut_demande' && (sortOrder === 'asc' ? 'â†‘' : 'â†“')}
                     </th>
                     <th>Projet</th>
                     <th>Localisation</th>
@@ -292,10 +292,10 @@ export default function DemandesPage() {
                     <th>Détenteur</th>
                     <th>Expert</th>
                     <th onClick={() => handleSort('date_instruction')}>
-                      Instr. {sortBy === 'date_instruction' && (sortOrder === 'asc' ? '↑' : '↓')}
+                      Instr. {sortBy === 'date_instruction' && (sortOrder === 'asc' ? 'â†‘' : 'â†“')}
                     </th>
                     <th onClick={() => handleSort('date_fin_instruction')}>
-                      Fin instr. {sortBy === 'date_fin_instruction' && (sortOrder === 'asc' ? '↑' : '↓')}
+                      Fin instr. {sortBy === 'date_fin_instruction' && (sortOrder === 'asc' ? 'â†‘' : 'â†“')}
                     </th>
                     <th>Budget</th>
                     <th>Superficie</th>
@@ -315,7 +315,7 @@ export default function DemandesPage() {
                     <tr>
                       <td colSpan={14} className={styles.emptyRow}>
                         <div className={styles.emptyState}>
-                          <div className={styles.emptyIcon}>📭</div>
+                          <div className={styles.emptyIcon}>ðŸ“­</div>
                           <h3>Aucune donnée trouvée</h3>
                           <p>Essayez de modifier vos filtres ou votre recherche</p>
                         </div>
@@ -342,7 +342,7 @@ export default function DemandesPage() {
                       <td className={styles.wrapCell}>
                         <div className={styles.stack}>
                           <span>{d.typePermis?.libelle ?? '—'}</span>
-                          <span className={styles.dim}>{d.typeProcedure?.libelle ?? '—'}</span>
+                          <span className={styles.dim}>{d.typeProcedure?.libelle ?? 'â€”'}</span>
                         </div>
                       </td>
                       <td className={styles.clip} title={d.detenteur?.nom_societeFR || ''}>{d.detenteur?.nom_societeFR ?? '—'}</td>
@@ -378,7 +378,7 @@ export default function DemandesPage() {
                 disabled={(data?.page ?? 1) >= (data?.pages ?? 1)}
                 className={styles.paginationBtn}
               >
-                Suivant →
+                Suivant â†’
               </button>
             </div>
           </div>
@@ -390,3 +390,5 @@ export default function DemandesPage() {
     </>
   );
 }
+
+

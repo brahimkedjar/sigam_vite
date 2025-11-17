@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import * as csv from 'csv-parser';
+import csv = require('csv-parser');
 import { StatutJuridique, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -14,7 +14,7 @@ type StatutCSV = {
 export async function main() {
   const statutData: any[] = [];
   const csvFilePath =
-    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_statut.csv";
+    "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_statut.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(

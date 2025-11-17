@@ -40,6 +40,18 @@ interface PriorTitre {
 }
 
 const apiBase = process.env.NEXT_PUBLIC_API_URL ?? '';
+const ALLOWED_PERMIS_CODES = new Set([
+  'APM',
+  'TEM',
+  'TEC',
+  'AAM',
+  'AAC',
+  'TXM',
+  'TXC',
+  'AXW',
+  'AXH',
+  'ARO',
+]);
 
 export default function DemandeStart() {
   const router = useRouter();
@@ -183,7 +195,11 @@ export default function DemandeStart() {
         signal: controller.signal,
       })
       .then((response) => {
-        setPermisOptions(response.data ?? []);
+        const list = response.data ?? [];
+        const filtered = list.filter((permis) =>
+          ALLOWED_PERMIS_CODES.has((permis.code_type || '').trim().toUpperCase()),
+        );
+        setPermisOptions(filtered);
       })
       .catch((error) => {
         if (axios.isCancel(error)) {
@@ -274,7 +290,7 @@ export default function DemandeStart() {
       const apms = list.filter((t) => (t.type_code || '').toUpperCase() === 'APM');
       setApmTitres(apms);
     } catch (err) {
-      console.error('Erreur chargement titres antÃ©rieurs', err);
+      console.error('Erreur chargement titres antérieurs', err);
       setPriorError("Impossible de charger les titres de prospection / exploration.");
     } finally {
       setPriorLoading(false);
@@ -311,7 +327,7 @@ export default function DemandeStart() {
     const permis = effectivePermis;
 
     if (!permis || !dateSoumission) {
-      toast.warning('Selectionnez un type de permis et une date de soumission.');
+      toast.warning('Sélectionnez un type de permis et une date de soumission.');
       return;
     }
 
@@ -336,7 +352,7 @@ export default function DemandeStart() {
           detIdStr = String(selectedPrior.detenteur.id_detenteur);
         }
         if (!detIdStr) {
-          toast.warning('Veuillez sÃ©lectionner le titre antÃ©rieur (APM/TEM/TEC).');
+          toast.warning('Veuillez sélectionner le titre antérieur (APM/TEM/TEC).');
           setSubmitting(false);
           // re-open modal to force selection
           await openPriorTitresModal();
@@ -445,7 +461,7 @@ export default function DemandeStart() {
               { withCredentials: true },
             );
           } catch (e) {
-            console.warn('Mise Ã  jour de la commune Ã©chouÃ©e', e);
+            console.warn('Mise à jour de la commune échouée', e);
           }
         }
 
@@ -491,7 +507,7 @@ export default function DemandeStart() {
               }, { withCredentials: true });
             }
           } catch (err) {
-            console.warn('Copie du pÃ©rimÃ¨tre Ã©chouÃ©e', err);
+            console.warn('Copie du périmètre échouée', err);
           }
         }
       }
@@ -595,7 +611,7 @@ export default function DemandeStart() {
               value={selectedPermisId === '' ? '' : String(selectedPermisId)}
               disabled={optionsLoading}
             >
-              <option value="">-- Selectionnez --</option>
+              <option value="">-- Sélectionnez --</option>
               {permisOptions.map((permis) => (
                 <option key={permis.id} value={permis.id}>
                   {permis.lib_type} ({permis.code_type}) - {permis.regime}
@@ -662,9 +678,9 @@ export default function DemandeStart() {
               <div className={styles.modalOverlay}>
                 <div className={styles.modalContent}>
                   <div className={styles.modalHeader}>
-                    <h3>SÃ©lectionnez le titre antÃ©rieur</h3>
+                    <h3>Sélectionnez le titre antérieur</h3>
                     <button className={styles.modalClose} onClick={() => setShowPriorModal(false)}>
-                      Ã—
+                      ×
                     </button>
                   </div>
                   <div className={styles.modalBody}>
@@ -680,7 +696,7 @@ export default function DemandeStart() {
                           onChange={(e) => setPriorSearch(e.target.value)} />
                       </div><div className={styles.titreList}>
                           {filteredPriorTitres.length === 0 && (
-                            <div>Aucun titre de prospection/exploration trouvÃ©.</div>
+                          <div>Aucun titre de prospection/exploration trouvé.</div>
                           )}
                           {visiblePriorTitres.map((t) => (
                             <label key={t.id} className={styles.titreItem}>
@@ -695,7 +711,7 @@ export default function DemandeStart() {
                                   <strong>{t.code_permis}</strong> {t.type_code ? `(${t.type_code})` : ''}
                                 </div>
                                 <div className={styles.titreDetenteur}>
-                                  DÃ©tenteur: {t.detenteur?.nom || 'â€”'}
+                                  Détenteur: {t.detenteur?.nom || '—'}
                                 </div>
                               </div>
                             </label>
@@ -725,7 +741,7 @@ export default function DemandeStart() {
                                       <strong>{t.code_permis}</strong> {t.type_code ? `(${t.type_code})` : ''}
                                     </div>
                                     <div className={styles.titreDetenteur}>
-                                      DÃ©tenteur: {t.detenteur?.nom || 'N/A'} {t.codeNumber ? `â€¢ ${t.codeNumber}` : ''}
+                                      Détenteur: {t.detenteur?.nom || 'N/A'} {t.codeNumber ? `• ${t.codeNumber}` : ''}
                                     </div>
                                   </div>
                                 </label>

@@ -6,7 +6,10 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class GeneratePermisService {
   constructor(private prisma: PrismaService) {}
 
-  async generatePermisFromDemande(demandeId: number) {
+  async generatePermisFromDemande(
+    demandeId: number,
+    options?: { codeNumber?: number | string }
+  ) {
   const demande = await this.prisma.demande.findUnique({
     where: { id_demande: demandeId },
     include: {
@@ -15,9 +18,7 @@ export class GeneratePermisService {
       daira: true,
       commune: true, // Include commune
       procedure: true,
-      detenteurdemande: {
-        include: { detenteur: true },
-      },
+      detenteurdemande: { include: { detenteur: true }, take: 1 }
     }
   });
 
@@ -30,22 +31,17 @@ export class GeneratePermisService {
   if (!demande.procedure) {
     throw new Error("Procedure missing");
   }
-  const detenteur = demande.detenteurdemande?.[0]?.detenteur;
-  if (!detenteur) {
+  const detenteurRel = demande.detenteurdemande?.[0]?.detenteur || null;
+  if (!detenteurRel) {
     throw new Error("Detenteur missing");
   }
   if (!demande.commune) {
     throw new Error("Commune missing");
   }
 
-  const initialDuration = demande.typePermis.duree_initiale;
-  if (initialDuration == null) {
-    throw new Error("TypePermis initial duration missing");
-  }
-
   const expirationDate = new Date();
   expirationDate.setFullYear(
-    expirationDate.getFullYear() + initialDuration
+    expirationDate.getFullYear() + demande.typePermis.duree_initiale!
   );
 
   // Resolve default statut if available (e.g., "En vigueur"). If not found, leave unset.
@@ -54,22 +50,46 @@ export class GeneratePermisService {
     select: { id: true },
   });
 
+  // Generate code_permis as "<TYPE> <N>"
+  const codeType = demande.typePermis.code_type;
+  let code_permis: string;
+
+  // If caller provided a fixed designation number, use it directly
+  if (options?.codeNumber !== undefined && options?.codeNumber !== null && `${options.codeNumber}`.trim() !== '') {
+    const fixedNum = `${options.codeNumber}`.trim();
+    code_permis = `${codeType} ${fixedNum}`;
+
+    // Ensure we don't duplicate an existing permis code
+    const exists = await this.prisma.permis.findFirst({ where: { code_permis } });
+    if (exists) {
+      throw new Error(`Un permis avec le code ${code_permis} existe déjà.`);
+    }
+  } else {
+    // Fallback: use global sequential count across permis
+    let pSeq = await this.prisma.permis.count();
+    do {
+      pSeq += 1;
+      code_permis = `${codeType} ${pSeq}`;
+    } while (await this.prisma.permis.findFirst({ where: { code_permis } }));
+  }
+
   const newPermis = await this.prisma.permis.create({
     data: {
       id_typePermis: demande.typePermis.id,
       id_commune: demande.commune.id_commune, // Changed to use commune ID
-      id_detenteur: detenteur.id_detenteur,
+      id_detenteur: detenteurRel.id_detenteur,
       id_statut: defaultStatut?.id ?? undefined,
-      code_permis: demande.code_demande || null,
+      code_permis,
       date_adjudication: null,
       date_octroi: new Date(),
       date_expiration: expirationDate,
-      duree_validite: initialDuration,
+      duree_validite: demande.typePermis.duree_initiale!,
       lieu_ditFR: demande.lieu_ditFR || "",
       lieu_ditAR: demande.lieu_dit_ar || "",
       superficie: demande.superficie || 0,
       utilisation: "",
       statut_juridique_terrain: demande.statut_juridique_terrain || "",
+      // Source fields not on Demande; leave null or map from specific sub-procedure if needed
       duree_prevue_travaux: null,
       date_demarrage_travaux: null,
       statut_activites: demande.procedure.statut_proc || "",
@@ -83,11 +103,12 @@ export class GeneratePermisService {
     data: { permisId: newPermis.id },
   });
 
-  if (demande.procedure?.id_proc) {
+  // Link permis to procedure via join table
+  if (demande.id_proc) {
     await this.prisma.permisProcedure.create({
       data: {
         id_permis: newPermis.id,
-        id_proc: demande.procedure.id_proc,
+        id_proc: demande.id_proc,
       },
     });
   }
@@ -103,9 +124,7 @@ export class GeneratePermisService {
         wilaya: true,
         daira: true,
         commune: true,
-        detenteurdemande: {
-          include: { detenteur: true },
-        },
+        detenteurdemande: { include: { detenteur: true }, take: 1 },
         procedure: true
       }
     });

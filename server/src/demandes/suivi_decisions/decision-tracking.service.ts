@@ -1,4 +1,4 @@
-// decision-tracking/decision-tracking.service.ts
+﻿// decision-tracking/decision-tracking.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -14,8 +14,8 @@ export class DecisionTrackingService {
     include: {
       demandes: {
         include: {
-          detenteur: true,
-          typeProcedure: true, // 🔑 get TypeProcedure from demande
+          detenteurdemande: { take: 1, include: { detenteur: true } },
+          typeProcedure: true, 
         },
         take: 1, // only first demande
       },
@@ -58,11 +58,11 @@ export class DecisionTrackingService {
     include: {
       demandes: {
         include: {
-          detenteur: true,
+          detenteurdemande: { take: 1, include: { detenteur: true } },
           typePermis: true,
-          typeProcedure: true, // 🔑 moved here
+          typeProcedure: true, 
         },
-        take: 1, // you’re taking only the first demande
+        take: 1, 
       },
       seance: {
         include: {
@@ -73,11 +73,7 @@ export class DecisionTrackingService {
           },
         },
       },
-      permis: {
-        include: {
-          detenteur: true,
-        },
-      },
+      permisProcedure: { include: { permis: { include: { detenteur: true } } } },
     },
   });
 }

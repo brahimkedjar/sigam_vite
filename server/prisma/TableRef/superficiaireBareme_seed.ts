@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import * as csv from 'csv-parser';
+import csv = require('csv-parser');
 import { SuperficiaireBareme, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -16,7 +16,7 @@ type SuperficiaireCSV = {
 export async function main() {
   const superficiaireData: any[] = [];
   const csvFilePath =
-    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_superficiaireBareme.csv";
+    "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_superficiaireBareme.csv";
 
   fs.createReadStream(csvFilePath)
         .pipe(

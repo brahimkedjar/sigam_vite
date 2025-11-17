@@ -47,16 +47,13 @@ async updateDetenteur(
   });
 }
 
-  // Demande Linking
+  // Demande Linking (uses detenteurDemande relation)
   @Put('demande/:id/link-detenteur')
   async linkDetenteurToDemande(
     @Param('id', ParseIntPipe) id_demande: number,
     @Body('id_detenteur') id_detenteur: number
   ) {
-    return this.prisma.demande.update({
-      where: { id_demande },
-      data: { id_detenteur }
-    });
+    return this.societeService.associateDetenteurWithDemande(id_demande, id_detenteur);
   }
 
   // Representant Legal Endpoints

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -13,7 +13,7 @@ export class DemandesDashboardService {
         }
       },
       include: {
-        detenteur: true,
+        detenteurdemande: { take: 1, include: { detenteur: true } },
         procedure: true
       },
       orderBy: {

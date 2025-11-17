@@ -75,7 +75,7 @@ import { InscriptionProvisoireModule } from './demandes/inscription_provisoire/i
       host: process.env.TYPEORM_HOST || process.env.PGHOST || 'localhost',
       port: parseInt(process.env.TYPEORM_PORT || process.env.PGPORT || '5432', 10),
       username: process.env.TYPEORM_USERNAME || process.env.PGUSER || 'postgres',
-      password: process.env.TYPEORM_PASSWORD || process.env.PGPASSWORD || 'ANAM2025',
+      password: process.env.TYPEORM_PASSWORD || process.env.PGPASSWORD || 'crb12345',
       database: process.env.TYPEORM_DATABASE || process.env.PGDATABASE || 'sigam',
       entities: [Notification, Expert],
       synchronize: false,

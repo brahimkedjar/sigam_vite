@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import * as csv from 'csv-parser';
+import csv = require('csv-parser');
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
@@ -15,7 +15,7 @@ type procedurePermisCSV = {
 export async function main() {
   const procedurePermisData: any[] = [];
   const csvFilePath =
-    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_procedurePermis.csv";
+    "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_procedurePermis.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(

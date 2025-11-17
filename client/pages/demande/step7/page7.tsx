@@ -21,7 +21,7 @@ interface Procedure1 {
   num_proc: string;
   id_seance?: number;
   demandes: Array<{
-    typeProcedure: { // ðŸ”‘ Moved typeProcedure to demande level
+    typeProcedure: { 
       libelle: string;
     };
     detenteur: {

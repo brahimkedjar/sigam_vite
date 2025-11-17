@@ -1,4 +1,4 @@
-// seances/seance.service.ts
+﻿// seances/seance.service.ts
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateSeanceDto } from './create-seance.dto';
@@ -131,10 +131,10 @@ async getAllProcedures(search?: string, page = 1, pageSize = 100) {
   ]);
 
   // Transform the data to match the expected format
-  const transformedData = procedures.map(procedure => ({
-    ...procedure,
-    typeProcedure: procedure.demandes[0]?.typeProcedure || null,
-    detenteur: procedure.demandes[0]?.detenteurdemande?.[0]?.detenteur || null
+  const transformedData = procedures.map((proc: any) => ({
+    ...proc,
+    typeProcedure: proc.demandes?.[0]?.typeProcedure || null,
+    detenteur: proc.demandes?.[0]?.detenteurdemande?.[0]?.detenteur || null
   }));
 
   return {
@@ -211,16 +211,8 @@ async getSeancesForMember(memberId: number) {
           num_proc: true,
           demandes: {
             select: {
-              detenteur: {
-                select: {
-                  nom_societeFR: true,
-                },
-              },
-              typeProcedure: {
-                select: {
-                  libelle: true, // 🔑 get typeProcedure via demande
-                },
-              },
+              detenteurdemande: { take: 1, include: { detenteur: { select: { nom_societeFR: true } } } },
+              typeProcedure: { select: { libelle: true } },
             },
           },
         },
@@ -257,7 +249,4 @@ async getSeancesWithDecisions() {
 
 
 }
-
-
-
 

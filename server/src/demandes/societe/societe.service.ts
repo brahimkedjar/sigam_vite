@@ -662,26 +662,23 @@ async getActionnaires(id_detenteur: number): Promise<any[]> {
 
 async associateDetenteurWithDemande(id_demande: number, id_detenteur: number): Promise<any> {
   // Verify both demande and detenteur exist
-  const demande = await this.prisma.demande.findUnique({
-    where: { id_demande }
-  });
-  
+  const demande = await this.prisma.demande.findUnique({ where: { id_demande } });
   if (!demande) {
     throw new HttpException('Demande not found', HttpStatus.NOT_FOUND);
   }
-  
-  const detenteur = await this.prisma.detenteurMorale.findUnique({
-    where: { id_detenteur }
-  });
-  
+  const detenteur = await this.prisma.detenteurMorale.findUnique({ where: { id_detenteur } });
   if (!detenteur) {
     throw new HttpException('Detenteur not found', HttpStatus.NOT_FOUND);
   }
-  
-  // Update the demande with the detenteur ID
-  return this.prisma.demande.update({
-    where: { id_demande },
-    data: { id_detenteur }
+
+  // Ensure only one primary detenteur per demande: remove existing links then create
+  await this.prisma.detenteurDemande.deleteMany({ where: { id_demande } });
+  return this.prisma.detenteurDemande.create({
+    data: {
+      id_demande,
+      id_detenteur,
+      role_detenteur: 'Titulaire',
+    },
   });
 }
 

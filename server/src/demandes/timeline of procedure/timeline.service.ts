@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
@@ -19,11 +19,10 @@ export class TimelineService {
           },
         },
       },
-      permis: true,
       demandes: {
         include: {
           typePermis: true,
-          typeProcedure: true, // 🔑 fetch typeProcedure here
+          typeProcedure: true, 
           dossiersFournis: true,
         },
       },
@@ -42,13 +41,13 @@ export class TimelineService {
     procedure: {
       id: procedure.id_proc,
       number: procedure.num_proc,
-      type: demandeType, // 🔑 now from demande.typeProcedure
-      startDate: procedure.date_debut_proc,
-      endDate: procedure.date_fin_proc,
+      type: demandeType, 
+      startDate: procedure.date_debut_proc || null,
+      endDate: procedure.date_fin_proc || null,
       status: procedure.statut_proc,
       totalDuration: this.calculateDuration(
-        procedure.date_debut_proc,
-        procedure.date_fin_proc
+        procedure.date_debut_proc || null,
+        procedure.date_fin_proc || null
       ),
     },
     steps: procedure.ProcedureEtape?.map((step) => ({
@@ -90,11 +89,11 @@ export class TimelineService {
 }
 
   private calculateDuration(
-    startDate: Date,
+    startDate?: Date | null,
     endDate?: Date | null,
     precise: boolean = false
   ): string | null {
-    if (!endDate) return null;
+    if (!startDate || !endDate) return null;
     
     const diffMs = endDate.getTime() - startDate.getTime();
     
@@ -148,3 +147,5 @@ export class TimelineService {
     }
   }
 }
+
+
