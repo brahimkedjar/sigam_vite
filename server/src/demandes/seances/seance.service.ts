@@ -94,20 +94,16 @@ async getAllProcedures(search?: string, page = 1, pageSize = 100) {
   if (search) {
     where.OR = [
       { num_proc: { contains: search, mode: 'insensitive' } },
-      { 
+      {
         demandes: {
           some: {
             OR: [
               {
-                detenteur: {
-                  nom_societeFR: { contains: search, mode: 'insensitive' }
+                detenteurdemande: {
+                  some: { detenteur: { nom_societeFR: { contains: search, mode: 'insensitive' } } }
                 }
               },
-              {
-                typeProcedure: {
-                  libelle: { contains: search, mode: 'insensitive' }
-                }
-              }
+              { typeProcedure: { libelle: { contains: search, mode: 'insensitive' } } }
             ]
           }
         }
@@ -121,14 +117,10 @@ async getAllProcedures(search?: string, page = 1, pageSize = 100) {
       include: {
         demandes: {
           include: {
-            detenteur: {
-              select: { nom_societeFR: true }
-            },
-            typeProcedure: {
-              select: { libelle: true, id: true }
-            }
+            detenteurdemande: { take: 1, include: { detenteur: { select: { nom_societeFR: true } } } },
+            typeProcedure: { select: { libelle: true, id: true } }
           },
-          take: 1 // Take the first demande if there are multiple
+          take: 1
         }
       },
       orderBy: { date_debut_proc: 'desc' },
@@ -142,7 +134,7 @@ async getAllProcedures(search?: string, page = 1, pageSize = 100) {
   const transformedData = procedures.map(procedure => ({
     ...procedure,
     typeProcedure: procedure.demandes[0]?.typeProcedure || null,
-    detenteur: procedure.demandes[0]?.detenteur || null
+    detenteur: procedure.demandes[0]?.detenteurdemande?.[0]?.detenteur || null
   }));
 
   return {
@@ -253,47 +245,7 @@ async getSeancesWithDecisions() {
             },
           },
         },
-        procedures: {
-          include: {
-            // 🔑 no direct typeProcedure on Procedure anymore
-            permis: {
-              include: {
-                procedures: {
-                  include: {
-                    demandes: {
-                      where: {
-                        typeProcedure: {
-                          libelle: 'demande', // 🔑 filter via demande.typeProcedure
-                        },
-                      },
-                      take: 1,
-                      include: {
-                        detenteur: {
-                          select: { nom_societeFR: true },
-                        },
-                        typeProcedure: { // 🔑 now included here
-                          select: { libelle: true },
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-            demandes: {
-              take: 1,
-              include: {
-                detenteur: {
-                  select: { nom_societeFR: true },
-                },
-                typeProcedure: { // 🔑 here too
-                  select: { libelle: true },
-                },
-              },
-            },
-          },
-          orderBy: { id_proc: 'asc' },
-        },
+        procedures: { include: { demandes: { take: 1, include: { detenteurdemande: { take: 1, include: { detenteur: { select: { nom_societeFR: true } } } }, typeProcedure: { select: { libelle: true } } } } }, orderBy: { id_proc: 'asc' } },
       },
       orderBy: { date_seance: 'desc' },
     });
@@ -305,3 +257,7 @@ async getSeancesWithDecisions() {
 
 
 }
+
+
+
+

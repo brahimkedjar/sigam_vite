@@ -33,12 +33,13 @@ async getFullDemandeSummaryByProc(@Param('idProc', ParseIntPipe) idProc: number)
         },
       },
       typePermis: true,
-      detenteur: {
+      detenteurdemande: {
+        take: 1,
         include: {
-          registreCommerce: true,
-          fonctions: {
+          detenteur: {
             include: {
-              personne: true,
+              registreCommerce: true,
+              fonctions: { include: { personne: true } },
             },
           },
         },
@@ -103,12 +104,13 @@ async getFullDemandeSummary(@Param('idDemande', ParseIntPipe) id: number) {
         }
       },
       typePermis: true,
-      detenteur: {
+      detenteurdemande: {
+        take: 1,
         include: {
-          registreCommerce: true,
-          fonctions: {
+          detenteur: {
             include: {
-              personne: true
+              registreCommerce: true,
+              fonctions: { include: { personne: true } }
             }
           }
         }

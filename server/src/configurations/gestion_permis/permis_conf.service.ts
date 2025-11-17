@@ -111,7 +111,11 @@ export class PermisService {
         },
         detenteur: true,
         statut: true,
-        procedures: true,
+        permisProcedure: {
+          include: {
+            procedure: true,
+          },
+        },
         RapportActivite: true,
         CahierCharge: true,
         ObligationFiscale: true,

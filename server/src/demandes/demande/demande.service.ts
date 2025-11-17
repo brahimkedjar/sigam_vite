@@ -11,9 +11,11 @@ export class DemandeService {
     const demande = await this.prisma.demande.findUnique({
       where: { id_demande },
       include: {
-        procedure: true, // keep procedure (without typeProcedure)
-        typeProcedure: true, // now directly from Demande
-        detenteur: true,
+        procedure: true,            // keep procedure (without typeProcedure)
+        typeProcedure: true,        // now directly from Demande
+        detenteurdemande: {
+          include: { detenteur: true },
+        },
         expertMinier: true,
       },
     });
@@ -22,94 +24,111 @@ export class DemandeService {
       throw new NotFoundException('Demande introuvable');
     }
 
-    return demande;
-  }
+    const primaryDetenteur = demande.detenteurdemande?.[0]?.detenteur ?? null;
+    return {
+      ...demande,
+      detenteur: primaryDetenteur,
+    };
+}
+
 
   async createDemande(data: {
-    id_typepermis: number;
-    objet_demande: string;
-    code_demande?: string;
-    id_detenteur?: number;
-    date_demande: Date;
-    date_instruction: Date;
-    id_sourceProc?: number;
-    designation_number?: string;
-  }) {
-    // Get type permis details
-    const typePermis = await this.prisma.typePermis.findUnique({
-      where: { id: data.id_typepermis },
-    });
+  id_typepermis: number;
+  objet_demande: string;
+  code_demande?: string;
+  id_detenteur?: number;
+  date_demande: Date;
+  date_instruction: Date;
+}) {
+  // Get type permis details
+  const typePermis = await this.prisma.typePermis.findUnique({
+    where: { id: data.id_typepermis }
+  });
 
-    if (!typePermis) {
-      throw new NotFoundException('Type de permis introuvable');
-    }
+  if (!typePermis) {
+    throw new NotFoundException('Type de permis introuvable');
+  }
 
-    // Get the "demande" type procedure
-    const typeProcedure = await this.prisma.typeProcedure.findFirst({
-      where: { libelle: 'demande' },
-    });
+  // Get the "demande" type procedure, auto-create it if missing
+  let typeProcedure = await this.prisma.typeProcedure.findFirst({
+    where: { libelle: { equals: 'demande', mode: 'insensitive' } }
+  });
 
-    if (!typeProcedure) {
-      throw new NotFoundException('Type de procédure "demande" introuvable');
-    }
-
-    // Generate sequential codes DEM-<TYPE>-<N> and PROC-<TYPE>-<N>
-    const codeType = typePermis.code_type;
-    let seq = await this.prisma.demande.count();
-    let finalSeq: number;
-    let finalCode: string;
-
-    if (data.code_demande && data.code_demande.trim().length > 0) {
-      finalCode = data.code_demande.trim();
-      const m = finalCode.match(/-(\d+)$/);
-      finalSeq = m ? parseInt(m[1], 10) : seq + 1;
-    } else {
-      do {
-        seq += 1;
-        finalCode = `DEM-${codeType}-${seq}`;
-      } while (
-        await this.prisma.demande.findUnique({ where: { code_demande: finalCode } })
-      );
-      finalSeq = seq;
-    }
-
-    // Create procedure first with PROC-<TYPE>-<N>
-    const createdProc = await this.prisma.procedure.create({
+  if (!typeProcedure) {
+    typeProcedure = await this.prisma.typeProcedure.create({
       data: {
-        num_proc: `PROC-${codeType}-${finalSeq}`,
-        date_debut_proc: new Date(),
-        statut_proc: 'EN_COURS',
-      },
-    });
-
-    // Create demande (with id_typeproc now)
-    return this.prisma.demande.create({
-      data: {
-        id_proc: createdProc.id_proc,
-        id_typeProc: typeProcedure.id,
-        code_demande: finalCode,
-        id_detenteur: data.id_detenteur,
-        id_typePermis: data.id_typepermis,
-        date_demande: data.date_demande,
-        date_instruction: data.date_instruction,
-        statut_demande: StatutDemande.EN_COURS,
-        id_sourceProc: data.id_sourceProc ?? undefined,
-        designation_number: data.designation_number ?? undefined,
-      },
-      include: {
-        procedure: true,
-        typeProcedure: true,
-        detenteur: true,
+        libelle: 'demande',
+        description: 'Procédure par défaut pour la création des demandes',
       },
     });
   }
+
+  // Generate code if not provided
+  const currentYear = new Date().getFullYear();
+  const procCount = await this.prisma.procedure.count({
+  where: {
+    date_debut_proc: {
+      gte: new Date(`${currentYear}-01-01`),
+      lte: new Date(`${currentYear}-12-31`),
+    },
+  },
+});
+
+const finalCode =
+  data.code_demande ||
+  `${typePermis.code_type}-${currentYear}-${procCount + 1}`;
+
+  // Create procedure (⚠️ no more id_typeproc here)
+  const createdProc = await this.prisma.procedure.create({
+    data: {
+      num_proc: finalCode,
+      date_debut_proc: new Date(),
+      statut_proc: 'EN_COURS',
+    },
+  });
+
+  // Create demande (with id_typeproc now)
+  const demande = await this.prisma.demande.create({
+    data: {
+      id_proc: createdProc.id_proc,
+      id_typeProc: typeProcedure.id,  
+      code_demande: finalCode,
+      id_typePermis: data.id_typepermis,
+      date_demande: data.date_demande,
+      date_instruction: data.date_instruction,
+      statut_demande: StatutDemande.EN_COURS,
+      ...(data.id_detenteur
+        ? {
+            detenteurdemande: {
+              create: {
+                id_detenteur: data.id_detenteur,
+                role_detenteur: 'principal',
+              },
+            },
+          }
+        : {}),
+    },
+    include: {
+      procedure: true,  
+      typeProcedure: true, 
+      detenteurdemande: { include: { detenteur: true } },
+    },
+  });
+
+  const primaryDetenteur = demande.detenteurdemande?.[0]?.detenteur ?? null;
+  return {
+    ...demande,
+    detenteur: primaryDetenteur,
+  };
+}
+
 
   async createOrFindExpert(data: {
     nom_expert: string;
     num_agrement: string;
     etat_agrement: string;
-    specialisation: string;
-    date_agrement: Date;
+    specialisation:string;
+    date_agrement:Date;
   }) {
     const existing = await this.prisma.expertMinier.findFirst({
       where: {
@@ -117,7 +136,7 @@ export class DemandeService {
         specialisation: data.specialisation,
         num_agrement: data.num_agrement,
         etat_agrement: data.etat_agrement,
-        date_agrement: data.date_agrement,
+        date_agrement:data.date_agrement
       },
     });
 
@@ -132,51 +151,48 @@ export class DemandeService {
       data: { id_expert },
       include: {
         expertMinier: true,
-        procedure: true,
-      },
+        procedure: true
+      }
     });
   }
 
   async generateCode(id_typepermis: number) {
-    const typePermis = await this.prisma.typePermis.findUnique({
-      where: { id: id_typepermis },
+    const typePermis = await this.prisma.typePermis.findUnique({ 
+      where: { id: id_typepermis }
     });
 
     if (!typePermis) {
       throw new NotFoundException('Type de permis introuvable');
     }
 
-    // Global sequential number across demandes
-    let seq = await this.prisma.demande.count();
-    let code_demande: string;
-    do {
-      seq += 1;
-      code_demande = `DEM-${typePermis.code_type}-${seq}`;
-    } while (
-      await this.prisma.demande.findUnique({ where: { code_demande } })
-    );
+    const year = new Date().getFullYear();
+    const count = await this.prisma.demande.count({
+      where: {
+        date_demande: {
+          gte: new Date(`${year}-01-01`),
+          lte: new Date(`${year}-12-31`),
+        },
+      },
+    });
 
+    const code_demande = `${typePermis.code_type}-${year}-${count + 1}`;
     return { code_demande };
   }
 
   // demande.service.ts
-  async update(id: number, updateDemandeDto: UpdateDemandeDto) {
-    return this.prisma.demande.update({
-      where: { id_demande: id },
-      data: {
-        id_wilaya: updateDemandeDto.id_wilaya,
-        id_daira: updateDemandeDto.id_daira,
-        id_commune: updateDemandeDto.id_commune,
-        lieu_ditFR: updateDemandeDto.lieu_ditFR,
-        lieu_dit_ar: updateDemandeDto.lieu_ditAR,
-        statut_juridique_terrain: updateDemandeDto.statut_juridique_terrain,
-        occupant_terrain_legal: updateDemandeDto.occupant_terrain_legal,
-        superficie: updateDemandeDto.superficie,
-        description_travaux: updateDemandeDto.description_travaux,
-        duree_travaux_estimee: updateDemandeDto.duree_travaux_estimee,
-        date_demarrage_prevue: updateDemandeDto.date_demarrage_prevue,
-      },
-    });
-  }
+async update(id: number, updateDemandeDto: UpdateDemandeDto) {
+  return this.prisma.demande.update({
+    where: { id_demande: id },
+    data: {
+      id_wilaya: updateDemandeDto.id_wilaya,
+      id_daira: updateDemandeDto.id_daira,
+      id_commune: updateDemandeDto.id_commune,
+      lieu_ditFR: updateDemandeDto.lieu_ditFR,
+      lieu_dit_ar: updateDemandeDto.lieu_ditAR,
+      statut_juridique_terrain: updateDemandeDto.statut_juridique_terrain,
+      occupant_terrain_legal: updateDemandeDto.occupant_terrain_legal,
+      superficie: updateDemandeDto.superficie,
+    },
+  });
 }
-
+}

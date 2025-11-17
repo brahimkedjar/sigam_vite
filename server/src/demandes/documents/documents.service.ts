@@ -562,7 +562,10 @@ export class DocumentsService {
     const data = await this.getDocumentsByDemande(id_demande);
     const demande = await this.prisma.demande.findUnique({
       where: { id_demande },
-      include: { detenteur: true, procedure: true },
+      include: {
+        detenteurdemande: { include: { detenteur: true } },
+        procedure: true,
+      },
     });
 
     if (!demande) {
@@ -570,7 +573,8 @@ export class DocumentsService {
     }
 
     const now = new Date();
-    const detenteurName = demande.detenteur?.nom_societeFR || 'Le demandeur';
+    const detenteurName =
+      demande.detenteurdemande?.[0]?.detenteur?.nom_societeFR || 'Le demandeur';
     const dossier = data.dossierFournis;
 
     const missingList = data.missingSummary.requiredMissing.map((m: any) => `- ${m.nom_doc}`).join('\n');
@@ -635,7 +639,7 @@ export class DocumentsService {
       where: { id_demande },
       include: {
         typePermis: true,
-        detenteur: true,
+        detenteurdemande: { include: { detenteur: true } },
         wilaya: true,
         daira: true,
         commune: true,
@@ -756,7 +760,8 @@ export class DocumentsService {
     const num = dossier.numero_recepisse || '—';
     const dateStr = (dossier.date_recepisse ? new Date(dossier.date_recepisse) : new Date()).toLocaleDateString('fr-DZ');
     const demandeCode = demande.code_demande || String(id_demande);
-    const detenteur = demande.detenteur?.nom_societeFR || 'Le demandeur';
+    const detenteur =
+      demande.detenteurdemande?.[0]?.detenteur?.nom_societeFR || 'Le demandeur';
     const typePermis = demande.typePermis?.lib_type || '—';
 
     drawParagraph(`Numéro de récépissé: ${num}`, 12);
@@ -778,7 +783,10 @@ export class DocumentsService {
     const data = await this.getDocumentsByDemande(id_demande);
     const demande = await this.prisma.demande.findUnique({
       where: { id_demande },
-      include: { detenteur: true, typePermis: true },
+      include: {
+        detenteurdemande: { include: { detenteur: true } },
+        typePermis: true,
+      },
     });
 
     if (!demande) throw new Error('Demande not found');
@@ -915,7 +923,8 @@ export class DocumentsService {
     drawTitle('MISE EN DEMEURE', 16);
 
     // Meta
-    const detenteur = demande.detenteur?.nom_societeFR || 'Le demandeur';
+    const detenteur =
+      demande.detenteurdemande?.[0]?.detenteur?.nom_societeFR || 'Le demandeur';
     const codeDemande = demande.code_demande || String(id_demande);
     const deadlineStr = data.deadlines?.miseEnDemeure
       ? new Date(data.deadlines.miseEnDemeure).toLocaleDateString('fr-DZ')

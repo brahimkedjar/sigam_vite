@@ -64,11 +64,6 @@ async findOne(@Param('id') id: string) {
   return this.permisService.findOneWithDetails(+id);
 }
 
-@Get(':id/historique')
-async getHistorique(@Param('id') id: string) {
-  return this.permisService.getHistoriqueByPermisId(+id);
-}
-
 @Get(':id/documents')
 @ApiOperation({ summary: 'Get all documents for a permis organized by procedure' })
 @ApiResponse({ status: 200, description: 'Documents organized by procedure' })

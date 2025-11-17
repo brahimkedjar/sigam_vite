@@ -1,0 +1,2226 @@
+[
+  {
+    "row": {
+      "id_combinaison": 1,
+      "id_typePermis": 1,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 2,
+      "id_typePermis": 1,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 3,
+      "id_typePermis": 1,
+      "id_typeProc": 3
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 4,
+      "id_typePermis": 1,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 5,
+      "id_typePermis": 1,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 6,
+      "id_typePermis": 1,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 7,
+      "id_typePermis": 1,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 8,
+      "id_typePermis": 1,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 9,
+      "id_typePermis": 1,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 10,
+      "id_typePermis": 1,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 11,
+      "id_typePermis": 1,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 12,
+      "id_typePermis": 2,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 13,
+      "id_typePermis": 2,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 14,
+      "id_typePermis": 2,
+      "id_typeProc": 3
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 15,
+      "id_typePermis": 2,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 16,
+      "id_typePermis": 2,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 17,
+      "id_typePermis": 2,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 18,
+      "id_typePermis": 2,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 19,
+      "id_typePermis": 2,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 20,
+      "id_typePermis": 2,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 21,
+      "id_typePermis": 2,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 22,
+      "id_typePermis": 2,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 23,
+      "id_typePermis": 2,
+      "id_typeProc": 13
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 24,
+      "id_typePermis": 3,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 25,
+      "id_typePermis": 3,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 26,
+      "id_typePermis": 3,
+      "id_typeProc": 3
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 27,
+      "id_typePermis": 3,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 28,
+      "id_typePermis": 3,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 29,
+      "id_typePermis": 3,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 30,
+      "id_typePermis": 3,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 31,
+      "id_typePermis": 3,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 32,
+      "id_typePermis": 3,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 33,
+      "id_typePermis": 3,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 34,
+      "id_typePermis": 3,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 35,
+      "id_typePermis": 3,
+      "id_typeProc": 12
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 36,
+      "id_typePermis": 4,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 37,
+      "id_typePermis": 4,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 38,
+      "id_typePermis": 4,
+      "id_typeProc": 3
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 39,
+      "id_typePermis": 4,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 40,
+      "id_typePermis": 4,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 41,
+      "id_typePermis": 4,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 42,
+      "id_typePermis": 4,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 43,
+      "id_typePermis": 4,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 44,
+      "id_typePermis": 4,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 45,
+      "id_typePermis": 4,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 46,
+      "id_typePermis": 4,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 47,
+      "id_typePermis": 4,
+      "id_typeProc": 12
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 48,
+      "id_typePermis": 5,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 49,
+      "id_typePermis": 5,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 50,
+      "id_typePermis": 5,
+      "id_typeProc": 3
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 51,
+      "id_typePermis": 5,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 52,
+      "id_typePermis": 5,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 53,
+      "id_typePermis": 5,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 54,
+      "id_typePermis": 5,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 55,
+      "id_typePermis": 5,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 56,
+      "id_typePermis": 5,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 57,
+      "id_typePermis": 5,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 58,
+      "id_typePermis": 5,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 59,
+      "id_typePermis": 6,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 60,
+      "id_typePermis": 6,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 61,
+      "id_typePermis": 6,
+      "id_typeProc": 3
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 62,
+      "id_typePermis": 6,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 63,
+      "id_typePermis": 6,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 64,
+      "id_typePermis": 6,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 65,
+      "id_typePermis": 6,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 66,
+      "id_typePermis": 6,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 67,
+      "id_typePermis": 6,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 68,
+      "id_typePermis": 6,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 69,
+      "id_typePermis": 6,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 70,
+      "id_typePermis": 7,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 71,
+      "id_typePermis": 7,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 72,
+      "id_typePermis": 7,
+      "id_typeProc": 3
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 73,
+      "id_typePermis": 7,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 74,
+      "id_typePermis": 7,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 75,
+      "id_typePermis": 7,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 76,
+      "id_typePermis": 7,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 77,
+      "id_typePermis": 7,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 78,
+      "id_typePermis": 7,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 79,
+      "id_typePermis": 7,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 80,
+      "id_typePermis": 7,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 81,
+      "id_typePermis": 7,
+      "id_typeProc": 12
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 82,
+      "id_typePermis": 8,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 83,
+      "id_typePermis": 8,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 84,
+      "id_typePermis": 8,
+      "id_typeProc": 3
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 85,
+      "id_typePermis": 8,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 86,
+      "id_typePermis": 8,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 87,
+      "id_typePermis": 8,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 88,
+      "id_typePermis": 8,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 89,
+      "id_typePermis": 8,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 90,
+      "id_typePermis": 8,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 91,
+      "id_typePermis": 8,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 92,
+      "id_typePermis": 8,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 93,
+      "id_typePermis": 8,
+      "id_typeProc": 16
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 94,
+      "id_typePermis": 8,
+      "id_typeProc": 18
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 95,
+      "id_typePermis": 9,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 96,
+      "id_typePermis": 9,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 97,
+      "id_typePermis": 9,
+      "id_typeProc": 3
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 98,
+      "id_typePermis": 9,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 99,
+      "id_typePermis": 9,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 100,
+      "id_typePermis": 9,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 101,
+      "id_typePermis": 9,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 102,
+      "id_typePermis": 9,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 103,
+      "id_typePermis": 9,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 104,
+      "id_typePermis": 9,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 105,
+      "id_typePermis": 9,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 106,
+      "id_typePermis": 9,
+      "id_typeProc": 13
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 107,
+      "id_typePermis": 9,
+      "id_typeProc": 14
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 108,
+      "id_typePermis": 9,
+      "id_typeProc": 16
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 109,
+      "id_typePermis": 9,
+      "id_typeProc": 17
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 110,
+      "id_typePermis": 9,
+      "id_typeProc": 18
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 111,
+      "id_typePermis": 10,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 112,
+      "id_typePermis": 10,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 113,
+      "id_typePermis": 10,
+      "id_typeProc": 3
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 114,
+      "id_typePermis": 10,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 115,
+      "id_typePermis": 10,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 116,
+      "id_typePermis": 10,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 117,
+      "id_typePermis": 10,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 118,
+      "id_typePermis": 10,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 119,
+      "id_typePermis": 10,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 120,
+      "id_typePermis": 10,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 121,
+      "id_typePermis": 10,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 122,
+      "id_typePermis": 10,
+      "id_typeProc": 13
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 123,
+      "id_typePermis": 10,
+      "id_typeProc": 14
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 124,
+      "id_typePermis": 10,
+      "id_typeProc": 16
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 125,
+      "id_typePermis": 10,
+      "id_typeProc": 17
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 126,
+      "id_typePermis": 10,
+      "id_typeProc": 18
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 127,
+      "id_typePermis": 11,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 128,
+      "id_typePermis": 11,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 129,
+      "id_typePermis": 11,
+      "id_typeProc": 3
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 130,
+      "id_typePermis": 11,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 131,
+      "id_typePermis": 11,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 132,
+      "id_typePermis": 11,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 133,
+      "id_typePermis": 11,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 134,
+      "id_typePermis": 11,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 135,
+      "id_typePermis": 11,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 136,
+      "id_typePermis": 11,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 137,
+      "id_typePermis": 11,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 138,
+      "id_typePermis": 11,
+      "id_typeProc": 12
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 139,
+      "id_typePermis": 11,
+      "id_typeProc": 13
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 140,
+      "id_typePermis": 11,
+      "id_typeProc": 16
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 141,
+      "id_typePermis": 11,
+      "id_typeProc": 17
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 142,
+      "id_typePermis": 11,
+      "id_typeProc": 18
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 143,
+      "id_typePermis": 12,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 144,
+      "id_typePermis": 12,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 145,
+      "id_typePermis": 12,
+      "id_typeProc": 3
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 146,
+      "id_typePermis": 12,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 147,
+      "id_typePermis": 12,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 148,
+      "id_typePermis": 12,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 149,
+      "id_typePermis": 12,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 150,
+      "id_typePermis": 12,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 151,
+      "id_typePermis": 12,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 152,
+      "id_typePermis": 12,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 153,
+      "id_typePermis": 12,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 154,
+      "id_typePermis": 12,
+      "id_typeProc": 12
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 155,
+      "id_typePermis": 12,
+      "id_typeProc": 13
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 156,
+      "id_typePermis": 12,
+      "id_typeProc": 16
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 157,
+      "id_typePermis": 12,
+      "id_typeProc": 17
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 158,
+      "id_typePermis": 12,
+      "id_typeProc": 18
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 159,
+      "id_typePermis": 13,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 160,
+      "id_typePermis": 13,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 161,
+      "id_typePermis": 13,
+      "id_typeProc": 3
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 162,
+      "id_typePermis": 13,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 163,
+      "id_typePermis": 13,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 164,
+      "id_typePermis": 13,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 165,
+      "id_typePermis": 13,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 166,
+      "id_typePermis": 13,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 167,
+      "id_typePermis": 13,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 168,
+      "id_typePermis": 13,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 169,
+      "id_typePermis": 13,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 170,
+      "id_typePermis": 13,
+      "id_typeProc": 12
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 171,
+      "id_typePermis": 13,
+      "id_typeProc": 13
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 172,
+      "id_typePermis": 13,
+      "id_typeProc": 16
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 173,
+      "id_typePermis": 13,
+      "id_typeProc": 17
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 174,
+      "id_typePermis": 14,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 175,
+      "id_typePermis": 14,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 176,
+      "id_typePermis": 14,
+      "id_typeProc": 3
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 177,
+      "id_typePermis": 14,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 178,
+      "id_typePermis": 14,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 179,
+      "id_typePermis": 14,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 180,
+      "id_typePermis": 14,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 181,
+      "id_typePermis": 14,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 182,
+      "id_typePermis": 14,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 183,
+      "id_typePermis": 14,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 184,
+      "id_typePermis": 14,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 185,
+      "id_typePermis": 14,
+      "id_typeProc": 12
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 186,
+      "id_typePermis": 14,
+      "id_typeProc": 13
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 187,
+      "id_typePermis": 14,
+      "id_typeProc": 16
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 188,
+      "id_typePermis": 14,
+      "id_typeProc": 17
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 189,
+      "id_typePermis": 15,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 190,
+      "id_typePermis": 15,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 191,
+      "id_typePermis": 15,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 192,
+      "id_typePermis": 15,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 193,
+      "id_typePermis": 15,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 194,
+      "id_typePermis": 15,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 195,
+      "id_typePermis": 15,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 196,
+      "id_typePermis": 15,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 197,
+      "id_typePermis": 15,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 198,
+      "id_typePermis": 15,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 199,
+      "id_typePermis": 15,
+      "id_typeProc": 14
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 200,
+      "id_typePermis": 15,
+      "id_typeProc": 15
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 201,
+      "id_typePermis": 15,
+      "id_typeProc": 16
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 202,
+      "id_typePermis": 15,
+      "id_typeProc": 17
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 203,
+      "id_typePermis": 16,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 204,
+      "id_typePermis": 16,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 205,
+      "id_typePermis": 16,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 206,
+      "id_typePermis": 16,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 207,
+      "id_typePermis": 16,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 208,
+      "id_typePermis": 16,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 209,
+      "id_typePermis": 16,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 210,
+      "id_typePermis": 16,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 211,
+      "id_typePermis": 16,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 212,
+      "id_typePermis": 16,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 213,
+      "id_typePermis": 16,
+      "id_typeProc": 18
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 214,
+      "id_typePermis": 17,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 215,
+      "id_typePermis": 17,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 216,
+      "id_typePermis": 17,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 217,
+      "id_typePermis": 17,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 218,
+      "id_typePermis": 17,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 219,
+      "id_typePermis": 17,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 220,
+      "id_typePermis": 17,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 221,
+      "id_typePermis": 17,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 222,
+      "id_typePermis": 17,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 223,
+      "id_typePermis": 17,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 224,
+      "id_typePermis": 17,
+      "id_typeProc": 18
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 225,
+      "id_typePermis": 18,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 226,
+      "id_typePermis": 18,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 227,
+      "id_typePermis": 18,
+      "id_typeProc": 3
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 228,
+      "id_typePermis": 18,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 229,
+      "id_typePermis": 18,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 230,
+      "id_typePermis": 18,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 231,
+      "id_typePermis": 18,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 232,
+      "id_typePermis": 18,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 233,
+      "id_typePermis": 18,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 234,
+      "id_typePermis": 18,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 235,
+      "id_typePermis": 18,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 236,
+      "id_typePermis": 18,
+      "id_typeProc": 18
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 237,
+      "id_typePermis": 19,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 238,
+      "id_typePermis": 19,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 239,
+      "id_typePermis": 19,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 240,
+      "id_typePermis": 19,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 241,
+      "id_typePermis": 19,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 242,
+      "id_typePermis": 19,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 243,
+      "id_typePermis": 19,
+      "id_typeProc": 12
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 244,
+      "id_typePermis": 19,
+      "id_typeProc": 18
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 245,
+      "id_typePermis": 20,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 246,
+      "id_typePermis": 20,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 247,
+      "id_typePermis": 20,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 248,
+      "id_typePermis": 20,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 249,
+      "id_typePermis": 20,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 250,
+      "id_typePermis": 20,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 251,
+      "id_typePermis": 20,
+      "id_typeProc": 12
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 252,
+      "id_typePermis": 20,
+      "id_typeProc": 18
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 253,
+      "id_typePermis": 21,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 254,
+      "id_typePermis": 21,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 255,
+      "id_typePermis": 21,
+      "id_typeProc": 3
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 256,
+      "id_typePermis": 21,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 257,
+      "id_typePermis": 21,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 258,
+      "id_typePermis": 21,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 259,
+      "id_typePermis": 21,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 260,
+      "id_typePermis": 21,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 261,
+      "id_typePermis": 21,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 262,
+      "id_typePermis": 21,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 263,
+      "id_typePermis": 21,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 264,
+      "id_typePermis": 21,
+      "id_typeProc": 12
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 265,
+      "id_typePermis": 21,
+      "id_typeProc": 18
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 266,
+      "id_typePermis": 22,
+      "id_typeProc": 1
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 267,
+      "id_typePermis": 22,
+      "id_typeProc": 2
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 268,
+      "id_typePermis": 22,
+      "id_typeProc": 3
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 269,
+      "id_typePermis": 22,
+      "id_typeProc": 4
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 270,
+      "id_typePermis": 22,
+      "id_typeProc": 5
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 271,
+      "id_typePermis": 22,
+      "id_typeProc": 6
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 272,
+      "id_typePermis": 22,
+      "id_typeProc": 7
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 273,
+      "id_typePermis": 22,
+      "id_typeProc": 8
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 274,
+      "id_typePermis": 22,
+      "id_typeProc": 9
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 275,
+      "id_typePermis": 22,
+      "id_typeProc": 10
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 276,
+      "id_typePermis": 22,
+      "id_typeProc": 11
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 277,
+      "id_typePermis": 22,
+      "id_typeProc": 12
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  },
+  {
+    "row": {
+      "id_combinaison": 278,
+      "id_typePermis": 22,
+      "id_typeProc": 18
+    },
+    "error": "\nInvalid `prisma.combinaisonPermisProc.create()` invocation in\nC:\\Users\\ANAM1408\\Desktop\\sigam_vite\\server\\prisma\\TableRef\\combinaisonPermisProc_seed.ts:40:46\n\n  37 // insertion ligne par ligne pour identifier les erreurs\n  38 for (const row of combinaisonPermisProcData) {\n  39   try {\n→ 40     await prisma.combinaisonPermisProc.create(\nUnique constraint failed on the fields: (`id_combinaison`)"
+  }
+]

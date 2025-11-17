@@ -5,6 +5,7 @@ import { PaymentService } from 'src/demandes/paiement/payment.service';
 import { StatutProcedure } from '@prisma/client';
 import { ProcedureEtapeService } from '../procedure_etape/procedure-etape.service';
 import { StatutPermis } from './types';
+import { values } from 'pdf-lib';
 
 @Injectable()
 export class ProcedureRenouvellementService {
@@ -14,100 +15,109 @@ export class ProcedureRenouvellementService {
     private readonly procedureEtapeService: ProcedureEtapeService,
   ) {}
 
+
   async startRenewalWithOriginalData(
-  permisId: number,
-  date_demande: string,
-  statut: StatutProcedure,
-) {
-  const now = new Date();
+    permisId: number,
+    date_demande: string,
+    statut: StatutProcedure,
+  ) {
+    const now = new Date();
 
-  if (!date_demande || isNaN(Date.parse(date_demande))) {
-    throw new BadRequestException('La date de la demande est invalide.');
-  }
+    if (!date_demande || isNaN(Date.parse(date_demande))) {
+      throw new BadRequestException('La date de la demande est invalide.');
+    }
 
-  const permis = await this.prisma.permis.findUnique({
-    where: { id: permisId },
-    include: {
-      typePermis: true,
-      procedures: {
-        include: {
-          demandes: {
-            include: { typeProcedure: true },
+    const permis = await this.prisma.permis.findUnique({
+      where: { id: permisId },
+      include: {
+        typePermis: true,
+        permisProcedure: {
+          include: {
+            procedure: {
+              include: {
+                demandes: {
+                  include: { typeProcedure: true },
+                },
+              },
+            },
           },
         },
-        orderBy: { date_debut_proc: 'asc' },
       },
-    },
-  });
+    });
 
-  if (!permis || permis.procedures.length === 0) {
-    throw new NotFoundException(
-      'Aucune procédure initiale trouvée pour ce permis.',
-    );
+    const procedures = (
+      permis?.permisProcedure
+        ?.map((relation) => relation.procedure)
+        .filter((proc): proc is NonNullable<typeof proc> => !!proc)
+        .sort((a, b) => {
+          const dateA = a.date_debut_proc ? new Date(a.date_debut_proc).getTime() : 0;
+          const dateB = b.date_debut_proc ? new Date(b.date_debut_proc).getTime() : 0;
+          return dateA - dateB;
+        })
+    ) ?? [];
+
+    if (!permis || procedures.length === 0) {
+      throw new NotFoundException(
+        'Aucune procedure initiale trouvee pour ce permis.',
+      );
+    }
+
+    const initialProcedure = procedures[0];
+    const initialDemande = initialProcedure.demandes[0];
+
+    const typeProc = await this.prisma.typeProcedure.findFirst({
+      where: { libelle: { contains: 'renouvellement', mode: 'insensitive' } },
+    });
+
+    if (!typeProc) {
+      throw new NotFoundException('TypeProcedure "renouvellement" introuvable');
+    }
+
+    const newProcedure = await this.prisma.procedure.create({
+      data: {
+        num_proc: `PROC-R-${Date.now()}`,
+        date_debut_proc: new Date(),
+        statut_proc: statut,
+      },
+    });
+
+    await this.prisma.permisProcedure.create({
+      data: {
+        id_permis: permis.id,
+        id_proc: newProcedure.id_proc,
+      },
+    });
+
+    const parsedDate = new Date(date_demande);
+
+    const newDemande = await this.prisma.demande.create({
+      data: {
+        id_proc: newProcedure.id_proc,
+        id_typePermis: permis.id_typePermis,
+        id_typeProc: typeProc.id,
+        code_demande: `DEM-R-${Date.now()}`,
+        statut_demande: 'EN_COURS',
+        date_demande: parsedDate,
+        date_instruction: new Date(),
+      },
+    });
+
+    await this.prisma.procedureRenouvellement.create({
+      data: {
+        id_demande: newDemande.id_demande,
+      },
+    });
+
+    return {
+      original_demande_id: initialDemande?.id_demande,
+      original_proc_id: initialProcedure?.id_proc,
+      new_proc_id: newProcedure.id_proc,
+      new_demande_id: newDemande.id_demande,
+    };
   }
-
-  const initialProcedure = permis.procedures[0];
-  const initialDemande = initialProcedure.demandes[0];
-
-  const typeProc = await this.prisma.typeProcedure.findFirst({
-    where: { libelle: { contains: 'renouvellement', mode: 'insensitive' } },
-  });
-
-  if (!typeProc) {
-    throw new NotFoundException('TypeProcedure "renouvellement" introuvable');
-  }
-
-  // 🔑 Create only procedure (no id_typeproc here)
-  // Generate renewal codes using same scheme
-  const codeType = permis.typePermis.code_type;
-  let seq = await this.prisma.demande.count();
-  let demandeCode: string;
-  do {
-    seq += 1;
-    demandeCode = `DEM-${codeType}-${seq}`;
-  } while (await this.prisma.demande.findUnique({ where: { code_demande: demandeCode } }));
-
-  const newProcedure = await this.prisma.procedure.create({
-    data: {
-      num_proc: `PROC-${codeType}-${seq}`,
-      date_debut_proc: new Date(),
-      statut_proc: statut,
-      permis: { connect: { id: permis.id } },
-    },
-  });
-
-  const parsedDate = new Date(date_demande);
-
-  // 🔑 Link typeProcedure here at demande level
-  const newDemande = await this.prisma.demande.create({
-    data: {
-      id_proc: newProcedure.id_proc,
-      id_typePermis: permis.id_typePermis,
-      id_typeProc: typeProc.id, // moved here
-      code_demande: demandeCode,
-      statut_demande: 'EN_COURS',
-      date_demande: parsedDate,
-      date_instruction: new Date()
-    },
-  });
-
-  await this.prisma.procedureRenouvellement.create({
-    data: {
-      id_demande: newDemande.id_demande,
-    },
-  });
-
-  return {
-    original_demande_id: initialDemande?.id_demande,
-    original_proc_id: initialProcedure?.id_proc,
-    new_proc_id: newProcedure.id_proc,
-    new_demande_id: newDemande.id_demande,
-  };
-}
-
 
   async getPermisForProcedure(procedureId: number) {
-    const procedure = await this.prisma.procedure.findUnique({
+    const relation = await this.prisma.permisProcedure.findFirst({
       where: { id_proc: procedureId },
       include: {
         permis: {
@@ -118,16 +128,23 @@ export class ProcedureRenouvellementService {
         },
       },
     });
-    return procedure?.permis[0] || null;
+    return relation?.permis || null;
   }
+  
+
+
 
   async createOrUpdateRenewal(procedureId: number, renewalData: any) {
     const procedure = await this.prisma.procedure.findUnique({
       where: { id_proc: procedureId },
       include: {
-        permis: {
+        permisProcedure: {
           include: {
-            typePermis: true,
+            permis: {
+              include: {
+                typePermis: true,
+              },
+            },
           },
         },
         demandes: true,
@@ -136,7 +153,7 @@ export class ProcedureRenouvellementService {
 
     if (!procedure) throw new NotFoundException('Procedure not found');
 
-    const permit = procedure.permis[0];
+    const permit = procedure.permisProcedure?.[0]?.permis;
     if (!permit) throw new NotFoundException('Permit not found');
 
     const permitType = permit.typePermis;
@@ -147,8 +164,10 @@ export class ProcedureRenouvellementService {
 
     const currentRenewalCount = await this.countPreviousRenewals(permit.id);
 
-    if (currentRenewalCount >= permitType.nbr_renouv_max!) {
-      throw new BadRequestException(`Maximum renewals (${permitType.nbr_renouv_max}) reached`);
+    if (currentRenewalCount >= (permitType.nbr_renouv_max ?? 0)) {
+      throw new BadRequestException(
+        `Maximum renewals (${permitType.nbr_renouv_max ?? 0}) reached`
+      );
     }
 
     const startDate = new Date(renewalData.date_debut_validite);
@@ -183,7 +202,6 @@ export class ProcedureRenouvellementService {
 
     return updatedRenewal;
   }
-
   async getPermitTypeDetails(permitTypeId: number) {
     const permitType = await this.prisma.typePermis.findUnique({
       where: { id: permitTypeId },
@@ -203,7 +221,7 @@ export class ProcedureRenouvellementService {
     return this.prisma.demande.findMany({
       where: {
         procedure: {
-          permis: { some: { id: permisId } },
+          permisProcedure: { some: { id_permis: permisId } },
         },
         renouvellement: { isNot: null },
       },
@@ -220,14 +238,16 @@ export class ProcedureRenouvellementService {
 
     if (!Object.values(StatutPermis).includes(normalizedStatus as StatutPermis)) {
       throw new BadRequestException(
-        `Invalid status: ${status}. Valid values are: ${Object.values(StatutPermis).join(', ')}`,
+        `Invalid status: ${status}. Valid values are: ${Object.values(StatutPermis).join(', ')}`
       );
     }
 
-    const permit = await this.prisma.permis.findFirst({
-      where: { procedures: { some: { id_proc: procedureId } } },
-      include: { statut: true },
+    const relation = await this.prisma.permisProcedure.findFirst({
+      where: { id_proc: procedureId },
+      include: { permis: { include: { statut: true } } },
     });
+
+    const permit = relation?.permis;
 
     if (!permit) {
       throw new NotFoundException('Permis not found for this procedure');
@@ -238,7 +258,7 @@ export class ProcedureRenouvellementService {
         where: { lib_statut: normalizedStatus },
         create: {
           lib_statut: normalizedStatus,
-          description: `Status ${normalizedStatus}`,
+          description: normalizedStatus,
         },
         update: {},
       });
@@ -250,7 +270,7 @@ export class ProcedureRenouvellementService {
         },
         include: {
           statut: true,
-          procedures: true,
+          permisProcedure: true,
         },
       });
     } catch (error) {
@@ -258,7 +278,6 @@ export class ProcedureRenouvellementService {
       throw new InternalServerErrorException('Failed to update permit status');
     }
   }
-
   async getRenewalData(procedureId: number) {
     const demande = await this.prisma.demande.findFirst({
       where: { id_proc: procedureId },
@@ -269,11 +288,15 @@ export class ProcedureRenouvellementService {
               include: {
                 procedure: {
                   include: {
-                    permis: {
+                    permisProcedure: {
                       include: {
-                        typePermis: true,
-                        detenteur: true,
-                        statut: true,
+                        permis: {
+                          include: {
+                            typePermis: true,
+                            detenteur: true,
+                            statut: true,
+                          },
+                        },
                       },
                     },
                   },
@@ -290,6 +313,7 @@ export class ProcedureRenouvellementService {
     }
 
     const renewal = demande.renouvellement;
+    const linkedPermit = renewal.demande.procedure?.permisProcedure?.[0]?.permis;
 
     return {
       num_decision: renewal.num_decision,
@@ -297,11 +321,10 @@ export class ProcedureRenouvellementService {
       date_debut_validite: renewal.date_debut_validite?.toISOString().split('T')[0],
       date_fin_validite: renewal.date_fin_validite?.toISOString().split('T')[0],
       commentaire: renewal.commentaire,
-      permis: renewal.demande.procedure!.permis[0],
-      nombre_renouvellements: renewal.demande.procedure!.permis[0].nombre_renouvellements,
+      permis: linkedPermit,
+      nombre_renouvellements: linkedPermit?.nombre_renouvellements,
     };
   }
-
   async countPreviousRenewals(permisId: number): Promise<number> {
   const permit = await this.prisma.permis.findUnique({
     where: { id: permisId },
@@ -346,3 +369,6 @@ export class ProcedureRenouvellementService {
     });
   }
 }
+
+
+

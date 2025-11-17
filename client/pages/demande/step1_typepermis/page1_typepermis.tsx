@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
@@ -86,8 +86,14 @@ export default function DemandeStart() {
 
   const displayPriorTitres = useMemo(() => {
     const code = (effectivePermis?.code_type || '').toUpperCase();
+    if (code === 'TXM') {
+      return priorTitres.filter((t) => (t.type_code || '').toUpperCase() === 'TEM');
+    }
+    if (code === 'TXC') {
+      return priorTitres.filter((t) => (t.type_code || '').toUpperCase() === 'TEC');
+    }
     if (code.startsWith('TX')) {
-      // Show only exploration titles TEM/TEC when exploitation is selected
+      // Fallback: show only exploration titles when exploitation selected
       return priorTitres.filter((t) => {
         const ty = (t.type_code || '').toUpperCase();
         return ty === 'TEM' || ty === 'TEC';
@@ -97,6 +103,8 @@ export default function DemandeStart() {
   }, [priorTitres, effectivePermis]);
 
   const filteredPriorTitres = useMemo(() => {
+    // When the selected permit itself is TEM, hide exploration list; only optional APM applies
+    if ((effectivePermis?.code_type || '').toUpperCase() === 'TEM') return [];
     const q = priorSearch.trim().toLowerCase();
     if (!q) return displayPriorTitres;
     return displayPriorTitres.filter((t) => {
@@ -106,7 +114,7 @@ export default function DemandeStart() {
       const number = (t.codeNumber || '').toLowerCase();
       return det.includes(q) || code.includes(q) || type.includes(q) || number.includes(q);
     });
-  }, [displayPriorTitres, priorSearch]);
+  }, [displayPriorTitres, priorSearch, effectivePermis]);
 
   const PAGE_SIZE = 50;
   const [pageCount, setPageCount] = useState(1);
@@ -233,7 +241,7 @@ export default function DemandeStart() {
       setSelectedPermis(response.data ?? null);
       // If exploitation (TXM/TXC), prompt to pick prior titre
       const code = (response.data?.code_type || '').toUpperCase();
-      if (code.startsWith('TX')) {
+      if (code.startsWith('TX') || code === 'TEM') {
         await openPriorTitresModal();
       }
     } catch (error) {
@@ -266,7 +274,7 @@ export default function DemandeStart() {
       const apms = list.filter((t) => (t.type_code || '').toUpperCase() === 'APM');
       setApmTitres(apms);
     } catch (err) {
-      console.error('Erreur chargement titres antérieurs', err);
+      console.error('Erreur chargement titres antÃ©rieurs', err);
       setPriorError("Impossible de charger les titres de prospection / exploration.");
     } finally {
       setPriorLoading(false);
@@ -317,7 +325,9 @@ export default function DemandeStart() {
     try {
       cleanLocalStorageForNewDemande();
 
-      const isExploitation = (permis.code_type || '').toUpperCase().startsWith('TX');
+      const codeSel = (permis.code_type || '').toUpperCase();
+      const isExploitation = codeSel.startsWith('TX');
+      const isExplorationTEM = codeSel === 'TEM';
       let id_detenteur: number | undefined = undefined;
       if (isExploitation) {
         // Ensure prior titre has been chosen
@@ -326,7 +336,7 @@ export default function DemandeStart() {
           detIdStr = String(selectedPrior.detenteur.id_detenteur);
         }
         if (!detIdStr) {
-          toast.warning('Veuillez sélectionner le titre antérieur (APM/TEM/TEC).');
+          toast.warning('Veuillez sÃ©lectionner le titre antÃ©rieur (APM/TEM/TEC).');
           setSubmitting(false);
           // re-open modal to force selection
           await openPriorTitresModal();
@@ -334,6 +344,13 @@ export default function DemandeStart() {
         }
         id_detenteur = Number(detIdStr);
         if (selectedPrior) persistPriorSelection(selectedPrior);
+      }
+
+      // If exploration TEM with selected APM, use its détendeur
+      if (isExplorationTEM) {
+        if (selectedApm?.detenteur?.id_detenteur) {
+          id_detenteur = Number(selectedApm.detenteur.id_detenteur);
+        }
       }
 
       // Pre-resolve exploitation lineage if needed
@@ -428,7 +445,7 @@ export default function DemandeStart() {
               { withCredentials: true },
             );
           } catch (e) {
-            console.warn('Mise à jour de la commune échouée', e);
+            console.warn('Mise Ã  jour de la commune Ã©chouÃ©e', e);
           }
         }
 
@@ -474,7 +491,69 @@ export default function DemandeStart() {
               }, { withCredentials: true });
             }
           } catch (err) {
-            console.warn('Copie du périmètre échouée', err);
+            console.warn('Copie du pÃ©rimÃ¨tre Ã©chouÃ©e', err);
+          }
+        }
+      }
+
+      // If exploration TEM and APM selected (or cached), align commune and copy perimeter from APM
+      if (isExplorationTEM) {
+        // Align commune from APM if available
+        if (id_demande && selectedApm?.communeId != null) {
+          try {
+            await axios.put(
+              `${apiBase}/demandes/${id_demande}`,
+              { id_commune: Number(selectedApm.communeId) },
+              { withCredentials: true },
+            );
+          } catch (e) {
+            console.warn('Mise à jour de la commune (APM) échouée', e);
+          }
+        }
+
+        // Copy perimeter polygon from selected APM titre into the new procedure
+        if (procedure?.id_proc) {
+          try {
+            let apmSourceProcId: number | null = null;
+            // Try cached
+            try {
+              const src = localStorage.getItem('apm_source_proc_id');
+              if (src) {
+                const n = parseInt(src, 10);
+                if (!isNaN(n)) apmSourceProcId = n;
+              }
+            } catch {}
+
+            // Resolve source procedure id from selected APM permis
+            if (!apmSourceProcId) {
+              const apmId = selectedApm?.id;
+              if (apmId) {
+                const pr = await axios.get(`${apiBase}/Permisdashboard/${apmId}`, { withCredentials: true });
+                const procedures = pr.data?.procedures || [];
+                let source = procedures
+                  .filter((p: any) => (p.coordonnees?.length ?? 0) > 0)
+                  .sort((a: any, b: any) => (b.coordonnees?.length ?? 0) - (a.coordonnees?.length ?? 0))[0];
+                const preferred = procedures.find((p: any) =>
+                  (p.coordonnees?.length ?? 0) > 0 &&
+                  (p.demandes?.[0]?.typeProcedure?.libelle || '').toLowerCase() === 'demande'
+                );
+                if (preferred) source = preferred;
+                if (source?.id_proc) {
+                  apmSourceProcId = source.id_proc;
+                  try { localStorage.setItem('apm_source_proc_id', String(apmSourceProcId)); } catch {}
+                }
+              }
+            }
+
+            if (apmSourceProcId) {
+              await axios.post(`${apiBase}/coordinates/copy`, {
+                source_proc: apmSourceProcId,
+                target_proc: procedure.id_proc,
+                mode: 'duplicate',
+              }, { withCredentials: true });
+            }
+          } catch (err) {
+            console.warn('Copie du périmètre APM échouée', err);
           }
         }
       }
@@ -583,9 +662,9 @@ export default function DemandeStart() {
               <div className={styles.modalOverlay}>
                 <div className={styles.modalContent}>
                   <div className={styles.modalHeader}>
-                    <h3>Sélectionnez le titre antérieur</h3>
+                    <h3>SÃ©lectionnez le titre antÃ©rieur</h3>
                     <button className={styles.modalClose} onClick={() => setShowPriorModal(false)}>
-                      ×
+                      Ã—
                     </button>
                   </div>
                   <div className={styles.modalBody}>
@@ -601,7 +680,7 @@ export default function DemandeStart() {
                           onChange={(e) => setPriorSearch(e.target.value)} />
                       </div><div className={styles.titreList}>
                           {filteredPriorTitres.length === 0 && (
-                            <div>Aucun titre de prospection/exploration trouvé.</div>
+                            <div>Aucun titre de prospection/exploration trouvÃ©.</div>
                           )}
                           {visiblePriorTitres.map((t) => (
                             <label key={t.id} className={styles.titreItem}>
@@ -616,7 +695,7 @@ export default function DemandeStart() {
                                   <strong>{t.code_permis}</strong> {t.type_code ? `(${t.type_code})` : ''}
                                 </div>
                                 <div className={styles.titreDetenteur}>
-                                  Détenteur: {t.detenteur?.nom || '—'}
+                                  DÃ©tenteur: {t.detenteur?.nom || 'â€”'}
                                 </div>
                               </div>
                             </label>
@@ -629,7 +708,7 @@ export default function DemandeStart() {
                             </div>
                           )}
                         </div>
-                        {selectedPrior?.type_code && (selectedPrior.type_code.toUpperCase() === 'TEM') && (
+                        {((effectivePermis?.code_type || '').toUpperCase() === 'TEM') && (
                           <>
                             <div style={{ marginTop: 12, fontWeight: 600 }}>Titres APM (optionnel)</div>
                             <div className={styles.titreList}>
@@ -646,7 +725,7 @@ export default function DemandeStart() {
                                       <strong>{t.code_permis}</strong> {t.type_code ? `(${t.type_code})` : ''}
                                     </div>
                                     <div className={styles.titreDetenteur}>
-                                      Détenteur: {t.detenteur?.nom || 'N/A'} {t.codeNumber ? `• ${t.codeNumber}` : ''}
+                                      DÃ©tenteur: {t.detenteur?.nom || 'N/A'} {t.codeNumber ? `â€¢ ${t.codeNumber}` : ''}
                                     </div>
                                   </div>
                                 </label>
@@ -667,14 +746,18 @@ export default function DemandeStart() {
                   <div className={styles.modalFooter}>
                     <button
                       className={`${styles.button} ${styles.start}`}
-                      disabled={!selectedPrior}
+                      disabled={(effectivePermis?.code_type || '').toUpperCase().startsWith('TX') && !selectedPrior}
                       onClick={() => {
-                        if (selectedPrior) {
+                        const codeSel = (effectivePermis?.code_type || '').toUpperCase();
+                        if (codeSel.startsWith('TX')) {
+                          if (!selectedPrior) return;
                           persistPriorSelection(selectedPrior);
-                          if (selectedApm) { persistApmSelection(selectedApm); }
-                          setShowPriorModal(false);
-                          toast.success('Titre antérieur sélectionné.');
                         }
+                        if (codeSel === 'TEM' && selectedApm) {
+                          persistApmSelection(selectedApm);
+                        }
+                        setShowPriorModal(false);
+                        toast.success('Sélection enregistrée.');
                       }}
                     >
                       Confirmer

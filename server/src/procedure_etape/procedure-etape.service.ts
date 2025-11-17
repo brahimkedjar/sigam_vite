@@ -87,7 +87,8 @@ async setStepStatus(id_proc: number, id_etape: number, statut: StatutProcedure, 
       include: { 
         demandes: {
           include: {
-            typeProcedure: true
+            typeProcedure: true,
+            typePermis: true,
           }
         }
       }
@@ -98,9 +99,11 @@ async setStepStatus(id_proc: number, id_etape: number, statut: StatutProcedure, 
     }
 
     // Get the procedure type (assuming first demande's type)
-    const procedureType = procedure.demandes[0]?.typeProcedure;
-    if (!procedureType) {
-      throw new Error(`No procedure type found for procedure ${id_proc}`);
+    const primaryDemande = procedure.demandes[0];
+    const procedureType = primaryDemande?.typeProcedure;
+    const procedureTypePermis = primaryDemande?.typePermis;
+    if (!procedureType || !procedureTypePermis) {
+      throw new Error(`No procedure type or type permis found for procedure ${id_proc}`);
     }
 
     // Check if procedure has phase associations
@@ -110,23 +113,38 @@ async setStepStatus(id_proc: number, id_etape: number, statut: StatutProcedure, 
 
     if (phaseCount === 0) {
       // Get phases specific to this procedure type
-      const phases = await this.prisma.phase.findMany({
-        where: { relationPhaseTypeProc: { some: { id_typeProcedure: procedureType.id } } },
-        orderBy: { ordre: 'asc' }
+      const phaseRelations = await this.prisma.relationPhaseTypeProc.findMany({
+        where: {
+          combinaison: {
+            id_typeProc: procedureType.id,
+            id_typePermis: procedureTypePermis.id,
+          },
+        },
+        include: { phase: true },
+        orderBy: {
+          phase: {
+            ordre: 'asc',
+          },
+        },
       });
 
-      const procedurePhasesData = phases.map((phase, index) => ({
+      if (phaseRelations.length === 0) {
+        throw new Error(
+          `No phases defined for combination typeProc=${procedureType.id} typePermis=${procedureTypePermis.id}`
+        );
+      }
+
+      const procedurePhasesData = phaseRelations.map((relation, index) => ({
         id_proc,
-        id_phase: phase.id_phase,
+        id_phase: relation.id_phase,
         ordre: index + 1,
-        statut: StatutProcedure.EN_ATTENTE
+        statut: StatutProcedure.EN_ATTENTE,
       }));
 
       await this.prisma.procedurePhase.createMany({
         data: procedurePhasesData
       });
 
-      console.log(`✅ Created ${phases.length} phase associations for procedure ${id_proc} (type: ${procedureType.libelle})`);
     }
   }
 
@@ -256,19 +274,11 @@ async setStepStatus(id_proc: number, id_etape: number, statut: StatutProcedure, 
       throw new Error('Cannot move to next phase - current phase not completed');
     }
 
-    // Get the next phase by comparing ordre against the current phase's ordre
-    const currentProcPhase = await this.prisma.procedurePhase.findUnique({
-      where: { id_proc_id_phase: { id_proc, id_phase: currentPhaseId } },
-    });
-
-    if (!currentProcPhase) {
-      throw new Error('Current phase not found in procedure');
-    }
-
+    // Get the next phase
     const nextPhase = await this.prisma.procedurePhase.findFirst({
       where: {
         id_proc,
-        ordre: { gt: currentProcPhase.ordre }
+        ordre: { gt: currentPhaseId }
       },
       orderBy: { ordre: 'asc' },
       include: { 

@@ -51,15 +51,20 @@ async createInitialDemandeObligations(
   if (!permis) {
     throw new HttpException('Permis not found', HttpStatus.NOT_FOUND);
   }
+  if (!permis.typePermis) {
+    throw new HttpException('TypePermis not configured for this permis', HttpStatus.BAD_REQUEST);
+  }
 
-  // Check if initial obligations already exist (we will still create any missing ones)
+  const initialDuration = this.ensureInitialDuration(permis.typePermis);
+
+  // Check if initial obligations already exist
   const existingInitialObligations = await this.prisma.obligationFiscale.findMany({
     where: { 
       id_permis: permisId,
       // We can identify initial obligations by their earlier years or specific pattern
       annee_fiscale: {
         gte: dateAttribution.getFullYear(),
-        lte: dateAttribution.getFullYear() + permis.typePermis.duree_initiale! - 1
+        lte: dateAttribution.getFullYear() + initialDuration - 1
       }
     },
     include: { typePaiement: true },
@@ -68,18 +73,20 @@ async createInitialDemandeObligations(
   console.log('Existing initial obligations:', existingInitialObligations.length);
 
   if (existingInitialObligations.length > 0) {
-    console.log('Initial obligations found; updating missing TS details if needed');
+    console.log('Initial obligations already exist, updating if needed');
+    
     // Update any surface tax obligations with missing details
     const obligationsWithMissingDetails = existingInitialObligations.filter(
       ob => !ob.details_calcul && ob.typePaiement.libelle === 'Taxe superficiaire'
     );
+    
     if (obligationsWithMissingDetails.length > 0) {
       console.log('Updating initial obligations with missing details:', obligationsWithMissingDetails.length);
       for (const obligation of obligationsWithMissingDetails) {
         await this.updateSurfaceTaxObligationDetails(obligation.id, permisId, dateAttribution, false);
       }
     }
-    // Do not return here; proceed to create any missing obligations
+    return existingInitialObligations;
   }
 
   // Calculate fees for initial demande
@@ -113,7 +120,7 @@ async createInitialDemandeObligations(
     permisId, 
     dateAttribution,
     false, // isRenewal = false
-    permis.typePermis.duree_initiale! // Use initial duration
+    initialDuration // Use initial duration
   );
 
   // Combine all obligations
@@ -121,26 +128,14 @@ async createInitialDemandeObligations(
 
   console.log('Creating initial demande obligations:', obligations.length);
 
-  // Create obligations in transaction (deduplicated)
+  // Create obligations in transaction
   const createdObligations = await this.prisma.$transaction(async (tx) => {
-    // Filter out obligations that already exist to avoid duplicates
-    const existing = await tx.obligationFiscale.findMany({
-      where: {
-        id_permis: permisId,
-        annee_fiscale: { in: obligations.map(o => o.annee_fiscale) },
-      },
-      select: { id_typePaiement: true, annee_fiscale: true },
+    // Create new obligations
+    const created = await tx.obligationFiscale.createMany({
+      data: obligations,
     });
 
-    const toCreate = obligations.filter(o =>
-      !existing.some(e => e.id_typePaiement === o.id_typePaiement && e.annee_fiscale === o.annee_fiscale)
-    );
-
-    for (const data of toCreate) {
-      await tx.obligationFiscale.create({ data });
-    }
-
-    console.log('Initial obligations created:', toCreate.length);
+    console.log('Initial obligations created:', created.count);
 
     // Fetch created surface tax obligations
     const createdSurfaceObligations = await tx.obligationFiscale.findMany({
@@ -164,7 +159,7 @@ async createInitialDemandeObligations(
         dateAttribution, 
         tx,
         false, // isRenewal = false
-        permis.typePermis.duree_initiale!
+        initialDuration
       );
     }
 
@@ -213,7 +208,7 @@ async createRenewalObligations(
   const renewalStartYear = renewalStartDate.getFullYear();
   const renewalEndYear = renewalStartYear + Math.ceil(renewalDuration) - 1;
 
-  // Check if renewal obligations already exist for this period (we will still create any missing ones)
+  // Check if renewal obligations already exist for this period
   const existingRenewalObligations = await this.prisma.obligationFiscale.findMany({
     where: { 
       id_permis: permisId,
@@ -228,11 +223,13 @@ async createRenewalObligations(
   console.log('Existing renewal obligations:', existingRenewalObligations.length);
 
   if (existingRenewalObligations.length > 0) {
-    console.log('Renewal obligations found; updating TS details if needed');
+    console.log('Renewal obligations already exist for this period, updating if needed');
+    
     // Update any surface tax obligations
     const surfaceTaxObligations = existingRenewalObligations.filter(
       ob => ob.typePaiement.libelle === 'Taxe superficiaire'
     );
+    
     for (const obligation of surfaceTaxObligations) {
       await this.updateSurfaceTaxObligationDetails(
         obligation.id, 
@@ -242,7 +239,7 @@ async createRenewalObligations(
         renewalDuration
       );
     }
-    // Do not return here; proceed to create any missing obligations
+    return existingRenewalObligations;
   }
 
   // Calculate establishment fee for renewal
@@ -271,26 +268,14 @@ async createRenewalObligations(
 
   console.log('Creating renewal obligations:', obligations.length);
 
-  // Create obligations in transaction (deduplicated)
+  // Create obligations in transaction
   const createdObligations = await this.prisma.$transaction(async (tx) => {
-    // Filter out obligations that already exist to avoid duplicates
-    const existing = await tx.obligationFiscale.findMany({
-      where: {
-        id_permis: permisId,
-        annee_fiscale: { in: obligations.map(o => o.annee_fiscale) },
-      },
-      select: { id_typePaiement: true, annee_fiscale: true },
+    // Create new obligations
+    const created = await tx.obligationFiscale.createMany({
+      data: obligations,
     });
 
-    const toCreate = obligations.filter(o =>
-      !existing.some(e => e.id_typePaiement === o.id_typePaiement && e.annee_fiscale === o.annee_fiscale)
-    );
-
-    for (const data of toCreate) {
-      await tx.obligationFiscale.create({ data });
-    }
-
-    console.log('Renewal obligations created:', toCreate.length);
+    console.log('Renewal obligations created:', created.count);
 
     // Fetch created surface tax obligations
     const createdSurfaceObligations = await tx.obligationFiscale.findMany({
@@ -377,14 +362,18 @@ async createRenewalObligations(
       return;
     }
 
+    if (!obligation.permis?.typePermis) {
+      throw new HttpException('TypePermis not loaded for obligation', HttpStatus.BAD_REQUEST);
+    }
+
     const obligationYear = obligation.annee_fiscale;
     const attributionYear = dateAttribution.getFullYear();
     const attributionMonth = dateAttribution.getMonth() + 1;
     
     // For renewals, use the renewal duration, otherwise use initial duration
-    const permitDuration = isRenewal && renewalDuration 
-      ? renewalDuration 
-      : obligation.permis.typePermis.duree_initiale;
+    const permitDuration = isRenewal
+      ? (renewalDuration ?? this.ensureInitialDuration(obligation.permis.typePermis))
+      : this.ensureInitialDuration(obligation.permis.typePermis);
 
     console.log('Parameters:', { obligationYear, attributionYear, permitDuration, isRenewal });
 
@@ -557,20 +546,29 @@ async createRenewalObligations(
   if (!permis) {
     throw new HttpException('Permis not found', HttpStatus.NOT_FOUND);
   }
+  if (!permis.typePermis) {
+    throw new HttpException('TypePermis not configured for this permis', HttpStatus.BAD_REQUEST);
+  }
 
-  const requiresSurfaceTax = ['TEM', 'TXM', 'TEC', 'TXC'].includes(permis.typePermis.code_type!);
+  const codeType = this.ensureCodeType(permis.typePermis);
+  const requiresSurfaceTax = ['PEM', 'PXM', 'PEC', 'PXC'].includes(codeType);
   if (!requiresSurfaceTax) {
-    console.log('No surface tax required for permit type:', permis.typePermis.code_type);
+    console.log('No surface tax required for permit type:', codeType);
     return [];
+  }
+
+  if (!permis.typePermis.taxe) {
+    throw new HttpException('Taxe superficiaire missing for this type de permis', HttpStatus.BAD_REQUEST);
   }
 
   const attributionYear = dateAttribution.getFullYear();
   const attributionMonth = dateAttribution.getMonth() + 1; // JavaScript months are 0-indexed
   
   // For renewals, use the provided renewal duration instead of initial duration
-  const dureeTotale = isRenewal && renewalDuration 
-    ? renewalDuration 
-    : permis.typePermis.duree_initiale;
+  const initialDuration = this.ensureInitialDuration(permis.typePermis);
+  const dureeTotale = isRenewal
+    ? (renewalDuration ?? initialDuration)
+    : initialDuration;
   
   // For renewals, use the appropriate period type based on nombre_renouvellements
   const periodeType = isRenewal 
@@ -588,7 +586,7 @@ async createRenewalObligations(
     nombre_renouvellements: permis.nombre_renouvellements
   });
 
-  for (let yearOffset = 0; yearOffset < dureeTotale!; yearOffset++) {
+  for (let yearOffset = 0; yearOffset < dureeTotale; yearOffset++) {
     const currentObligationYear = attributionYear + yearOffset;
     let numberOfMonths = 12;
     
@@ -609,11 +607,11 @@ async createRenewalObligations(
         numberOfMonths = diffDays / 30.44; // Average month length
         numberOfMonths = Math.ceil(numberOfMonths * 10) / 10; // Round to 1 decimal
       }
-    } else if (yearOffset === dureeTotale! - 1 && !isRenewal) {
+    } else if (yearOffset === dureeTotale - 1 && !isRenewal) {
       // Last year of initial permit: from start of year to attribution date + duration - 1 day
       const finalYearStart = new Date(currentObligationYear, 0, 1);
       const permitEndDate = new Date(dateAttribution);
-      permitEndDate.setFullYear(permitEndDate.getFullYear() + dureeTotale!);
+      permitEndDate.setFullYear(permitEndDate.getFullYear() + dureeTotale);
       permitEndDate.setDate(permitEndDate.getDate() - 1); // -1 day to get the last day
         
       const diffTime = Math.abs(permitEndDate.getTime() - finalYearStart.getTime());
@@ -666,6 +664,28 @@ async createRenewalObligations(
     } else {
       return 'autre_renouvellement';
     }
+  }
+
+  private ensureInitialDuration(
+    typePermis: { duree_initiale: number | null | undefined; lib_type?: string | null }
+  ): number {
+    if (typePermis?.duree_initiale == null) {
+      throw new HttpException(
+        `La durée initiale n'est pas configurée pour le type de permis ${typePermis?.lib_type ?? ''}`,
+        HttpStatus.BAD_REQUEST
+      );
+    }
+    return typePermis.duree_initiale;
+  }
+
+  private ensureCodeType(typePermis: { code_type: string | null | undefined }): string {
+    if (!typePermis?.code_type) {
+      throw new HttpException(
+        `Le code type n'est pas configuré pour ce type de permis`,
+        HttpStatus.BAD_REQUEST
+      );
+    }
+    return typePermis.code_type;
   }
 
   private calculateSurfaceTaxForPeriod(
@@ -768,16 +788,34 @@ async createRenewalObligations(
   }
 
   async getProcedureWithPermis(procedureId: number) {
-    return this.prisma.procedure.findUnique({
+    const procedure = await this.prisma.procedure.findUnique({
       where: { id_proc: procedureId },
       include: {
-        permis: {
+        permisProcedure: {
           include: {
-            typePermis: true,
+            permis: {
+              include: {
+                typePermis: true,
+              },
+            },
           },
         },
       },
     });
+
+    if (!procedure) {
+      return null;
+    }
+
+    const permisList = procedure.permisProcedure
+      .map(rel => rel.permis)
+      .filter((p): p is NonNullable<typeof p> => !!p);
+
+    const { permisProcedure, ...rest } = procedure as any;
+    return {
+      ...rest,
+      permis: permisList,
+    };
   }
 
   async getObligationsForPermis(permisId: number): Promise<ObligationResponseDto[]> {
@@ -924,27 +962,31 @@ async createRenewalObligations(
   }
 
   async getPermisWithDetails(permisId: number) {
-    return this.prisma.permis.findUnique({
+    const permis = await this.prisma.permis.findUnique({
       where: { id: permisId },
       include: {
         typePermis: { include: { taxe: true } },
         detenteur: true,
         commune: true,
         statut: true,
-        procedures: {
+        permisProcedure: {
           include: {
-            demandes: {
+            procedure: {
               include: {
-                typeProcedure: true,
-                typePermis: true,
-                expertMinier: true,
-                wilaya: true,
-                daira: true,
-                commune: true,
+                demandes: {
+                  include: {
+                    typeProcedure: true,
+                    typePermis: true,
+                    expertMinier: true,
+                    wilaya: true,
+                    daira: true,
+                    commune: true,
+                  },
+                },
+                ProcedureEtape: true,
+                ProcedurePhase: true,
               },
             },
-            ProcedureEtape: true,
-            ProcedurePhase: true,
           },
         },
         ObligationFiscale: {
@@ -957,6 +999,20 @@ async createRenewalObligations(
         RapportActivite: true,
       },
     });
+
+    if (!permis) {
+      return null;
+    }
+
+    const procedures = permis.permisProcedure
+      .map(rel => rel.procedure)
+      .filter((proc): proc is NonNullable<typeof proc> => !!proc);
+
+    const { permisProcedure, ...rest } = permis as any;
+    return {
+      ...rest,
+      procedures,
+    };
   }
   async checkAllObligationsPaid(permisId: number): Promise<{
   isPaid: boolean;
