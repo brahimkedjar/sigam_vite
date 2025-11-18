@@ -92,6 +92,11 @@ async export(
   res.setHeader('Content-Disposition', `attachment; filename="demandes_export.csv"`);
   res.send(csv);
 }
+
+  @Get('mine')
+  async mine(@Query('responsable') responsable?: string) {
+    return this.service.findByResponsable(responsable ?? '');
+  }
   @Get(':id')
   async one(@Param('id') id: string) {
     return this.service.getDemandeById(+id);

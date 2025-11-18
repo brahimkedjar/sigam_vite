@@ -741,9 +741,13 @@ useEffect(() => {
   }, [idDemande, famille, apiURL]);
 
   const phases: Phase[] = procedureData?.ProcedurePhase
-    ? procedureData.ProcedurePhase.map((pp: ProcedurePhase) => pp.phase).sort(
-        (a: Phase, b: Phase) => a.ordre - b.ordre
-      )
+    ? procedureData.ProcedurePhase
+        .slice()
+        .sort((a: ProcedurePhase, b: ProcedurePhase) => a.ordre - b.ordre)
+        .map((pp: ProcedurePhase) => ({
+          ...pp.phase,
+          ordre: pp.ordre,
+        }))
     : [];
 
   const generateId = () => Math.random().toString(36).substring(2, 9);

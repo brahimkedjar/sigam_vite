@@ -286,8 +286,12 @@ useActivateEtape({
 
   const phases: Phase[] = procedureData?.ProcedurePhase 
     ? procedureData.ProcedurePhase
-        .map((pp: ProcedurePhase) => pp.phase)
-        .sort((a: Phase, b: Phase) => a.ordre - b.ordre)
+        .slice()
+        .sort((a: ProcedurePhase, b: ProcedurePhase) => a.ordre - b.ordre)
+        .map((pp: ProcedurePhase) => ({
+          ...pp.phase,
+          ordre: pp.ordre,
+        }))
     : [];
 
   const handleOpenCahierForm = (doc: DocumentWithStatus) => {

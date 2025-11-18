@@ -144,7 +144,7 @@ export default function Step5_Documents() {
     const total = demandeMeta.duree_instruction;
 
     // Point de départ = début de procédure, sinon date_demande.
-    const startRaw = (procedureData as any)?.date_debut_proc || demandeMeta.date_demande;
+    const startRaw = demandeMeta.date_demande;
     if (!startRaw) return null;
     const start = new Date(startRaw);
     start.setHours(0, 0, 0, 0);
@@ -547,8 +547,12 @@ export default function Step5_Documents() {
 
   const phases: Phase[] = procedureData?.ProcedurePhase 
     ? procedureData.ProcedurePhase
-        .map((pp: ProcedurePhase) => pp.phase)
-        .sort((a: Phase, b: Phase) => a.ordre - b.ordre)
+        .slice()
+        .sort((a: ProcedurePhase, b: ProcedurePhase) => a.ordre - b.ordre)
+        .map((pp: ProcedurePhase) => ({
+          ...pp.phase,
+          ordre: pp.ordre,
+        }))
     : [];
 
   const handleOpenCahierForm = (doc: DocumentWithStatus) => {

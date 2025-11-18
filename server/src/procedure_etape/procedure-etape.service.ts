@@ -121,11 +121,14 @@ async setStepStatus(id_proc: number, id_etape: number, statut: StatutProcedure, 
           },
         },
         include: { phase: true },
-        orderBy: {
-          phase: {
-            ordre: 'asc',
+        orderBy: [
+          { ordre: 'asc' },
+          {
+            phase: {
+              ordre: 'asc',
+            },
           },
-        },
+        ],
       });
 
       if (phaseRelations.length === 0) {
@@ -137,7 +140,7 @@ async setStepStatus(id_proc: number, id_etape: number, statut: StatutProcedure, 
       const procedurePhasesData = phaseRelations.map((relation, index) => ({
         id_proc,
         id_phase: relation.id_phase,
-        ordre: index + 1,
+        ordre: relation.ordre ?? index + 1,
         statut: StatutProcedure.EN_ATTENTE,
       }));
 

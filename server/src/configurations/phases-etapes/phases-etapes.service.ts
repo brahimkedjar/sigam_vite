@@ -203,7 +203,7 @@ export class PhasesEtapesService {
     });
   }
 
-  async createCombinaison(dto: CreateCombinaisonPermisProcDto) {
+  async createCombinaison(dto: CreateCombinaisonPermisProcDto & { duree_regl_proc?: number | null }) {
     // Ensure referenced types exist
     const typePermis = await this.prisma.typePermis.findUnique({
       where: { id: dto.id_typePermis },
@@ -241,6 +241,7 @@ export class PhasesEtapesService {
       data: {
         id_typePermis: dto.id_typePermis,
         id_typeProc: dto.id_typeProc,
+        duree_regl_proc: dto.duree_regl_proc ?? null,
       },
     });
   }
@@ -270,21 +271,47 @@ export class PhasesEtapesService {
     }
   }
 
+  async updateCombinaison(
+    id_combinaison: number,
+    dto: UpdateCombinaisonPermisProcDto & { duree_regl_proc?: number | null },
+  ) {
+    try {
+      return await this.prisma.combinaisonPermisProc.update({
+        where: { id_combinaison },
+        data: {
+          duree_regl_proc: dto.duree_regl_proc ?? null,
+        },
+      });
+    } catch (error: any) {
+      if (error.code === 'P2025') {
+        throw new NotFoundException(
+          `Combinaison avec id ${id_combinaison} introuvable`,
+        );
+      }
+      throw new BadRequestException(
+        "Erreur lors de la mise à jour de la combinaison.",
+      );
+    }
+  }
+
   async findRelationsByCombinaison(id_combinaison: number) {
     return this.prisma.relationPhaseTypeProc.findMany({
       where: { id_combinaison },
       include: {
         phase: true,
       },
-      orderBy: {
-        phase: {
-          ordre: 'asc',
+      orderBy: [
+        { ordre: 'asc' },
+        {
+          phase: {
+            ordre: 'asc',
+          },
         },
-      },
+      ],
     });
   }
 
-  async createRelation(dto: CreateRelationPhaseTypeProcDto) {
+  async createRelation(dto: CreateRelationPhaseTypeProcDto & { ordre?: number | null }) {
     // Optional: prevent duplicates for same (id_phase, id_combinaison)
     const existing = await this.prisma.relationPhaseTypeProc.findFirst({
       where: {
@@ -303,6 +330,7 @@ export class PhasesEtapesService {
       data: {
         id_phase: dto.id_phase,
         id_combinaison: dto.id_combinaison,
+        ordre: dto.ordre ?? null,
         dureeEstimee: dto.dureeEstimee ?? null,
       },
     });

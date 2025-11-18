@@ -2,62 +2,67 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-type SequenceRow = {
+type SeqInfo = {
   table_name: string;
   column_name: string;
   sequence_name: string;
 };
 
 async function syncAllSequences() {
-  // Find all sequences attached to table columns in the public schema
-  const rows = await prisma.$queryRawUnsafe<SequenceRow[]>(`
+  console.log("🔍 Detecting all sequences...");
+
+  // This query finds ALL sequences linked to table columns (NOT dependent on depType)
+  const seqs = await prisma.$queryRawUnsafe<SeqInfo[]>(`
     SELECT
       t.relname AS table_name,
       a.attname AS column_name,
       s.relname AS sequence_name
-    FROM pg_class t
-    JOIN pg_attribute a ON a.attrelid = t.oid AND a.attnum > 0
-    JOIN pg_depend d ON d.refobjid = t.oid AND d.refobjsubid = a.attnum
-    JOIN pg_class s ON s.oid = d.objid
-    JOIN pg_namespace n ON n.oid = t.relnamespace
-    WHERE d.deptype = 'a'
-      AND n.nspname = 'public';
+    FROM pg_class s
+    JOIN pg_depend d ON d.objid = s.oid
+    JOIN pg_class t ON d.refobjid = t.oid
+    JOIN pg_attribute a ON a.attrelid = t.oid AND a.attnum = d.refobjsubid
+    WHERE s.relkind = 'S'          -- only sequences
+      AND d.classid = 'pg_class'::regclass; -- ensure dependency is table-level
   `);
 
-  for (const row of rows) {
-    const { table_name, column_name, sequence_name } = row;
-    // Move the sequence to max(id)+1 for that table/column.
-    // Wrap each update in a try/catch so that any stale or missing
-    // sequence entry does not break the whole sync.
+  console.log(`🔧 Found ${seqs.length} sequences to fix.\n`);
+
+  for (const seq of seqs) {
+    const { table_name, column_name, sequence_name } = seq;
+
+    // Build SQL (with proper quoted identifiers)
     const sql = `
       SELECT setval(
-        '${sequence_name}',
+        '"${sequence_name}"',
         COALESCE((SELECT MAX("${column_name}") FROM "${table_name}"), 0) + 1,
         false
       );
     `;
+
     try {
       await prisma.$executeRawUnsafe(sql);
+      console.log(
+        `✔ Synced ${sequence_name} → ${table_name}.${column_name}`
+      );
     } catch (err) {
-      console.warn(
-        `Skipping sequence sync for ${sequence_name} on ${table_name}.${column_name}:`,
-        (err as Error).message ?? err,
+      console.error(
+        `❌ Failed syncing sequence ${sequence_name}: ${(err as Error).message}`
       );
     }
   }
+
+  console.log("\n✅ All sequences synchronized successfully!");
 }
 
 async function main() {
-  console.log('Synchronising PostgreSQL sequences with current data...');
-  await syncAllSequences();
-  console.log('Sequences synchronised successfully.');
+  try {
+    console.log("🚀 Starting global sequence synchronization...");
+    await syncAllSequences();
+  } catch (err) {
+    console.error("❌ Fatal error:", err);
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
-main()
-  .catch((error) => {
-    console.error('Error while synchronising sequences', error);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+main();

@@ -45,6 +45,7 @@ async updateDemande(
       code_demande?: string;
       id_detenteur?: number;
       date_demande: string;
+      nom_responsable?: string;
     }
   ) {
     const demande = await this.demandeService.createDemande({
@@ -53,6 +54,7 @@ async updateDemande(
       code_demande: body.code_demande,
       id_detenteur: body.id_detenteur,
       date_demande: new Date(body.date_demande),
+      nom_responsable: body.nom_responsable,
     });
 
     return demande;

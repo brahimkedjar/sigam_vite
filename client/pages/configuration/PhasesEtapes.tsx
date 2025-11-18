@@ -35,12 +35,14 @@ interface CombinaisonPermisProc {
   id_typeProc: number;
   typePermis: TypePermisLite;
   typeProc: TypeProcedureLite;
+  duree_regl_proc?: number | null;
 }
 
 interface RelationPhaseTypeProc {
   id_relation: number;
   id_phase: number;
   id_combinaison: number;
+  ordre: number | null;
   dureeEstimee: number | null;
   phase: Phase;
 }
@@ -79,6 +81,7 @@ const PhasesEtapes: React.FC = () => {
 
   const [relationForm, setRelationForm] = useState({
     id_phase: '',
+    ordre: '',
     dureeEstimee: '',
   });
 
@@ -101,7 +104,7 @@ const PhasesEtapes: React.FC = () => {
   const filteredCombinaisons = useMemo(() => {
     const q = combinaisonSearch.trim().toLowerCase();
     if (!q) return combinaisons;
-    return combinaisons.filter((combinaison) => {
+      return combinaisons.filter((combinaison) => {
       const tp = combinaison.typePermis;
       const tr = combinaison.typeProc;
       const label =
@@ -109,6 +112,14 @@ const PhasesEtapes: React.FC = () => {
       return label.includes(q);
     });
   }, [combinaisons, combinaisonSearch]);
+
+  const selectedCombinaison = useMemo(
+    () =>
+      combinaisons.find(
+        (c) => c.id_combinaison === selectedCombinaisonId,
+      ) ?? null,
+    [combinaisons, selectedCombinaisonId],
+  );
 
   const handleTemplateChangeWithRoute = (
     event: React.ChangeEvent<HTMLSelectElement>,
@@ -449,6 +460,10 @@ const PhasesEtapes: React.FC = () => {
         body: JSON.stringify({
           id_phase: Number(relationForm.id_phase),
           id_combinaison: selectedCombinaisonId,
+          ordre:
+            relationForm.ordre.trim() === ''
+              ? null
+              : Number(relationForm.ordre),
           dureeEstimee: dureeValue,
         }),
       });
@@ -456,7 +471,7 @@ const PhasesEtapes: React.FC = () => {
         const text = await response.text();
         throw new Error(text || 'Failed to create relation');
       }
-      setRelationForm({ id_phase: '', dureeEstimee: '' });
+      setRelationForm({ id_phase: '', ordre: '', dureeEstimee: '' });
       await fetchRelations(selectedCombinaisonId);
     } catch (err) {
       console.error(err);
@@ -832,6 +847,70 @@ const PhasesEtapes: React.FC = () => {
 
         {selectedCombinaisonId != null && (
           <>
+            {selectedCombinaison && (
+              <div className={styles.list}>
+                <div className={styles.itemCard}>
+                  <div className={styles.itemMain}>
+                    <div className={styles.itemTitle}>
+                      Durée réglementaire de la procédure
+                    </div>
+                    <div className={styles.itemMeta}>
+                      Type permis : {selectedCombinaison.typePermis.code_type} -{' '}
+                      {selectedCombinaison.typePermis.lib_type} / Type procédure :{' '}
+                      {selectedCombinaison.typeProc.libelle}
+                    </div>
+                  </div>
+                  <div className={styles.itemActions}>
+                    <input
+                      key={`${selectedCombinaison.id_combinaison}-${selectedCombinaison.duree_regl_proc ?? ''}`}
+                      type="number"
+                      className={styles.durationInput}
+                      placeholder="Durée (jours)"
+                      defaultValue={
+                        selectedCombinaison.duree_regl_proc != null
+                          ? String(selectedCombinaison.duree_regl_proc)
+                          : ''
+                      }
+                      onBlur={async (event) => {
+                        if (!apiURL || selectedCombinaisonId == null) return;
+                        const raw = event.target.value.trim();
+                        const value =
+                          raw === '' ? null : Number(raw);
+                        if (raw !== '' && Number.isNaN(value)) {
+                          setError('La durée réglementaire doit être un nombre.');
+                          return;
+                        }
+                        try {
+                          setError(null);
+                          const response = await fetch(
+                            `${apiURL}/phases-etapes/combinaisons/${selectedCombinaisonId}`,
+                            {
+                              method: 'PUT',
+                              headers: { 'Content-Type': 'application/json' },
+                              credentials: 'include',
+                              body: JSON.stringify({
+                                duree_regl_proc: value,
+                              }),
+                            },
+                          );
+                          if (!response.ok) {
+                            const text = await response.text();
+                            throw new Error(text || 'Failed to update combinaison');
+                          }
+                          await fetchCombinaisons();
+                        } catch (err) {
+                          console.error(err);
+                          setError(
+                            "Erreur lors de la mise à jour de la durée réglementaire.",
+                          );
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className={styles.relationsList}>
               {relations.length === 0 ? (
                 <div className={styles.emptyState}>
@@ -842,7 +921,7 @@ const PhasesEtapes: React.FC = () => {
                   <div key={relation.id_relation} className={styles.itemCard}>
                     <div className={styles.itemMain}>
                       <div className={styles.itemTitle}>
-                        {relation.phase.ordre}. {relation.phase.libelle}
+                        {(relation.ordre ?? relation.phase.ordre)}. {relation.phase.libelle}
                       </div>
                       <div className={styles.itemMeta}>
                         Durée estimée totale :{' '}
@@ -853,6 +932,47 @@ const PhasesEtapes: React.FC = () => {
                     </div>
                     <div className={styles.itemActions}>
                       <span className={styles.badge}>Phase</span>
+                      <input
+                        type="number"
+                        className={styles.durationInput}
+                        defaultValue={
+                          relation.ordre != null ? String(relation.ordre) : ''
+                        }
+                        placeholder="Ordre"
+                        onBlur={async (event) => {
+                          if (!apiURL) return;
+                          const raw = event.target.value.trim();
+                          const value = raw === '' ? null : Number(raw);
+                          if (raw !== '' && Number.isNaN(value)) {
+                            setError("L'ordre doit être un nombre.");
+                            return;
+                          }
+                          try {
+                            setError(null);
+                            const response = await fetch(
+                              `${apiURL}/phases-etapes/relations/${relation.id_relation}`,
+                              {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                credentials: 'include',
+                                body: JSON.stringify({
+                                  ordre: value,
+                                }),
+                              },
+                            );
+                            if (!response.ok) {
+                              const text = await response.text();
+                              throw new Error(text || 'Failed to update relation');
+                            }
+                            await fetchRelations(relation.id_combinaison);
+                          } catch (err) {
+                            console.error(err);
+                            setError(
+                              "Erreur lors de la mise à jour de l'ordre de la phase.",
+                            );
+                          }
+                        }}
+                      />
                       <button
                         type="button"
                         className={`${styles.smallButton} ${styles.dangerButton}`}

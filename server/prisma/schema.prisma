@@ -420,6 +420,7 @@ model TypePermis {
     id_combinaison  Int      @id @default(autoincrement())
     id_typePermis  Int
     id_typeProc  Int
+    duree_regl_proc Int?
     typePermis     TypePermis @relation( fields: [id_typePermis], references: [id])
     typeProc     TypeProcedure @relation( fields: [id_typeProc], references: [id])
     relationPhaseTypeProc relationPhaseTypeProc[]
@@ -577,6 +578,7 @@ model relationPhaseTypeProc {
   id_relation Int      @id @default(autoincrement())
   id_phase        Int
   id_combinaison Int
+  ordre          Int?
   dureeEstimee Int?
 
   phase          Phase          @relation(fields: [id_phase], references: [id_phase])

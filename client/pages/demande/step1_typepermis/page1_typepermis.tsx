@@ -12,6 +12,7 @@ import Navbar from '../../navbar/Navbar';
 import Sidebar from '../../sidebar/Sidebar';
 import { cleanLocalStorageForNewDemande } from '../../../utils/cleanLocalStorage';
 import { useViewNavigator } from '../../../src/hooks/useViewNavigator';
+import { useAuthStore } from '../../../src/store/useAuthStore';
 import { useAuthReady } from '../../../src/hooks/useAuthReady';
 import { useLoading } from '@/components/globalspinner/LoadingContext';
 
@@ -58,6 +59,7 @@ export default function DemandeStart() {
   const isAuthReady = useAuthReady();
   const { currentView, navigateTo } = useViewNavigator('nouvelle-demande');
   const { resetLoading } = useLoading();
+  const { auth } = useAuthStore();
 
   const [permisOptions, setPermisOptions] = useState<TypePermis[]>([]);
   const [optionsLoading, setOptionsLoading] = useState(false);
@@ -414,6 +416,7 @@ export default function DemandeStart() {
           id_typepermis: permis.id,
           objet_demande: 'Instruction initialisee',
           date_demande: dateSoumission.toISOString(),
+          nom_responsable: auth.username || undefined,
           ...(id_detenteur ? { id_detenteur } : {}),
           ...(id_sourceProc ? { id_sourceProc } : {}),
           ...(designation_number ? { designation_number } : {}),

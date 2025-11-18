@@ -38,6 +38,7 @@ export class DemandeService {
     code_demande?: string;
     id_detenteur?: number;
     date_demande: Date;
+    nom_responsable?: string | null;
   }) {
   // Get type permis details
   const typePermis = await this.prisma.typePermis.findUnique({
@@ -96,6 +97,7 @@ const finalCode =
       date_demande: data.date_demande,
       duree_instruction: 10,
       statut_demande: StatutDemande.EN_COURS,
+      Nom_Prenom_Resp_Enregist: data.nom_responsable ?? null,
       ...(data.id_detenteur
         ? {
             detenteurdemande: {

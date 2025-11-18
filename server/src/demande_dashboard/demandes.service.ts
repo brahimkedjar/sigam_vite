@@ -206,6 +206,25 @@ export class DemandesService {
     avgInstructionDays,
   };
 }
+
+  async findByResponsable(nom_responsable: string) {
+    if (!nom_responsable?.trim()) {
+      return [];
+    }
+
+    const items = await this.prisma.demande.findMany({
+      where: {
+        Nom_Prenom_Resp_Enregist: nom_responsable.trim(),
+      },
+      include: this.baseInclude,
+      orderBy: { date_demande: 'desc' },
+    });
+
+    return items.map((demande) => ({
+      ...demande,
+      detenteur: this.extractDetenteur(demande),
+    }));
+  }
   async getDemandeById(id: number) {
     return this.prisma.demande.findUnique({
       where: { id_demande: id },

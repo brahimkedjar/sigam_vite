@@ -83,6 +83,17 @@ export class PhasesEtapesController {
     return this.phasesEtapesService.createCombinaison(dto);
   }
 
+  @Put('combinaisons/:id_combinaison')
+  updateCombinaison(
+    @Param('id_combinaison') id_combinaison: string,
+    @Body() dto: UpdateCombinaisonPermisProcDto,
+  ) {
+    return this.phasesEtapesService.updateCombinaison(
+      Number(id_combinaison),
+      dto,
+    );
+  }
+
   @Delete('combinaisons/:id_combinaison')
   deleteCombinaison(@Param('id_combinaison') id_combinaison: string) {
     return this.phasesEtapesService.deleteCombinaison(Number(id_combinaison));
