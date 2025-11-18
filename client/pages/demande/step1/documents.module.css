@@ -1139,13 +1139,13 @@
 }
 
 .modal-content {
-  height: 500px;
-  background-color: white;
-  border-radius: 8px;
-  width: 100%;
-  max-width: 950px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
+    height: 98%;
+    background-color: white;
+    border-radius: 8px;
+    min-width: 94%;
+    max-width: 950px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
 }
 
 .modal-header {

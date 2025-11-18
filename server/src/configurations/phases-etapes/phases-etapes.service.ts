@@ -177,8 +177,14 @@ export class PhasesEtapesService {
     }
 
     try {
-      return await this.prisma.etapeProc.delete({
+      // Détacher simplement l'étape de la phase au lieu de la supprimer
+      return await this.prisma.etapeProc.update({
         where: { id_etape },
+        data: {
+          phase: {
+            disconnect: true,
+          },
+        },
       });
     } catch (error: any) {
       if (error.code === 'P2025') {

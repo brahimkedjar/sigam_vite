@@ -1386,7 +1386,7 @@ export default function Step5_Documents() {
                               </label>
                             </div>
 
-                            {doc.nom_doc === "Cahier des charges renseigné" && (
+                            {doc.nom_doc === "Cahier des charges renseigne" && (
                               <button
                                 className={styles['cahier-btn']}
                                 onClick={() => handleOpenCahierForm(doc)}

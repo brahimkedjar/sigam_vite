@@ -550,10 +550,10 @@ model EtapeProc {
   lib_etape   String
   duree_etape Int?     // en jours
   ordre_etape Int      // ordre a l'interieur d'une phase
-  id_phase    Int
+  id_phase    Int?
   page_route  String?  // Chemin de la page front associée (ex: "demande/step1/page1")
 
-  phase Phase @relation(fields: [id_phase], references: [id_phase])
+  phase Phase? @relation(fields: [id_phase], references: [id_phase])
   procedureEtapes ProcedureEtape[] // status of etapes in procedures
   procedurePhaseEtapes procedurePhaseEtapes[]                
 

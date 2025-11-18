@@ -54,7 +54,7 @@ async setStepStatus(id_proc: number, id_etape: number, statut: StatutProcedure, 
       });
 
       // Auto-update phase status after creating etape
-      await this.autoUpdatePhaseStatus(id_proc, etapeWithPhase.id_phase);
+      await this.autoUpdatePhaseStatus(id_proc, etapeWithPhase.id_phase!);
       return result;
     }
 
@@ -75,7 +75,7 @@ async setStepStatus(id_proc: number, id_etape: number, statut: StatutProcedure, 
     });
 
     // Auto-update phase status after etape change
-    await this.autoUpdatePhaseStatus(id_proc, etapeWithPhase.id_phase);
+    await this.autoUpdatePhaseStatus(id_proc, etapeWithPhase.id_phase!);
 
     return result;
   }

@@ -158,251 +158,218 @@ export default function CahierChargesDemande() {
 
 
 const generatePDF = (formData: CahierDesCharges) => {
-  // Create new PDF document
   const doc = new jsPDF();
-  
-  // Set margins and initial position
+
   const margin = 20;
-  let yPosition = margin;
-  
-  // Add logo or header (if you have one)
-  // doc.addImage(logo, 'PNG', margin, yPosition, 40, 20);
-  yPosition += 25;
-  
-  // Title
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const usableWidth = pageWidth - margin * 2;
+  const bottomMargin = 20;
+  const lineHeight = 6;
+  const labelWidth = 65;
+  const valueWidth = usableWidth - labelWidth - 5;
+
+  let y = margin;
+
+  const ensureSpace = (neededHeight: number) => {
+    if (y + neededHeight > pageHeight - bottomMargin) {
+      doc.addPage();
+      y = margin;
+    }
+  };
+
+  const drawSectionTitle = (title: string) => {
+    ensureSpace(12);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(52, 73, 94);
+    doc.text(title, margin, y);
+    y += 10;
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(0, 0, 0);
+  };
+
+  const drawRows = (rows: [string, string][]) => {
+    rows.forEach(([label, rawValue]) => {
+      const value = rawValue ?? '';
+      const labelLines = doc.splitTextToSize(label, labelWidth);
+      const valueLines = doc.splitTextToSize(value, valueWidth);
+      const rowHeight =
+        Math.max(labelLines.length, valueLines.length) * lineHeight;
+
+      ensureSpace(rowHeight);
+
+      doc.setFont('helvetica', 'bold');
+      labelLines.forEach((line: string | string[], index: number) => {
+        doc.text(line, margin, y + index * lineHeight);
+      });
+      doc.setFont('helvetica', 'normal');
+      valueLines.forEach((line: string | string[], index: number) => {
+        doc.text(line, margin + labelWidth + 5, y + index * lineHeight);
+      });
+
+      y += rowHeight + 2;
+    });
+  };
+
+  // ----- Header -----
+  y += 25;
   doc.setFontSize(20);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(41, 128, 185); // Nice blue color
-  doc.text('CAHIER DES CHARGES', margin, yPosition);
-  yPosition += 15;
-  
-  // Document number and date
+  doc.setTextColor(41, 128, 185);
+  doc.text('CAHIER DES CHARGES', margin, y);
+  y += 15;
+
   doc.setFontSize(12);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(100, 100, 100);
-  doc.text(`N°: ${formData.num_cdc || 'Non spécifié'}`, margin, yPosition);
-  doc.text(`Date: ${new Date().toLocaleDateString('fr-FR')}`, 150, yPosition);
-  yPosition += 15;
-  
-  // Add a separator line
+  doc.text(`N°: ${formData.num_cdc || 'Non spécifié'}`, margin, y);
+  doc.text(`Date: ${new Date().toLocaleDateString('fr-FR')}`, margin + 130, y);
+  y += 10;
+
   doc.setDrawColor(200, 200, 200);
-  doc.line(margin, yPosition, 190, yPosition);
-  yPosition += 15;
-  
-  // Section 1: Informations Générales
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(52, 73, 94);
-  doc.text('1. INFORMATIONS GéNéRALES', margin, yPosition);
-  yPosition += 10;
-  
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(0, 0, 0);
-  
-  // Create a table for general information
-  const generalInfo = [
-    ['Année d\'exercice', formData.dateExercice || 'Non spécifié'],
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 10;
+
+  // ----- Section 1: Informations générales -----
+  drawSectionTitle('1. INFORMATIONS GÉNÉRALES');
+  drawRows([
+    ["Année d'exercice", formData.dateExercice || 'Non spécifié'],
     ['Fuseau', formData.fuseau || 'Non spécifié'],
-    ['Type de coordonnées', formData.typeCoordonnees || 'Non spécifié']
-  ];
-  
-  generalInfo.forEach(([label, value]) => {
-    if (yPosition > 250) {
-      doc.addPage();
-      yPosition = margin;
-    }
-    
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${label}:`, margin, yPosition);
-    doc.setFont('helvetica', 'normal');
-    doc.text(value, margin + 60, yPosition);
-    yPosition += 7;
-  });
-  
-  yPosition += 10;
-  
-  // Section 2: Terrain
-  if (yPosition > 240) {
-    doc.addPage();
-    yPosition = margin;
-  }
-  
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(52, 73, 94);
-  doc.text('2. TERRAIN', margin, yPosition);
-  yPosition += 10;
-  
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(0, 0, 0);
-  
-  const terrainInfo = [
+    ['Type de coordonnées', formData.typeCoordonnees || 'Non spécifié'],
+  ]);
+
+  // ----- Section 2: Terrain -----
+  drawSectionTitle('2. TERRAIN');
+  drawRows([
     ['Nature juridique', formData.natureJuridique || 'Non spécifié'],
     ['Vocation du terrain', formData.vocationTerrain || 'Non spécifié'],
     ['Nom du gérant', formData.nomGerant || 'Non spécifié'],
-    ['Personne en charge des travaux', formData.personneChargeTrxx || 'Non spécifié'],
-    ['Qualification', formData.qualification || 'Non spécifié']
-  ];
-  
-  terrainInfo.forEach(([label, value]) => {
-    if (yPosition > 250) {
-      doc.addPage();
-      yPosition = margin;
-    }
-    
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${label}:`, margin, yPosition);
-    doc.setFont('helvetica', 'normal');
-    
-    // Handle long text by splitting into multiple lines
-    const splitText = doc.splitTextToSize(value, 120);
-    doc.text(splitText, margin + 60, yPosition);
-    yPosition += (splitText.length * 7);
+    [
+      'Personne en charge des travaux',
+      formData.personneChargeTrxx || 'Non spécifié',
+    ],
+    ['Qualification', formData.qualification || 'Non spécifié'],
+  ]);
+
+  // ----- Section 3: Réserves -----
+  drawSectionTitle('3. RÉSERVES');
+  drawRows([
+    [
+      'Réserves géologiques (tonnes)',
+      formData.reservesGeologiques != null
+        ? formData.reservesGeologiques.toLocaleString('fr-FR')
+        : 'Non spécifié',
+    ],
+    [
+      'Réserves exploitables (tonnes)',
+      formData.reservesExploitables != null
+        ? formData.reservesExploitables.toLocaleString('fr-FR')
+        : 'Non spécifié',
+    ],
+  ]);
+
+  // ----- Section 4: Exploitation -----
+  drawSectionTitle('4. EXPLOITATION');
+  drawRows([
+    [
+      "Volume d'extraction (tonnes/an)",
+      formData.volumeExtraction && formData.volumeExtraction !== ''
+        ? String(formData.volumeExtraction)
+        : 'Non spécifié',
+    ],
+    [
+      "Durée d'exploitation",
+      formData.dureeExploitation && formData.dureeExploitation !== ''
+        ? String(formData.dureeExploitation)
+        : 'Non spécifié',
+    ],
+    [
+      "Méthode d'exploitation",
+      formData.methodeExploitation && formData.methodeExploitation !== ''
+        ? String(formData.methodeExploitation)
+        : 'Non spécifié',
+    ],
+    [
+      'Durée des travaux',
+      formData.dureeTravaux && formData.dureeTravaux !== ''
+        ? String(formData.dureeTravaux)
+        : 'Non spécifié',
+    ],
+    [
+      'Date de début des travaux',
+      formData.dateDebutTravaux && formData.dateDebutTravaux !== ''
+        ? String(formData.dateDebutTravaux)
+        : 'Non spécifié',
+    ],
+    [
+      'Date de début de production',
+      formData.dateDebutProduction && formData.dateDebutProduction !== ''
+        ? String(formData.dateDebutProduction)
+        : 'Non spécifié',
+    ],
+  ]);
+
+  // ----- Section 5: Investissements -----
+  drawSectionTitle('5. INVESTISSEMENTS');
+
+  const investissementDA =
+    formData.investissementDA && formData.investissementDA !== ''
+      ? `${Number(formData.investissementDA).toLocaleString('fr-FR')} DA`
+      : 'Non spécifié';
+
+  const investissementUSD =
+    formData.investissementUSD && formData.investissementUSD !== ''
+      ? `$${Number(formData.investissementUSD).toLocaleString('fr-FR')}`
+      : 'Non spécifié';
+
+  const capaciteInstallee =
+    formData.capaciteInstallee && formData.capaciteInstallee !== ''
+      ? String(formData.capaciteInstallee)
+      : 'Non spécifié';
+
+  drawRows([
+    ['Investissement (DA)', investissementDA],
+    ['Investissement (USD)', investissementUSD],
+    ['Capacité installée (tonnes/jour)', capaciteInstallee],
+  ]);
+
+  // ----- Section 6: Commentaires -----
+  drawSectionTitle('6. COMMENTAIRES');
+  const commentsText =
+    formData.commentaires && formData.commentaires.trim().length > 0
+      ? formData.commentaires
+      : 'Aucun commentaire';
+
+  const commentsLines = doc.splitTextToSize(commentsText, usableWidth);
+  ensureSpace(commentsLines.length * lineHeight);
+  commentsLines.forEach((line: string | string[], index: number) => {
+    doc.text(line, margin, y + index * lineHeight);
   });
-  
-  yPosition += 10;
-  
-  // Section 3: Réserves
-  if (yPosition > 240) {
-    doc.addPage();
-    yPosition = margin;
-  }
-  
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(52, 73, 94);
-  doc.text('3. RéSERVES', margin, yPosition);
-  yPosition += 10;
-  
-  doc.setFontSize(11);
-  
-  const reservesInfo = [
-    ['Réserves géologiques (tonnes)', formData.reservesGeologiques ? formData.reservesGeologiques.toLocaleString('fr-FR') : 'Non spécifié'],
-    ['Réserves exploitables (tonnes)', formData.reservesExploitables ? formData.reservesExploitables.toLocaleString('fr-FR') : 'Non spécifié']
-  ];
-  
-  reservesInfo.forEach(([label, value]) => {
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${label}:`, margin, yPosition);
-    doc.setFont('helvetica', 'normal');
-    doc.text(value, margin + 70, yPosition);
-    yPosition += 7;
-  });
-  
-  yPosition += 10;
-  
-  // Section 4: Exploitation
-  if (yPosition > 240) {
-    doc.addPage();
-    yPosition = margin;
-  }
-  
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(52, 73, 94);
-  doc.text('4. EXPLOITATION', margin, yPosition);
-  yPosition += 10;
-  
-  doc.setFontSize(11);
-  
-  const exploitationInfo = [
-    ['Volume d\'extraction (tonnes/an)', formData.volumeExtraction || 'Non spécifié'],
-    ['Durée d\'exploitation', formData.dureeExploitation || 'Non spécifié'],
-    ['Méthode d\'exploitation', formData.methodeExploitation || 'Non spécifié'],
-    ['Durée des travaux', formData.dureeTravaux || 'Non spécifié'],
-    ['Date de début des travaux', formData.dateDebutTravaux || 'Non spécifié'],
-    ['Date de début de production', formData.dateDebutProduction || 'Non spécifié']
-  ];
-  
-  exploitationInfo.forEach(([label, value]) => {
-    if (yPosition > 250) {
-      doc.addPage();
-      yPosition = margin;
-    }
-    
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${label}:`, margin, yPosition);
-    doc.setFont('helvetica', 'normal');
-    
-    const splitText = doc.splitTextToSize(value, 120);
-    doc.text(splitText, margin + 70, yPosition);
-    yPosition += (splitText.length * 7);
-  });
-  
-  yPosition += 10;
-  
-  // Section 5: Investissements
-  if (yPosition > 240) {
-    doc.addPage();
-    yPosition = margin;
-  }
-  
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(52, 73, 94);
-  doc.text('5. INVESTISSEMENTS', margin, yPosition);
-  yPosition += 10;
-  
-  doc.setFontSize(11);
-  
-  const investmentInfo = [
-    ['Investissement (DA)', formData.investissementDA ? `${parseFloat(formData.investissementDA).toLocaleString('fr-FR')} DA` : 'Non spécifié'],
-    ['Investissement (USD)', formData.investissementUSD ? `$${parseFloat(formData.investissementUSD).toLocaleString('fr-FR')}` : 'Non spécifié'],
-    ['Capacité installée (tonnes/jour)', formData.capaciteInstallee || 'Non spécifié']
-  ];
-  
-  investmentInfo.forEach(([label, value]) => {
-    doc.setFont('helvetica', 'bold');
-    doc.text(`${label}:`, margin, yPosition);
-    doc.setFont('helvetica', 'normal');
-    doc.text(value, margin + 60, yPosition);
-    yPosition += 7;
-  });
-  
-  yPosition += 10;
-  
-  // Section 6: Commentaires
-  if (yPosition > 240) {
-    doc.addPage();
-    yPosition = margin;
-  }
-  
-  doc.setFontSize(16);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(52, 73, 94);
-  doc.text('6. COMMENTAIRES', margin, yPosition);
-  yPosition += 10;
-  
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'normal');
-  
-  if (formData.commentaires) {
-    const comments = doc.splitTextToSize(formData.commentaires, 170);
-    doc.text(comments, margin, yPosition);
-    yPosition += (comments.length * 7);
-  } else {
-    doc.text('Aucun commentaire', margin, yPosition);
-    yPosition += 7;
-  }
-  
-  yPosition += 15;
-  
-  // Footer with page numbers
+  y += commentsLines.length * lineHeight + 4;
+
+  // Footer (pages)
   const pageCount = doc.getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(150, 150, 150);
-    doc.text(`Page ${i} sur ${pageCount}`, 105, 285, { align: 'center' });
-    doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')}`, 190, 285, { align: 'right' });
+    doc.text(`Page ${i} sur ${pageCount}`, pageWidth / 2, pageHeight - 10, {
+      align: 'center',
+    });
+    doc.text(
+      `Généré le ${new Date().toLocaleDateString('fr-FR')}`,
+      pageWidth - margin,
+      pageHeight - 10,
+      { align: 'right' },
+    );
   }
-  
-  // Save the PDF
+
   doc.save(`Cahier-des-Charges-${formData.num_cdc || new Date().getTime()}.pdf`);
 };
+
 const handleGeneratePDF = () => {
   generatePDF(formData);
 };

@@ -1,4 +1,3 @@
-
 /* Layout */
 .appContainer {
   display: flex;
@@ -122,6 +121,132 @@
 
 .cardContent {
   padding: 1.5rem;
+}
+
+/* Forms */
+.seanceBadge {
+  background: #eef2ff;
+  color: #312e81;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.formGrid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-bottom: 0.5rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.formGroup label {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.formGroup input,
+.formGroup textarea {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.95rem;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+.formActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.formHint {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+.memberSelectGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.memberSelectCard {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  background: #f8fafc;
+  padding: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  font: inherit;
+}
+
+.memberSelectCard:hover {
+  border-color: #c7d2fe;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.08);
+}
+
+.memberSelectCardSelected {
+  border-color: #4f46e5;
+  background: #eef2ff;
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.18);
+}
+
+.memberSelectName {
+  font-weight: 600;
+  color: #111827;
+}
+
+.memberSelectRole {
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.decisionToggle {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+.toggleOption {
+  border: 1px solid #d1d5db;
+  border-radius: 9999px;
+  padding: 0.5rem 1rem;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  color: #1f2937;
+  transition: all 0.2s;
+}
+
+.toggleOption:hover {
+  border-color: #4f46e5;
+  color: #4f46e5;
+}
+
+.toggleOptionActive {
+  background: #4f46e5;
+  color: #fff;
+  border-color: #4f46e5;
+  box-shadow: 0 6px 16px rgba(79, 70, 229, 0.25);
 }
 
 /* Info Grid */
@@ -730,4 +855,3 @@
   font-weight: 600;
   display: inline-flex;
 }
-

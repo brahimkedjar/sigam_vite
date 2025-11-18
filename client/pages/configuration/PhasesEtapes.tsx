@@ -6,7 +6,7 @@ interface Etape {
   lib_etape: string;
   duree_etape: number | null;
   ordre_etape: number;
-  id_phase: number;
+  id_phase: number | null;
   page_route?: string | null;
 }
 
@@ -90,15 +90,20 @@ const PhasesEtapes: React.FC = () => {
     [phases, selectedPhaseId],
   );
 
+  // Étapes disponibles comme modèles ("Étape existante").
+  // On ne les dérive plus seulement des phases, car une étape
+  // peut être détachée d'une phase tout en restant réutilisable.
+  const [etapesTemplates, setEtapesTemplates] = useState<
+    (Etape & { phaseLibelle?: string | null })[]
+  >([]);
+
   const allEtapesTemplates = useMemo(
     () =>
-      phases.flatMap((phase) =>
-        (phase.etapes ?? []).map((etape) => ({
-          ...etape,
-          phaseLibelle: phase.libelle,
-        })),
-      ),
-    [phases],
+      etapesTemplates.map((etape) => ({
+        ...etape,
+        phaseLibelle: etape.phaseLibelle ?? 'Non affectée',
+      })),
+    [etapesTemplates],
   );
 
   const filteredCombinaisons = useMemo(() => {
@@ -133,14 +138,18 @@ const PhasesEtapes: React.FC = () => {
     );
     if (!template) return;
     setEtapeForm({
-      id_etape: template.id_etape,
+      // On utilise l'étape existante comme modèle,
+      // mais on crée une nouvelle étape pour la phase sélectionnée.
+      id_etape: null,
       lib_etape: template.lib_etape || '',
       duree_etape:
         template.duree_etape == null ? '' : String(template.duree_etape ?? ''),
       ordre_etape: String(template.ordre_etape ?? ''),
       page_route: template.page_route || '',
     });
-    setIsEditingEtape(true);
+    // On reste en mode création pour ne pas modifier / supprimer
+    // l'étape d'origine dans la base.
+    setIsEditingEtape(false);
   };
 
   useEffect(() => {
@@ -152,7 +161,7 @@ const PhasesEtapes: React.FC = () => {
     const load = async () => {
       try {
         setLoading(true);
-        await Promise.all([fetchPhases(), fetchCombinaisons()]);
+        await Promise.all([fetchPhases(), fetchCombinaisons(), fetchEtapesTemplates()]);
       } catch (err) {
         console.error(err);
         setError('Erreur lors du chargement des phases et combinaisons.');
@@ -174,6 +183,24 @@ const PhasesEtapes: React.FC = () => {
     }
     const data = await response.json();
     setPhases(data || []);
+  };
+
+  const fetchEtapesTemplates = async () => {
+    if (!apiURL) return;
+    const response = await fetch(`${apiURL}/phases-etapes/etapes`, {
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      throw new Error('Failed to load etapes');
+    }
+    const data = await response.json();
+    // Enrichir avec libellé de phase si présent
+    const enriched =
+      (data || []).map((e: any) => ({
+        ...e,
+        phaseLibelle: e.phase?.libelle ?? null,
+      })) ?? [];
+    setEtapesTemplates(enriched);
   };
 
   const fetchCombinaisons = async () => {
@@ -362,7 +389,7 @@ const PhasesEtapes: React.FC = () => {
       if (!response.ok) {
         throw new Error('Failed to save etape');
       }
-      await fetchPhases();
+      await Promise.all([fetchPhases(), fetchEtapesTemplates()]);
       resetEtapeForm();
     } catch (err) {
       console.error(err);
@@ -401,7 +428,7 @@ const PhasesEtapes: React.FC = () => {
         const text = await response.text();
         throw new Error(text || 'Delete failed');
       }
-      await fetchPhases();
+      await Promise.all([fetchPhases(), fetchEtapesTemplates()]);
       if (isEditingEtape && etapeForm.id_etape === etape.id_etape) {
         resetEtapeForm();
       }

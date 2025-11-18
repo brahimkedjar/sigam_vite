@@ -4,16 +4,13 @@ import axios from 'axios';
 import styles from './cd_step.module.css';
 import { useSearchParams } from '@/src/hooks/useSearchParams';
 import router from 'next/router';
-import { FiChevronLeft, FiChevronRight, FiSave, FiDownload } from 'react-icons/fi';
+import { FiChevronLeft, FiChevronRight, FiSave } from 'react-icons/fi';
 import { STEP_LABELS } from '@/src/constants/steps';
 import Navbar from '@/pages/navbar/Navbar';
 import Sidebar from '@/pages/sidebar/Sidebar';
 import { ViewType } from '@/src/types/viewtype';
 import ProgressStepper from '@/components/ProgressStepper';
 import { useViewNavigator } from '@/src/hooks/useViewNavigator';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import logo from '@/public/logo.jpg';
 import { useActivateEtape } from '@/src/hooks/useActivateEtape';
 import { Phase, Procedure, ProcedureEtape, ProcedurePhase, StatutProcedure } from '@/src/types/procedure';
 interface Procedure1 {
@@ -21,7 +18,7 @@ interface Procedure1 {
   num_proc: string;
   id_seance?: number;
   demandes: Array<{
-    typeProcedure: { 
+    typeProcedure: { // ðŸ”‘ Moved typeProcedure to demande level
       libelle: string;
     };
     detenteur: {
@@ -42,6 +39,10 @@ interface Seance {
     fonction_membre: string;
     email_membre: string;
     signature_type: 'electronique' | 'manuelle';
+  }>;
+  procedures?: Array<{
+    id_proc: number;
+    num_proc: string;
   }>;
   comites: Array<Comite>;
 }
@@ -65,6 +66,19 @@ interface Decision {
   commentaires?: string;
 }
 
+interface MemberOption {
+  id_membre: number;
+  nom_membre: string;
+  prenom_membre: string;
+  fonction_membre: string;
+  email_membre?: string;
+}
+
+type AlertState = {
+  type: 'success' | 'error';
+  message: string;
+};
+
 const Page8: React.FC = () => {
   const searchParams = useSearchParams();
   const idProcStr = searchParams?.get('id');
@@ -80,19 +94,46 @@ const Page8: React.FC = () => {
   const apiURL = process.env.NEXT_PUBLIC_API_URL;
   const { currentView, navigateTo } = useViewNavigator("nouvelle-demande");
   const [detenteur, setDetenteur] = useState<string | ''>('');
-    const [savingEtape, setSavingEtape] = useState(false);
-    const [etapeMessage, setEtapeMessage] = useState<string | null>(null);
+  const [savingEtape, setSavingEtape] = useState(false);
+  const [etapeMessage, setEtapeMessage] = useState<string | null>(null);
   const [statutProc, setStatutProc] = useState<string | undefined>(undefined);
-const [procedureData, setProcedureData] = useState<Procedure | null>(null);
-const [currentEtape, setCurrentEtape] = useState<{ id_etape: number } | null>(null);
-const [procedureTypeId, setProcedureTypeId] = useState<number | undefined>();
-const [refetchTrigger, setRefetchTrigger] = useState(0);
-const [hasActivatedStep7, setHasActivatedStep7] = useState(false); // Add flag for step 2
+  const [procedureData, setProcedureData] = useState<Procedure | null>(null);
+  const [currentEtape, setCurrentEtape] = useState<{ id_etape: number } | null>(null);
+  const [procedureTypeId, setProcedureTypeId] = useState<number | undefined>();
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
+  const [hasActivatedStep7, setHasActivatedStep7] = useState(false); // Add flag for step 2
   const [currentStep] = useState(7);
   const [activatedSteps, setActivatedSteps] = useState<Set<number>>(new Set());
-    const [isPageReady, setIsPageReady] = useState(false);
-      const [isLoading, setIsLoading] = useState(true);
-      const [loadingMessage, setLoadingMessage] = useState('Chargement des paramétres...');
+  const [isPageReady, setIsPageReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadingMessage, setLoadingMessage] = useState('Chargement des parametres...');
+  const [availableMembers, setAvailableMembers] = useState<MemberOption[]>([]);
+  const [membersLoading, setMembersLoading] = useState(false);
+  const [membersError, setMembersError] = useState<string | null>(null);
+  const [seanceAlert, setSeanceAlert] = useState<AlertState | null>(null);
+  const [decisionAlert, setDecisionAlert] = useState<AlertState | null>(null);
+  const [isSavingSeance, setIsSavingSeance] = useState(false);
+  const [isSavingDecision, setIsSavingDecision] = useState(false);
+  const [seanceForm, setSeanceForm] = useState({
+    num: '',
+    date: '',
+    exercice: new Date().getFullYear(),
+    remarques: '',
+    selectedMembers: [] as number[],
+  });
+  const [decisionForm, setDecisionForm] = useState({
+    date_comite: '',
+    numero_decision: '',
+    avis: '' as '' | 'favorable' | 'defavorable',
+    duree: '',
+    commentaires: '',
+  });
+
+  const buildDecisionNumber = () => {
+    const now = new Date();
+    const stamp = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    return `DEC-${stamp}-${idProc ?? 'PROC'}`;
+  };
 
 
   useEffect(() => {
@@ -178,135 +219,99 @@ useEffect(() => {
   });
 
 
-const phases: Phase[] = procedureData?.ProcedurePhase 
-  ? procedureData.ProcedurePhase
-      .slice()
-      .sort((a: ProcedurePhase, b: ProcedurePhase) => a.ordre - b.ordre)
-      .map((pp: ProcedurePhase) => ({
-        ...pp.phase,
-        ordre: pp.ordre,
-      }))
-  : [];
+  const phases: Phase[] = procedureData?.ProcedurePhase 
+    ? procedureData.ProcedurePhase
+        .slice()
+        .sort((a: ProcedurePhase, b: ProcedurePhase) => a.ordre - b.ordre)
+        .map((pp: ProcedurePhase) => ({
+          ...pp.phase,
+          ordre: pp.ordre,
+        }))
+    : [];
   
-  // useActivateEtape({ idProc, etapeNum: 7, statutProc });
-  const getDataUrlFromImage = async (src: string): Promise<string> => {
-  const response = await fetch(src);
-  const blob = await response.blob();
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.readAsDataURL(blob);
-  });
-};
-const getProcedureType = (procedure: Procedure1): string => {
-  return procedure.demandes[0]?.typeProcedure?.libelle || 'N/A';
-};
-const generatePDFReport = async () => {
-  if (!procedure || !seance || !comite || !decision) return;
-
-  try {
-    const doc = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
-    });
-
-    // Add logo if available
-        try {
-          const logoSrc = typeof logo === 'string' ? logo : (logo as any).src;
-          const logoDataUrl = await getDataUrlFromImage(logoSrc);
-          doc.addImage(logoDataUrl, 'PNG', 15, 10, 30, 15);
-        } catch (logoError) {
-          console.warn('Could not load logo:', logoError);
-          doc.setFontSize(16);
-          doc.text('Rapport Officiel', 20, 20);
-        }
-
-    // Title
-    doc.setFontSize(18);
-    doc.setTextColor(40, 53, 147);
-    doc.text('Rapport de Décision du Comité de Direction', 105, 30, { align: 'center' });
-
-    // Procedure info
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`Procédure: ${procedure.num_proc}`, 15, 45);
-    doc.text(`Type: ${procedure ? getProcedureType(procedure) : 'N/A'}`, 15, 50);
-    doc.text(`Société: ${detenteur}`, 15, 55);
-
-    // Seance info
-    doc.text(`Séance du Comité: ${seance.num_seance}`, 15, 65);
-    doc.text(`Date: ${formatDate(seance.date_seance)}`, 15, 70);
-    doc.text(`Exercice: ${seance.exercice}`, 15, 75);
-
-    // Decision info
-    doc.setFontSize(14);
-    doc.setTextColor(40, 53, 147);
-    doc.text('Décision du Comité', 15, 85);
-
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`Numéro décision: ${decision.numero_decision}`, 15, 90);
-    doc.text(`Date du comité: ${formatDate(comite.date_comite)}`, 15, 95);
-    
-    // Add summary table using autoTable
-    autoTable(doc, {
-      startY: 105,
-      head: [['Détails', 'Valeurs']],
-      body: [
-        ['Décision', decision.decision_cd === 'favorable' ? 'Favorable âœ“' : 'Défavorable ✗'],
-        ['Durée', decision.duree_decision ? `${decision.duree_decision} mois` : 'N/A'],
-      ],
-      theme: 'grid',
-      headStyles: {
-        fillColor: [79, 70, 229],
-        textColor: 255
-      }
-    });
-
-    // Add members table
-    autoTable(doc, {
-      startY: (doc as any).lastAutoTable.finalY + 15,
-      head: [['Membres du Comité', 'Fonction', 'Signature']],
-      body: seance.membres.map(membre => [
-        `${membre.prenom_membre} ${membre.nom_membre}`,
-        membre.fonction_membre,
-        membre.signature_type === 'electronique' ? 'E-Signature' : 'Manuelle'
-      ]),
-      theme: 'grid',
-      headStyles: {
-        fillColor: [79, 70, 229],
-        textColor: 255
-      }
-    });
-
-    // Add comments if available
-    if (decision.commentaires) {
-      doc.setFontSize(12);
-      doc.setTextColor(0, 0, 0);
-      doc.text('Commentaires:', 15, (doc as any).lastAutoTable.finalY + 15);
-      
-      // Split long comments into multiple lines
-      const splitComments = doc.splitTextToSize(decision.commentaires, 180);
-      doc.text(splitComments, 15, (doc as any).lastAutoTable.finalY + 20);
-    }
-
-    // Add footer
-const pageCount = (doc.internal as any).getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-      doc.setPage(i);
-      doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-      doc.text(`Page ${i} sur ${pageCount}`, 105, 287, { align: 'center' });
-      doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')}`, 195, 287, { align: 'right' });
-    }
-
-    doc.save(`Rapport_Decision_${procedure.num_proc}.pdf`);
-  } catch (error) {
-    console.error('Error generating PDF:', error);
-    alert('Une erreur est survenue lors de la génération du rapport');
+const toLocalDateTimeValue = (value?: string | null) => {
+  if (!value) {
+    return '';
   }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
 };
+
+const toISODateTime = (value: string) => {
+  if (!value) {
+    return null;
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+  return date.toISOString();
+};
+
+  useEffect(() => {
+    if (!apiURL) {
+      return;
+    }
+
+    const fetchMembers = async () => {
+      setMembersLoading(true);
+      setMembersError(null);
+      try {
+        const response = await axios.get<MemberOption[]>(`${apiURL}/api/seances/membres-comite`);
+        setAvailableMembers(response.data);
+      } catch (err) {
+        console.error('Erreur lors du chargement des membres du comité:', err);
+        setMembersError('Impossible de charger les membres du comité');
+      } finally {
+        setMembersLoading(false);
+      }
+    };
+
+    fetchMembers();
+  }, [apiURL]);
+
+  useEffect(() => {
+    if (!seance) {
+      return;
+    }
+    setSeanceForm({
+      num: seance.num_seance,
+      date: toLocalDateTimeValue(seance.date_seance),
+      exercice: seance.exercice,
+      remarques: seance.remarques || '',
+      selectedMembers: seance.membres.map((membre) => membre.id_membre),
+    });
+  }, [seance]);
+
+  useEffect(() => {
+    if (decision && comite) {
+      setDecisionForm({
+        date_comite: toLocalDateTimeValue(comite.date_comite),
+        numero_decision: decision.numero_decision,
+        avis: decision.decision_cd,
+        duree: decision.duree_decision ? decision.duree_decision.toString() : '',
+        commentaires: decision.commentaires || '',
+      });
+      return;
+    }
+
+    setDecisionForm((prev) => {
+      const nextDate = prev.date_comite || (seance ? toLocalDateTimeValue(seance.date_seance) : '');
+      const nextNumero = prev.numero_decision || buildDecisionNumber();
+      if (nextDate === prev.date_comite && nextNumero === prev.numero_decision) {
+        return prev;
+      }
+      return {
+        ...prev,
+        date_comite: nextDate,
+        numero_decision: nextNumero,
+      };
+    });
+  }, [decision, comite, seance]);
 
 
 
@@ -337,7 +342,9 @@ console.log('Procedure fetched:', detenteur?.data);
       setStatutProc(detenteur.data.procedure.statut_proc);
       const idSeance = procRes.data.id_seance;
       if (!idSeance) {
-        setError('Aucune séance associée à cette procédure');
+        setSeance(null);
+        setComite(null);
+        setDecision(null);
         setLoading(false);
         return;
       }
@@ -346,7 +353,9 @@ console.log('Procedure fetched:', detenteur?.data);
       const foundSeanceWithDec = seancesWithDecRes.data.data.find((s: Seance) => s.id_seance === idSeance);
 
       if (!foundSeanceBasic || !foundSeanceWithDec) {
-        setError('Séance non trouvée');
+        setSeance(null);
+        setComite(null);
+        setDecision(null);
         setLoading(false);
         return;
       }
@@ -365,9 +374,12 @@ console.log('Procedure fetched:', detenteur?.data);
         setComite(foundComite);
         if (foundComite.decisionCDs && foundComite.decisionCDs.length > 0) {
           setDecision(foundComite.decisionCDs[0]);
+        } else {
+          setDecision(null);
         }
       } else {
-        setError('Comité non trouvé pour cette procédure');
+        setComite(null);
+        setDecision(null);
       }
     } catch (err) {
       console.error('Erreur lors de la récupération des données:', err);
@@ -375,6 +387,186 @@ console.log('Procedure fetched:', detenteur?.data);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleMemberToggle = (memberId: number) => {
+    setSeanceForm((prev) => {
+      const exists = prev.selectedMembers.includes(memberId);
+      return {
+        ...prev,
+        selectedMembers: exists
+          ? prev.selectedMembers.filter((id) => id !== memberId)
+          : [...prev.selectedMembers, memberId],
+      };
+    });
+  };
+
+  const handleSeanceSubmit = async (): Promise<boolean> => {
+    if (!apiURL || !idProc) {
+      setSeanceAlert({ type: 'error', message: 'Procédure introuvable pour cette séance.' });
+      return false;
+    }
+    if (!seanceForm.num.trim()) {
+      setSeanceAlert({ type: 'error', message: 'Renseignez le numéro de séance.' });
+      return false;
+    }
+    if (!seanceForm.date) {
+      setSeanceAlert({ type: 'error', message: 'Veuillez renseigner la date et l\'heure de la séance.' });
+      return false;
+    }
+    if (seanceForm.selectedMembers.length === 0) {
+      setSeanceAlert({ type: 'error', message: 'Sélectionnez au moins un membre du comité présent.' });
+      return false;
+    }
+
+    const isoDate = toISODateTime(seanceForm.date);
+    if (!isoDate) {
+      setSeanceAlert({ type: 'error', message: 'Format de date invalide.' });
+      return false;
+    }
+
+    const existingProcedureIds = seance?.procedures?.map((proc) => proc.id_proc).filter(Boolean) || [];
+    const uniqueProcedureIds = seance
+      ? Array.from(new Set([...existingProcedureIds, idProc]))
+      : [idProc];
+
+    const basePayload = {
+      num_seance: seanceForm.num.trim(),
+      date_seance: isoDate,
+      exercice: Number(seanceForm.exercice) || new Date().getFullYear(),
+      membresIds: seanceForm.selectedMembers,
+      proceduresIds: uniqueProcedureIds,
+      statut: 'terminee' as const,
+      remarques: seanceForm.remarques || undefined,
+    };
+
+    setIsSavingSeance(true);
+    setSeanceAlert(null);
+
+    let success = false;
+    try {
+      const response = seance
+        ? await axios.put(`${apiURL}/api/seances/${seance.id_seance}`, basePayload)
+        : await axios.post(`${apiURL}/api/seances`, basePayload);
+
+      setSeance(response.data);
+      await fetchData();
+      setSeanceAlert({
+        type: 'success',
+        message: seance ? 'Séance mise à jour avec succès.' : 'Séance enregistrée avec succès.',
+      });
+      success = true;
+    } catch (err) {
+      console.error("Erreur lors de l'enregistrement de la séance:", err);
+      setSeanceAlert({ type: 'error', message: "Impossible d'enregistrer la séance." });
+    } finally {
+      setIsSavingSeance(false);
+    }
+
+    return success;
+  };
+  const handleDecisionSubmit = async (): Promise<boolean> => {
+    if (!apiURL || !idProc) {
+      setDecisionAlert({ type: 'error', message: 'Procédure introuvable pour cette décision.' });
+      return false;
+    }
+    if (!seance) {
+      setDecisionAlert({ type: 'error', message: 'Aucune séance associée à cette procédure.' });
+      return false;
+    }
+    if (!decisionForm.avis) {
+      setDecisionAlert({ type: 'error', message: 'Choisissez un avis favorable ou défavorable.' });
+      return false;
+    }
+
+    const isoDate = toISODateTime(decisionForm.date_comite || seanceForm.date || '');
+    if (!isoDate) {
+      setDecisionAlert({ type: 'error', message: 'Format de date du comité invalide.' });
+      return false;
+    }
+
+    setIsSavingDecision(true);
+    setDecisionAlert(null);
+
+    let success = false;
+    try {
+      let comiteId = comite?.id_comite;
+      let decisionId = decision?.id_decision;
+
+      if (!comiteId) {
+        try {
+          const existing = await axios.post(`${apiURL}/api/comites/by-procedure`, {
+            seanceId: seance.id_seance,
+            procedureId: idProc,
+          });
+          if (existing.data?.id_comite) {
+            comiteId = existing.data.id_comite;
+            decisionId = existing.data.decisionCDs?.[0]?.id_decision ?? null;
+          }
+        } catch (err) {
+          console.warn('Aucun comité existant pour cette procédure:', err);
+        }
+      }
+
+      const comitePayload = {
+        id_seance: seance.id_seance,
+        id_proc: idProc,
+        date_comite: isoDate,
+        numero_decision: decisionForm.numero_decision || buildDecisionNumber(),
+        objet_deliberation: comite?.objet_deliberation || `Décision pour ${procedure?.num_proc || idProc}`,
+        resume_reunion: comite?.resume_reunion || '',
+      };
+
+      if (comiteId) {
+        await axios.put(`${apiURL}/api/comites/${comiteId}`, {
+          date_comite: comitePayload.date_comite,
+          numero_decision: comitePayload.numero_decision,
+          objet_deliberation: comitePayload.objet_deliberation,
+          resume_reunion: comitePayload.resume_reunion,
+        });
+      } else {
+        const createdComite = await axios.post(`${apiURL}/api/comites`, comitePayload);
+        comiteId = createdComite.data.id_comite;
+        decisionId = createdComite.data.decisionCDs?.[0]?.id_decision ?? null;
+      }
+
+      if (!comiteId) {
+        throw new Error('Comité introuvable après création.');
+      }
+
+      const decisionPayload = {
+        id_comite: comiteId,
+        decision_cd: decisionForm.avis as 'favorable' | 'defavorable',
+        numero_decision: decisionForm.numero_decision || buildDecisionNumber(),
+        duree_decision: decisionForm.duree ? parseInt(decisionForm.duree, 10) : undefined,
+        commentaires: decisionForm.commentaires || undefined,
+      };
+
+      if (decisionId) {
+        await axios.put(`${apiURL}/api/decisions/${decisionId}`, decisionPayload);
+      } else {
+        await axios.post(`${apiURL}/api/decisions`, decisionPayload);
+      }
+
+      setDecisionAlert({ type: 'success', message: 'Décision enregistrée avec succès.' });
+      await fetchData();
+      success = true;
+    } catch (err) {
+      console.error("Erreur lors de l'enregistrement de la décision:", err);
+      setDecisionAlert({ type: 'error', message: "Impossible d'enregistrer la décision." });
+    } finally {
+      setIsSavingDecision(false);
+    }
+
+    return success;
+  };
+
+  const handleSaveAll = async () => {
+    const seanceSaved = await handleSeanceSubmit();
+    if (!seanceSaved) {
+      return;
+    }
+    await handleDecisionSubmit();
   };
 
   const handleSaveEtape = async () => {
@@ -403,16 +595,6 @@ console.log('Procedure fetched:', detenteur?.data);
 
   const handlePrevious = () => {
     router.push(`/demande/step6/page6?id=${idProc}`)
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('fr-FR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
   };
 
   if (loading) {
@@ -444,43 +626,6 @@ console.log('Procedure fetched:', detenteur?.data);
     );
   }
 
-  if (error) {
-    return (
-      <div className={styles.appContainer}>
-        <Navbar />
-        <div className={styles.appContent}>
-          <Sidebar currentView={currentView} navigateTo={navigateTo} />
-          <main className={styles.mainContent}>
-                                <div className={styles.contentWrapper}>
-
-             {procedureData && (
-  <ProgressStepper
-    phases={phases}
-    currentProcedureId={idProc}
-    currentEtapeId={currentEtape?.id_etape}
-    procedurePhases={procedureData.ProcedurePhase || []}
-    procedureTypeId={procedureTypeId}
-  />
-)}
-            <div className={styles.errorContainer}>
-              <div className={styles.errorIcon}>!</div>
-              <h3>Erreur de chargement</h3>
-              <p>{error}</p>
-              <button 
-                onClick={() => window.location.reload()}
-                className={styles.retryButton}
-              >
-                Réessayer
-              </button>
-            </div>
-            </div>
-          </main>
-          
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className={styles.appContainer}>
     <Navbar />
@@ -503,172 +648,199 @@ console.log('Procedure fetched:', detenteur?.data);
   />
 )}
 
-            <h1 className={styles.mainTitle}>
+           <h1 className={styles.mainTitle}>
               <span className={styles.stepNumber}>8</span>
               Décision du Comité de Direction
             </h1>
+            {error && (
+              <div className={`${styles.alert} ${styles['alert-error']}`}>
+                <span className={styles.alertIcon}>!</span>
+                <span>{error}</span>
+              </div>
+            )}
           </div>
 
           <div className={styles.contentContainer}>
-            {/* Procedure Summary */}
-            <div className={styles.summaryCard}>
-              <div className={styles.summaryHeader}>
-                <h2>Procédure {procedure?.num_proc}</h2>
-                <span className={styles.procedureType}>
-  {procedure ? getProcedureType(procedure) : 'N/A'}
-</span>
+            <div className={styles.infoCard}>
+              <div className={styles.cardHeader}>
+                <h2>Résultat de la séance</h2>
+                <span className={styles.seanceBadge}>
+                  {seance?.num_seance ? `Séance ${seance.num_seance}` : 'Nouvelle séance'}
+                </span>
               </div>
-              <div className={styles.summaryContent}>
-                <div className={styles.summaryItem}>
-                  <strong>Société:</strong> 
-                  
-                  {detenteur || 'N/A'}
+              <div className={styles.cardContent}>
+                {!seance && (
+                  <div className={`${styles.alert} ${styles['alert-error']}`}>
+                    <span className={styles.alertIcon}>!</span>
+                    <span>Cette procédure n'a pas encore de séance enregistrée. Saisissez les informations ci-dessous pour créer l'enregistrement officiel.</span>
+                  </div>
+                )}
+                {seanceAlert && (
+                  <div className={`${styles.alert} ${seanceAlert.type === 'success' ? styles['alert-success'] : styles['alert-error']}`}>
+                    <span className={styles.alertIcon}>{seanceAlert.type === 'success' ? '+' : '!'}</span>
+                    <span>{seanceAlert.message}</span>
+                  </div>
+                )}
+                <div className={styles.formGroup}>
+                  <label>Numéro de séance *</label>
+                  <input
+                    type="text"
+                    value={seanceForm.num}
+                    onChange={(e) => setSeanceForm((prev) => ({ ...prev, num: e.target.value }))}
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Date de la séance *</label>
+                  <input
+                    type="datetime-local"
+                    value={seanceForm.date}
+                    onChange={(e) => setSeanceForm((prev) => ({ ...prev, date: e.target.value }))}
+                  />
+                </div>
+                <div className={styles.formGrid}>
+                  <div className={styles.formGroup}>
+                    <label>Exercice</label>
+                    <input
+                      type="number"
+                      min="1900"
+                      value={seanceForm.exercice}
+                      onChange={(e) => setSeanceForm((prev) => ({ ...prev, exercice: Number(e.target.value) }))}
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Remarques</label>
+                    <textarea
+                      rows={3}
+                      value={seanceForm.remarques}
+                      onChange={(e) => setSeanceForm((prev) => ({ ...prev, remarques: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Membres présents *</label>
+                  {membersLoading ? (
+                    <p className={styles.formHint}>Chargement des membres...</p>
+                  ) : membersError ? (
+                    <div className={`${styles.alert} ${styles['alert-error']}`}>
+                      <span className={styles.alertIcon}>!</span>
+                      <span>{membersError}</span>
+                    </div>
+                  ) : (
+                    <div className={styles.memberSelectGrid}>
+                      {availableMembers.map((member) => {
+                        const isSelected = seanceForm.selectedMembers.includes(member.id_membre);
+                        return (
+                          <button
+                            type="button"
+                            key={member.id_membre}
+                            className={`${styles.memberSelectCard} ${isSelected ? styles.memberSelectCardSelected : ''}`}
+                            onClick={() => handleMemberToggle(member.id_membre)}
+                          >
+                            <div className={styles.memberSelectName}>
+                              {member.prenom_membre} {member.nom_membre}
+                            </div>
+                            <div className={styles.memberSelectRole}>{member.fonction_membre}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+                <div className={styles.formActions}>
+                  <button
+                    type="button"
+                    className={`${styles.button} ${styles.primaryButton}`}
+                    onClick={handleSeanceSubmit}
+                    disabled={isSavingSeance}
+                  >
+                    {isSavingSeance ? 'Enregistrement...' : seance ? 'Mettre à jour la séance' : 'Créer la séance'}
+                  </button>
                 </div>
               </div>
             </div>
 
-            {/* Seance Information */}
-            {seance && (
-              <div className={styles.infoCard}>
-                <div className={styles.cardHeader}>
-                  <h2>Séance du Comité</h2>
-                </div>
-                <div className={styles.cardContent}>
-                  <div className={styles.infoGrid}>
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Numéro:</span>
-                      <span className={styles.infoValue}>{seance.num_seance}</span>
-                    </div>
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Date:</span>
-                      <span className={styles.infoValue}>{formatDate(seance.date_seance)}</span>
-                    </div>
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Exercice:</span>
-                      <span className={styles.infoValue}>{seance.exercice}</span>
-                    </div>
-                  </div>
-
-                  {seance.remarques && (
-                    <div className={styles.remarks}>
-                      <h3 className={styles.subTitle}>Remarques</h3>
-                      <p>{seance.remarques}</p>
-                    </div>
-                  )}
-
-                  <h3 className={styles.subTitle}>Membres participants</h3>
-                  <div className={styles.membersGrid}>
-                    {seance.membres.map((membre) => (
-                      <div key={membre.id_membre} className={styles.memberCard}>
-                        <div className={styles.memberAvatar}>
-                          {membre.prenom_membre.charAt(0)}{membre.nom_membre.charAt(0)}
-                        </div>
-                        <div className={styles.memberInfo}>
-                          <h4>{membre.prenom_membre} {membre.nom_membre}</h4>
-                          <p>{membre.fonction_membre}</p>
-                          <p className={styles.memberEmail}>{membre.email_membre}</p>
-                        </div>
-                        <div className={`${styles.signatureBadge} ${membre.signature_type === 'electronique' ? styles.electronic : styles.manual}`}>
-                          {membre.signature_type === 'electronique' ? 'E-Signature' : 'Signature manuelle'}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+            <div className={styles.infoCard}>
+              <div className={styles.cardHeader}>
+                <h2>Avis du comité</h2>
               </div>
-            )}
-
-            {/* Comite Decision */}
-            {comite && (
-              <div className={styles.infoCard}>
-                <div className={styles.cardHeader}>
-                  <h2>Décision du Comité</h2>
-                  <button 
-  className={styles.downloadButton}
-  onClick={generatePDFReport}
->
-  <FiDownload /> Télécharger le rapport
-</button>
+              <div className={styles.cardContent}>
+                {decisionAlert && (
+                  <div className={`${styles.alert} ${decisionAlert.type === 'success' ? styles['alert-success'] : styles['alert-error']}`}>
+                    <span className={styles.alertIcon}>{decisionAlert.type === 'success' ? '+' : '!'}</span>
+                    <span>{decisionAlert.message}</span>
+                  </div>
+                )}
+                <div className={styles.formGrid}>
+                  <div className={styles.formGroup}>
+                    <label>Date du comité</label>
+                    <input
+                      type="datetime-local"
+                      value={decisionForm.date_comite}
+                      onChange={(e) => setDecisionForm((prev) => ({ ...prev, date_comite: e.target.value }))}
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label>Numéro de décision</label>
+                    <input
+                      type="text"
+                      value={decisionForm.numero_decision}
+                      onChange={(e) => setDecisionForm((prev) => ({ ...prev, numero_decision: e.target.value }))}
+                    />
+                  </div>
                 </div>
-                <div className={styles.cardContent}>
-                  <div className={styles.infoGrid}>
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Numéro décision:</span>
-                      <span className={styles.infoValue}>{decision?.numero_decision}</span>
-                    </div>
-                    <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Date du comité:</span>
-                      <span className={styles.infoValue}>{formatDate(comite.date_comite)}</span>
-                    </div>
-                    
+                <div className={styles.formGroup}>
+                  <label>Avis *</label>
+                  <div className={styles.decisionToggle}>
+                    <button
+                      type="button"
+                      className={`${styles.toggleOption} ${decisionForm.avis === 'favorable' ? styles.toggleOptionActive : ''}`}
+                      onClick={() => setDecisionForm((prev) => ({ ...prev, avis: 'favorable' }))}
+                    >
+                      Avis favorable
+                    </button>
+                    <button
+                      type="button"
+                      className={`${styles.toggleOption} ${decisionForm.avis === 'defavorable' ? styles.toggleOptionActive : ''}`}
+                      onClick={() => setDecisionForm((prev) => ({ ...prev, avis: 'defavorable' }))}
+                    >
+                      Avis défavorable
+                    </button>
                   </div>
-
-                  <div className={styles.infoItemFull}>
-                    <span className={styles.infoLabel}>Objet:</span>
-                    <span className={styles.infoValue}>{comite.objet_deliberation}</span>
+                </div>
+                <div className={styles.formGrid}>
+                  <div className={styles.formGroup}>
+                    <label>Durée (mois)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={decisionForm.duree}
+                      onChange={(e) => setDecisionForm((prev) => ({ ...prev, duree: e.target.value }))}
+                    />
                   </div>
-
-                  <div className={styles.infoItemFull}>
-                    <span className={styles.infoLabel}>Résumé:</span>
-                    <p className={styles.infoValue}>{comite.resume_reunion}</p>
+                  <div className={styles.formGroup}>
+                    <label>Commentaires</label>
+                    <textarea
+                      rows={3}
+                      value={decisionForm.commentaires}
+                      onChange={(e) => setDecisionForm((prev) => ({ ...prev, commentaires: e.target.value }))}
+                    />
                   </div>
-
-                  <h3 className={styles.subTitle}>Documents joints</h3>
-                  <div className={styles.documentsGrid}>
-                    {comite.fiche_technique && (
-                      <a href={comite.fiche_technique} target="_blank" rel="noopener noreferrer" className={styles.documentCard}>
-                        <span>Fiche technique</span>
-                        <span className={styles.downloadIcon}>â†“</span>
-                      </a>
-                    )}
-                    {comite.carte_projettee && (
-                      <a href={comite.carte_projettee} target="_blank" rel="noopener noreferrer" className={styles.documentCard}>
-                        <span>Carte projetée</span>
-                        <span className={styles.downloadIcon}>â†“</span>
-                      </a>
-                    )}
-                    {comite.rapport_police && (
-                      <a href={comite.rapport_police} target="_blank" rel="noopener noreferrer" className={styles.documentCard}>
-                        <span>Rapport police</span>
-                        <span className={styles.downloadIcon}>â†“</span>
-                      </a>
-                    )}
-                    {!comite.fiche_technique && !comite.carte_projettee && !comite.rapport_police && (
-                      <div className={styles.noDocuments}>Aucun document joint</div>
-                    )}
-                  </div>
-
-                  {decision && (
-                    <>
-                      <h3 className={styles.subTitle}>Décision</h3>
-                      <div className={`${styles.decisionCard} ${decision.decision_cd === 'favorable' ? styles.favorable : styles.defavorable}`}>
-                        <div className={styles.decisionHeader}>
-                          <h4>
-                            {decision.decision_cd === 'favorable' ? (
-                              <span className={styles.decisionIcon}>âœ“</span>
-                            ) : (
-                              <span className={styles.decisionIcon}>✗</span>
-                            )}
-                            Décision {decision.decision_cd === 'favorable' ? 'Favorable' : 'Défavorable'}
-                          </h4>
-                          {decision.duree_decision && (
-                            <span className={styles.durationBadge}>
-                              {decision.duree_decision} mois
-                            </span>
-                          )}
-                        </div>
-                        {decision.commentaires && (
-                          <div className={styles.decisionComment}>
-                            <strong>Commentaires:</strong> {decision.commentaires}
-                          </div>
-                        )}
-                      </div>
-                    </>
+                </div>
+                <div className={styles.formActions}>
+                  <button
+                    type="button"
+                    className={`${styles.button} ${styles.primaryButton}`}
+                    onClick={handleDecisionSubmit}
+                    disabled={isSavingDecision || !seance}
+                  >
+                    {isSavingDecision ? 'Enregistrement...' : "Enregistrer l'avis du comité"}
+                  </button>
+                  {!seance && (
+                    <p className={styles.formHint}>Associez la procédure à une séance avant de saisir l'avis.</p>
                   )}
                 </div>
               </div>
-            )}
-
+            </div>
             {/* Action Buttons */}
             <div className={styles.actionButtons}>
               <button 
@@ -677,6 +849,14 @@ console.log('Procedure fetched:', detenteur?.data);
               >
                 <FiChevronLeft className={styles.buttonIcon} />
                 Précédent
+              </button>
+
+              <button
+                onClick={handleSaveAll}
+                className={`${styles.button} ${styles.primaryButton}`}
+                disabled={isSavingSeance || isSavingDecision}
+              >
+                {isSavingSeance || isSavingDecision ? 'Enregistrement...' : 'Enregistrer la séance et l\'avis'}
               </button>
               
               <button
@@ -711,3 +891,6 @@ console.log('Procedure fetched:', detenteur?.data);
 };
 
 export default Page8;
+
+
+
