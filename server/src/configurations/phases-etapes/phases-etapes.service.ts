@@ -162,37 +162,27 @@ export class PhasesEtapesService {
   }
 
   async deleteEtape(id_etape: number) {
-    const procedureEtapesCount = await this.prisma.procedureEtape.count({
+  // On autorise le retrait d'une étape d'une phase
+  // même si elle a déjà été utilisée par des procédures.
+  // On la détache seulement de la phase de configuration.
+
+  try {
+    return await this.prisma.etapeProc.update({
       where: { id_etape },
-    });
-    const procedurePhaseEtapesCount =
-      await this.prisma.procedurePhaseEtapes.count({
-        where: { id_etape },
-      });
-
-    if (procedureEtapesCount > 0 || procedurePhaseEtapesCount > 0) {
-      throw new BadRequestException(
-        "Impossible de supprimer une étape qui est déjà utilisée par des procédures.",
-      );
-    }
-
-    try {
-      // Détacher simplement l'étape de la phase au lieu de la supprimer
-      return await this.prisma.etapeProc.update({
-        where: { id_etape },
-        data: {
-          phase: {
-            disconnect: true,
-          },
+      data: {
+        phase: {
+          disconnect: true,
         },
-      });
-    } catch (error: any) {
-      if (error.code === 'P2025') {
-        throw new NotFoundException(`Étape avec id ${id_etape} introuvable`);
-      }
-      throw error;
+      },
+    });
+  } catch (error: any) {
+    if (error.code === 'P2025') {
+      throw new NotFoundException(`Étape avec id ${id_etape} introuvable`);
     }
+    throw error;
   }
+}
+
 
   // Combinaisons et relations Phase / TypeProc / TypePermis
 
