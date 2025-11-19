@@ -419,33 +419,16 @@ export default function Step2() {
     idProc,
     etapeNum: 2,
     shouldActivate: currentStep === 2 && !activatedSteps.has(2) && isPageReady,
-    onActivationSuccess: () => {
-      setActivatedSteps(prev => new Set(prev).add(2));
-      if (procedureData) {
-        const updatedData = { ...procedureData };
-        
-        if (updatedData.ProcedureEtape) {
-          const stepToUpdate = updatedData.ProcedureEtape.find(pe => pe.id_etape === 2);
-          if (stepToUpdate) {
-            stepToUpdate.statut = 'EN_COURS' as StatutProcedure;
-          }
-          setCurrentEtape({ id_etape: 2 });
-        }
-        
-        if (updatedData.ProcedurePhase) {
-          const phaseContainingStep2 = updatedData.ProcedurePhase.find(pp => 
-            pp.phase?.etapes?.some(etape => etape.id_etape === 2)
-          );
-          if (phaseContainingStep2) {
-            phaseContainingStep2.statut = 'EN_COURS' as StatutProcedure;
-          }
-        }
-        
-        setProcedureData(updatedData);
+    onActivationSuccess: (stepStatus: string) => {
+      if (stepStatus === 'TERMINEE') {
+        setActivatedSteps(prev => new Set(prev).add(2));
         setHasActivatedStep2(true);
+        return;
       }
-      
-      setTimeout(() => setRefetchTrigger(prev => prev + 1), 1000);
+
+      setActivatedSteps(prev => new Set(prev).add(2));
+      setHasActivatedStep2(true);
+      setTimeout(() => setRefetchTrigger(prev => prev + 1), 500);
     }
   });
 
@@ -612,6 +595,43 @@ export default function Step2() {
 
   const handlePrevious = () => {
     router.push(`/demande/step1/page1?id=${idProc}`)
+  };
+
+  const handleSaveEtapeFixed = async () => {
+    if (!idProc) {
+      setEtapeMessage("ID procedure introuvable !");
+      return;
+    }
+
+    setSavingEtape(true);
+    setEtapeMessage(null);
+
+    try {
+      let etapeId = 2;
+
+      try {
+        if (procedureData?.ProcedurePhase) {
+          const pathname = window.location.pathname.replace(/^\/+/, '');
+          const phasesList = (procedureData.ProcedurePhase || []) as ProcedurePhase[];
+          const allEtapes = phasesList.flatMap(pp => pp.phase?.etapes ?? []);
+          const match = allEtapes.find((e: any) => e.page_route === pathname);
+          if (match?.id_etape != null) {
+            etapeId = match.id_etape;
+          }
+        }
+      } catch {
+        // fallback to default etapeId
+      }
+
+      await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/${etapeId}`);
+      setEtapeMessage("�tape 2 enregistr�e avec succ�s !");
+      setRefetchTrigger(prev => prev + 1);
+    } catch (err) {
+      console.error(err);
+      setEtapeMessage("Erreur lors de l'enregistrement de l'�tape.");
+    } finally {
+      setSavingEtape(false);
+    }
   };
 
   const handleSaveEtape = async () => {
@@ -832,12 +852,13 @@ export default function Step2() {
             {/* Progress Steps */}
             {procedureData && (
               <ProgressStepper
-                phases={phases}
-                currentProcedureId={idProc}
-                currentEtapeId={currentStep}
-                procedurePhases={procedureData.ProcedurePhase || []}
-                procedureTypeId={procedureTypeId}
-              />
+                 phases={phases}
+                 currentProcedureId={idProc}
+                 currentEtapeId={currentStep}
+                 procedurePhases={procedureData.ProcedurePhase || []}
+                 procedureTypeId={procedureTypeId}
+                 procedureEtapes={procedureData.ProcedureEtape || []}
+               />
             )}
             <div className={styles.contentWrapper}>
               <h2 className={styles.pageTitle}>
@@ -1125,7 +1146,7 @@ export default function Step2() {
 
                 <button
                   className={styles.btnSave}
-                  onClick={handleSaveEtape}
+                  onClick={handleSaveEtapeFixed}
                   disabled={savingEtape || statutProc === 'TERMINEE' || !statutProc}
                 >
                   <BsSave className={styles.btnIcon} /> {savingEtape ? "Sauvegarde en cours..." : "Sauvegarder l'étape"}

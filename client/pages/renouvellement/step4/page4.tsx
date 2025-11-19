@@ -378,28 +378,15 @@ useEffect(() => {
     idProc,
     etapeNum: 4,
     shouldActivate: currentStep === 4 && !activatedSteps.has(4) && isPageReady,
-    onActivationSuccess: () => {
-      setActivatedSteps((prev) => new Set(prev).add(4));
-      if (procedureData) {
-        const updatedData = { ...procedureData };
-        if (updatedData.ProcedureEtape) {
-          const stepToUpdate = updatedData.ProcedureEtape.find((pe) => pe.id_etape === 4);
-          if (stepToUpdate) {
-            stepToUpdate.statut = 'EN_COURS' as StatutProcedure;
-          }
-          setCurrentEtape({ id_etape: 4 });
-        }
-        if (updatedData.ProcedurePhase) {
-          const phaseContainingStep4 = updatedData.ProcedurePhase.find((pp) =>
-            pp.phase?.etapes?.some((etape) => etape.id_etape === 4)
-          );
-          if (phaseContainingStep4) {
-            phaseContainingStep4.statut = 'EN_COURS' as StatutProcedure;
-          }
-        }
-        setProcedureData(updatedData);
+    onActivationSuccess: (stepStatus: string) => {
+      if (stepStatus === 'TERMINEE') {
+        setActivatedSteps((prev) => new Set(prev).add(4));
         setHasActivatedStep4(true);
+        return;
       }
+
+      setActivatedSteps((prev) => new Set(prev).add(4));
+      setHasActivatedStep4(true);
     },
   });
 
@@ -1103,12 +1090,13 @@ useEffect(() => {
           <div className={styles['informations-container']}>
             {procedureData && (
               <ProgressStepper
-                phases={phases}
-                currentProcedureId={idProc}
-                currentEtapeId={currentStep}
-                procedurePhases={procedureData.ProcedurePhase || []}
-                procedureTypeId={procedureTypeId}
-              />
+                 phases={phases}
+                 currentProcedureId={idProc}
+                 currentEtapeId={currentStep}
+                 procedurePhases={procedureData.ProcedurePhase || []}
+                 procedureTypeId={procedureTypeId}
+                 procedureEtapes={procedureData.ProcedureEtape || []}
+               />
             )}
             <div className={styles['header-section']}>
               <h1 className={styles['page-title']}>

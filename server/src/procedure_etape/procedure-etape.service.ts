@@ -11,19 +11,44 @@ export class ProcedureEtapeService {
 
 async setStepStatus(id_proc: number, id_etape: number, statut: StatutProcedure, link?: string) {
     const now = new Date();
+    console.log('[setStepStatus] called', { id_proc, id_etape, targetStatut: statut, link });
+
     const existing = await this.prisma.procedureEtape.findUnique({
       where: { id_proc_id_etape: { id_proc, id_etape } },
     });
+    console.log('[setStepStatus] existing ProcedureEtape:', existing);
 
-    // Get the phase of this etape
+    // Get the phase of this etape (can be null now because etapes can be detached)
     const etapeWithPhase = await this.prisma.etapeProc.findUnique({
       where: { id_etape },
-      include: { phase: true }
+      include: { phase: true },
     });
 
     if (!etapeWithPhase) {
-      throw new Error(`Etape ${id_etape} not found or has no phase association`);
+      throw new Error(`Etape ${id_etape} not found`);
     }
+
+    // Try to determine the phase for this step in the context of this procedure.
+    // Priority:
+    // 1) The etape's own id_phase (configuration link), if still present.
+    // 2) A mapping row in procedurePhaseEtapes for this (id_proc, id_etape).
+    let phaseId: number | null = etapeWithPhase.id_phase ?? null;
+
+    if (phaseId == null) {
+      const procPhaseEtape = await this.prisma.procedurePhaseEtapes.findFirst({
+        where: { id_proc, id_etape },
+      });
+      if (procPhaseEtape?.id_phase != null) {
+        phaseId = procPhaseEtape.id_phase;
+      }
+    }
+
+    console.log('[setStepStatus] resolved phaseId', {
+      id_proc,
+      id_etape,
+      etapeIdPhase: etapeWithPhase.id_phase,
+      resolvedPhaseId: phaseId,
+    });
 
     // Ensure procedure exists and has phase associations
     await this.ensureProcedureHasPhases(id_proc);
@@ -52,9 +77,12 @@ async setStepStatus(id_proc: number, id_etape: number, statut: StatutProcedure, 
       const result = await this.prisma.procedureEtape.create({
         data: createData,
       });
+      console.log('[setStepStatus] created ProcedureEtape:', result);
 
-      // Auto-update phase status after creating etape
-      await this.autoUpdatePhaseStatus(id_proc, etapeWithPhase.id_phase!);
+      // Auto-update phase status after creating etape, if we have a phase
+      if (phaseId != null) {
+        await this.autoUpdatePhaseStatus(id_proc, phaseId);
+      }
       return result;
     }
 
@@ -73,9 +101,12 @@ async setStepStatus(id_proc: number, id_etape: number, statut: StatutProcedure, 
       where: { id_proc_id_etape: { id_proc, id_etape } },
       data: updateData,
     });
+    console.log('[setStepStatus] updated ProcedureEtape:', result);
 
-    // Auto-update phase status after etape change
-    await this.autoUpdatePhaseStatus(id_proc, etapeWithPhase.id_phase!);
+    // Auto-update phase status after etape change, if we have a phase
+    if (phaseId != null) {
+      await this.autoUpdatePhaseStatus(id_proc, phaseId);
+    }
 
     return result;
   }
@@ -176,11 +207,30 @@ async setStepStatus(id_proc: number, id_etape: number, statut: StatutProcedure, 
       newStatut = StatutProcedure.EN_ATTENTE;
     }
 
-    // Update the phase status
-    return this.prisma.procedurePhase.update({
-      where: { id_proc_id_phase: { id_proc, id_phase } },
-      data: { statut: newStatut }
+    console.log('[autoUpdatePhaseStatus] result', {
+      id_proc,
+      id_phase,
+      statuses,
+      newStatut,
     });
+
+    // Update the phase status (if it exists for this procedure)
+    try {
+      return await this.prisma.procedurePhase.update({
+        where: { id_proc_id_phase: { id_proc, id_phase } },
+        data: { statut: newStatut }
+      });
+    } catch (error: any) {
+      if (error?.code === 'P2025') {
+        // No procedurePhase row for this (id_proc, id_phase) – skip quietly
+        console.warn('[autoUpdatePhaseStatus] No ProcedurePhase found to update', {
+          id_proc,
+          id_phase,
+        });
+        return null;
+      }
+      throw error;
+    }
   }
 
   async getProcedureWithPhases(id_proc: number) {

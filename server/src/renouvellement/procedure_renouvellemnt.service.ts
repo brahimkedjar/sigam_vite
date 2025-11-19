@@ -73,9 +73,31 @@ export class ProcedureRenouvellementService {
       throw new NotFoundException('TypeProcedure "renouvellement" introuvable');
     }
 
+    // Generate codes based on permit type
+    const codeType = permis.typePermis?.code_type ?? 'UNK';
+
+    const procCount = await this.prisma.procedure.count({
+      where: {
+        demandes: {
+          some: {
+            id_typePermis: permis.id_typePermis,
+          },
+        },
+      },
+    });
+
+    const demCount = await this.prisma.demande.count({
+      where: {
+        id_typePermis: permis.id_typePermis,
+      },
+    });
+
+    const numProc = `PROC-${codeType}-${procCount + 1}`;
+    const codeDemande = `DEM-${codeType}-${demCount + 1}`;
+
     const newProcedure = await this.prisma.procedure.create({
       data: {
-        num_proc: `PROC-R-${Date.now()}`,
+        num_proc: numProc,
         date_debut_proc: new Date(),
         statut_proc: statut,
       },
@@ -95,7 +117,7 @@ export class ProcedureRenouvellementService {
         id_proc: newProcedure.id_proc,
         id_typePermis: permis.id_typePermis,
         id_typeProc: typeProc.id,
-        code_demande: `DEM-R-${Date.now()}`,
+        code_demande: codeDemande,
         statut_demande: 'EN_COURS',
         date_demande: parsedDate,
         date_instruction: new Date(),
@@ -369,6 +391,5 @@ export class ProcedureRenouvellementService {
     });
   }
 }
-
 
 

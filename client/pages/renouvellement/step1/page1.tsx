@@ -249,38 +249,14 @@ useActivateEtape({
     shouldActivate: currentStep === 1 && !activatedSteps.has(1) && isPageReady,
     onActivationSuccess: (stepStatus: string) => {
       if (stepStatus === 'TERMINEE') {
-        // If step is already TERMINEE, just mark it as activated locally
         setActivatedSteps(prev => new Set(prev).add(1));
         setHasActivatedStep1(true);
         return;
       }
 
       setActivatedSteps(prev => new Set(prev).add(1));
-      if (procedureData) {
-        const updatedData = { ...procedureData };
-        
-        if (updatedData.ProcedureEtape) {
-          const stepToUpdate = updatedData.ProcedureEtape.find(pe => pe.id_etape === 1);
-          if (stepToUpdate && stepStatus === 'EN_ATTENTE') {
-            stepToUpdate.statut = 'EN_COURS' as StatutProcedure;
-          }
-          setCurrentEtape({ id_etape: 1 });
-        }
-        
-        if (updatedData.ProcedurePhase) {
-          const phaseContainingStep1 = updatedData.ProcedurePhase.find(pp => 
-            pp.phase?.etapes?.some(etape => etape.id_etape === 1)
-          );
-          if (phaseContainingStep1 && stepStatus === 'EN_ATTENTE') {
-            phaseContainingStep1.statut = 'EN_COURS' as StatutProcedure;
-          }
-        }
-        
-        setProcedureData(updatedData);
-        setHasActivatedStep1(true);
-      }
-      
-      setTimeout(() => setRefetchTrigger(prev => prev + 1), 1000);
+      setHasActivatedStep1(true);
+      setTimeout(() => setRefetchTrigger(prev => prev + 1), 500);
     }
   });
 
@@ -557,12 +533,13 @@ useActivateEtape({
               {/* Progress Steps */}
               {procedureData && (
                 <ProgressStepper
-                  phases={phases}
-                  currentProcedureId={idProc}
-                  currentEtapeId={currentStep}
-                  procedurePhases={procedureData.ProcedurePhase || []}
-                  procedureTypeId={procedureTypeId}
-                />
+                   phases={phases}
+                   currentProcedureId={idProc}
+                   currentEtapeId={currentStep}
+                   procedurePhases={procedureData.ProcedurePhase || []}
+                   procedureTypeId={procedureTypeId}
+                   procedureEtapes={procedureData.ProcedureEtape || []}
+                 />
               )}
 
               <h2 className={styles['page-title']}>

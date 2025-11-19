@@ -2,7 +2,7 @@
 import { FiCheck, FiPlay, FiArrowRight, FiX, FiRefreshCw } from 'react-icons/fi';
 import { useRouter } from 'next/router';
 import styles from './ProgressStepper.module.css';
-import { Phase, ProcedurePhase, EtapeProc } from '../src/types/procedure';
+import { Phase, ProcedurePhase, EtapeProc, ProcedureEtape } from '../src/types/procedure';
 import axios from 'axios';
 
 const MISSING_DOCS_STORAGE_KEY = 'sigam_missing_required_docs';
@@ -22,6 +22,7 @@ interface Props {
   currentEtapeId?: number;
   procedurePhases?: ProcedurePhase[];
   procedureTypeId?: number;
+  procedureEtapes?: ProcedureEtape[];
 }
 
 const ProgressStepper: React.FC<Props> = ({
@@ -30,6 +31,7 @@ const ProgressStepper: React.FC<Props> = ({
   currentEtapeId,
   procedurePhases = [],
   procedureTypeId,
+  procedureEtapes = [],
 }) => {
   const router = useRouter();
   const [expandedPhase, setExpandedPhase] = useState<number | null>(null);
@@ -167,13 +169,34 @@ const ProgressStepper: React.FC<Props> = ({
 
   const getEtapeStatus = useCallback(
     (etape: EtapeProc): string => {
-      const procedureEtape = etape.procedureEtapes?.find(
-        et => et.id_proc === currentProcedureId
-      ) ?? etape.procedureEtapes?.[0];
+      if (!currentProcedureId) {
+        return 'EN_ATTENTE';
+      }
 
-      return procedureEtape?.statut ?? 'EN_ATTENTE';
+      // Merge all known statuses for this etape
+      const candidates: ProcedureEtape[] = [
+        ...procedureEtapes.filter((et) => et.id_etape === etape.id_etape),
+        ...(etape.procedureEtapes ?? []),
+      ];
+
+      const match = candidates.find(
+        (et) => et.id_proc === currentProcedureId && et.id_etape === etape.id_etape,
+      );
+      // Debug log to verify what the stepper sees
+      // eslint-disable-next-line no-console
+      console.log('[ProgressStepper/getEtapeStatus]', {
+        currentProcedureId,
+        etapeId: etape.id_etape,
+        matchStatut: match?.statut,
+        candidates: candidates.map(c => ({
+          id_proc: c.id_proc,
+          id_etape: c.id_etape,
+          statut: c.statut,
+        })),
+      });
+      return match?.statut ?? 'EN_ATTENTE';
     },
-    [currentProcedureId]
+    [currentProcedureId, procedureEtapes],
   );
 
   const isPhaseCompleted = useCallback(

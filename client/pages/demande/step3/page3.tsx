@@ -216,7 +216,7 @@ export default function Capacites() {
     };
 
     fetchProcedureData();
-  }, [idProc, apiURL]);
+  }, [idProc, apiURL, refetchTrigger]);
 
   // Fetch demande data when procedure data is available
   useEffect(() => {
@@ -267,31 +267,8 @@ export default function Capacites() {
       }
 
       setActivatedSteps(prev => new Set(prev).add(3));
-      if (procedureData) {
-        const updatedData = { ...procedureData };
-        
-        if (updatedData.ProcedureEtape) {
-          const stepToUpdate = updatedData.ProcedureEtape.find(pe => pe.id_etape === 3);
-          if (stepToUpdate && stepStatus === 'EN_ATTENTE') {
-            stepToUpdate.statut = 'EN_COURS' as StatutProcedure;
-          }
-          setCurrentEtape({ id_etape: 3 });
-        }
-        
-        if (updatedData.ProcedurePhase) {
-          const phaseContainingStep3 = updatedData.ProcedurePhase.find(pp => 
-            pp.phase?.etapes?.some(etape => etape.id_etape === 3)
-          );
-          if (phaseContainingStep3 && stepStatus === 'EN_ATTENTE') {
-            phaseContainingStep3.statut = 'EN_COURS' as StatutProcedure;
-          }
-        }
-        
-        setProcedureData(updatedData);
-        setHasActivatedStep3(true);
-      }
-      
-      setTimeout(() => setRefetchTrigger(prev => prev + 1), 1000);
+      setHasActivatedStep3(true);
+      setTimeout(() => setRefetchTrigger(prev => prev + 1), 500);
     }
   });
 
@@ -320,6 +297,43 @@ export default function Capacites() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSaveEtapeFixed = async () => {
+    if (!idProc) {
+      setEtapeMessage("ID procedure introuvable !");
+      return;
+    }
+
+    setSavingEtape(true);
+    setEtapeMessage(null);
+
+    try {
+      let etapeId = 3;
+
+      try {
+        if (procedureData?.ProcedurePhase) {
+          const pathname = window.location.pathname.replace(/^\/+/, '');
+          const phasesList = (procedureData.ProcedurePhase || []) as ProcedurePhase[];
+          const allEtapes = phasesList.flatMap(pp => pp.phase?.etapes ?? []);
+          const match = allEtapes.find((e: any) => e.page_route === pathname);
+          if (match?.id_etape != null) {
+            etapeId = match.id_etape;
+          }
+        }
+      } catch {
+        // fallback to default etapeId
+      }
+
+      await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/${etapeId}`);
+      setEtapeMessage("étape 3 enregistrée avec succés !");
+      setRefetchTrigger(prev => prev + 1);
+    } catch (err) {
+      console.error(err);
+      setEtapeMessage("Erreur lors de l'enregistrement de l'étape.");
+    } finally {
+      setSavingEtape(false);
+    }
   };
 
   const handleSaveEtape = async () => {
@@ -436,12 +450,13 @@ export default function Capacites() {
               {/* Progress Steps */}
               {procedureData && (
                 <ProgressStepper
-                  phases={phases}
-                  currentProcedureId={idProc}
-                  currentEtapeId={currentStep}
-                  procedurePhases={procedureData.ProcedurePhase || []}
-                  procedureTypeId={procedureTypeId}
-                />
+                   phases={phases}
+                   currentProcedureId={idProc}
+                   currentEtapeId={currentStep}
+                   procedurePhases={procedureData.ProcedurePhase || []}
+                   procedureTypeId={procedureTypeId}
+                   procedureEtapes={procedureData.ProcedureEtape || []}
+                 />
               )}
 
               <h2 className={styles.pageTitle}>
@@ -647,7 +662,7 @@ export default function Capacites() {
                 
                 <button
                   className={styles.btnSave}
-                  onClick={handleSaveEtape}
+                  onClick={handleSaveEtapeFixed}
                   disabled={savingEtape || statutProc === 'TERMINEE' || !statutProc}
                 >
                   <BsSave className={styles.btnIcon} /> {savingEtape ? "Sauvegarde en cours..." : "Sauvegarder l'étape"}

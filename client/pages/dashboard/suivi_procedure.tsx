@@ -1002,8 +1002,15 @@ const toggleDropdown = (demandeId: number) => {
                             className={styles.sortableHeader}
                             onClick={() => handleSort('procedure.num_proc')}
                           >
-                            CODE Procedure
+                            CODE PROCÉDURE
                             {renderSortIndicator('procedure.num_proc')}
+                          </th>
+                          <th
+                            className={styles.sortableHeader}
+                            onClick={() => handleSort('code_demande')}
+                          >
+                            CODE DEMANDE
+                            {renderSortIndicator('code_demande')}
                           </th>
                           <th 
                             className={styles.sortableHeader}
@@ -1046,6 +1053,9 @@ const toggleDropdown = (demandeId: number) => {
                             <tr key={d.id_demande} className={isExpanded ? styles.expanded : ''}>
                               <td>
                                 <span className={styles.codeHighlight}>{d.procedure?.num_proc}</span>
+                              </td>
+                              <td>
+                                <span className={styles.codeHighlight}>{d.code_demande}</span>
                               </td>
                               <td>{getSocieteName(d)}</td>
                               <td>

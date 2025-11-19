@@ -63,30 +63,25 @@ export class DemandeService {
     });
   }
 
-  // Generate procedure and demande codes based on typePermis.code_type
-  const codeType = typePermis.code_type ?? 'UNK';
+  // Generate code if not provided
+  const currentYear = new Date().getFullYear();
   const procCount = await this.prisma.procedure.count({
-    where: {
-      demandes: {
-        some: {
-          id_typePermis: data.id_typepermis,
-        },
-      },
+  where: {
+    date_debut_proc: {
+      gte: new Date(`${currentYear}-01-01`),
+      lte: new Date(`${currentYear}-12-31`),
     },
-  });
-  const demCount = await this.prisma.demande.count({
-    where: {
-      id_typePermis: data.id_typepermis,
-    },
-  });
-  const generatedNumProc = `PROC-${codeType}-${procCount + 1}`;
-  const generatedCodeDemande = `DEM-${codeType}-${demCount + 1}`;
-  const finalCodeDemande = data.code_demande || generatedCodeDemande;
+  },
+});
+
+const finalCode =
+  data.code_demande ||
+  `${typePermis.code_type}-${currentYear}-${procCount + 1}`;
 
   // Create procedure (⚠️ no more id_typeproc here)
   const createdProc = await this.prisma.procedure.create({
     data: {
-      num_proc: generatedNumProc,
+      num_proc: finalCode,
       date_debut_proc: new Date(),
       statut_proc: 'EN_COURS',
     },
@@ -97,7 +92,7 @@ export class DemandeService {
     data: {
       id_proc: createdProc.id_proc,
       id_typeProc: typeProcedure.id,
-      code_demande: finalCodeDemande,
+      code_demande: finalCode,
       id_typePermis: data.id_typepermis,
       date_demande: data.date_demande,
       duree_instruction: 10,
@@ -171,15 +166,17 @@ export class DemandeService {
       throw new NotFoundException('Type de permis introuvable');
     }
 
-    const codeType = typePermis.code_type ?? 'UNK';
-
+    const year = new Date().getFullYear();
     const count = await this.prisma.demande.count({
       where: {
-        id_typePermis: id_typepermis,
+        date_demande: {
+          gte: new Date(`${year}-01-01`),
+          lte: new Date(`${year}-12-31`),
+        },
       },
     });
 
-    const code_demande = `DEM-${codeType}-${count + 1}`;
+    const code_demande = `${typePermis.code_type}-${year}-${count + 1}`;
     return { code_demande };
   }
 

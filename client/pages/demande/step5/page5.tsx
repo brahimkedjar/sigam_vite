@@ -225,29 +225,16 @@ export default function CadastrePage() {
     idProc,
     etapeNum: 5,
     shouldActivate: currentStep === 5 && !activatedSteps.has(5),
-    onActivationSuccess: () => {
-      setActivatedSteps(prev => new Set(prev).add(5));
-      if (procedureData) {
-        const updatedData = { ...procedureData };
-        if (updatedData.ProcedureEtape) {
-          const stepToUpdate = updatedData.ProcedureEtape.find(pe => pe.id_etape === 5);
-          if (stepToUpdate) {
-            stepToUpdate.statut = 'EN_COURS' as StatutProcedure;
-          }
-          setCurrentEtape({ id_etape: 5 });
-        }
-        if (updatedData.ProcedurePhase) {
-          const phaseContainingStep5 = updatedData.ProcedurePhase.find(pp => 
-            pp.phase?.etapes?.some(etape => etape.id_etape === 5)
-          );
-          if (phaseContainingStep5) {
-            phaseContainingStep5.statut = 'EN_COURS' as StatutProcedure;
-          }
-        }
-        setProcedureData(updatedData);
+    onActivationSuccess: (stepStatus: string) => {
+      if (stepStatus === 'TERMINEE') {
+        setActivatedSteps(prev => new Set(prev).add(5));
         setHasActivatedStep5(true);
+        return;
       }
-      setTimeout(() => setRefetchTrigger(prev => prev + 1), 1000);
+
+      setActivatedSteps(prev => new Set(prev).add(5));
+      setHasActivatedStep5(true);
+      setTimeout(() => setRefetchTrigger(prev => prev + 1), 500);
     }
   });
 
@@ -482,7 +469,44 @@ export default function CadastrePage() {
     }
   };
 
-   const handleSaveEtape = async () => {
+  const handleSaveEtapeFixed = async () => {
+    if (!idProc) {
+      setError("ID procédure manquant !");
+      setTimeout(() => setError(null), 4000);
+      return;
+    }
+    setSavingEtape(true);
+    try {
+      let etapeId = 5;
+
+      try {
+        if (procedureData?.ProcedurePhase) {
+          const pathname = window.location.pathname.replace(/^\/+/, '');
+          const phasesList = (procedureData.ProcedurePhase || []) as ProcedurePhase[];
+          const allEtapes = phasesList.flatMap(pp => pp.phase?.etapes ?? []);
+          const match = allEtapes.find((e: any) => e.page_route === pathname);
+          if (match?.id_etape != null) {
+            etapeId = match.id_etape;
+          }
+        }
+      } catch {
+        // fallback to default etapeId
+      }
+
+      await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/${etapeId}`);
+      setSuccess("étape 5 enregistrée avec succés !");
+      setTimeout(() => setSuccess(null), 3000);
+      setRefetchTrigger(prev => prev + 1);
+    } catch (err) {
+      console.error("Erreur étape", err);
+      setError("Erreur lors de l'enregistrement de l'étape");
+      setTimeout(() => setError(null), 4000);
+    } finally {
+      setSavingEtape(false);
+    }
+  };
+
+  const handleSaveEtape = async () => {
     if (!idProc) {
       setError("ID procédure manquant !");
       setTimeout(() => setError(null), 4000);
@@ -866,12 +890,13 @@ export default function CadastrePage() {
           <div className={styles['content-wrapper']}>
             {procedureData && (
               <ProgressStepper
-                phases={phases}
-                currentProcedureId={idProc}
-                currentEtapeId={currentEtape?.id_etape}
-                procedurePhases={procedureData.ProcedurePhase || []}
-                procedureTypeId={procedureTypeId}
-              />
+                 phases={phases}
+                 currentProcedureId={idProc}
+                 currentEtapeId={currentEtape?.id_etape}
+                 procedurePhases={procedureData.ProcedurePhase || []}
+                 procedureTypeId={procedureTypeId}
+                 procedureEtapes={procedureData.ProcedureEtape || []}
+               />
             )}
             <div className={styles['cadastre-app']}>
               <header className={styles['app-header']}>
@@ -1459,7 +1484,7 @@ export default function CadastrePage() {
                     </button>
                     <button
                       className={styles['btnSave']}
-                      onClick={handleSaveEtape}
+                      onClick={handleSaveEtapeFixed}
                     //  disabled={savingEtape || statutProc === 'TERMINEE' || !statutProc}
                     >
                       <BsSave className={styles['btnIcon']} /> {savingEtape ? "Sauvegarde en cours..." : "Sauvegarder l'étape"}

@@ -272,9 +272,31 @@ export class TransfertService {
         throw new BadRequestException('Un transfert est deja en cours pour ce permis');
       }
 
+      // Generate codes based on permit type
+      const codeType = permis.typePermis?.code_type ?? 'UNK';
+
+      const procCount = await tx.procedure.count({
+        where: {
+          demandes: {
+            some: {
+              id_typePermis: permis.id_typePermis,
+            },
+          },
+        },
+      });
+
+      const demCount = await tx.demande.count({
+        where: {
+          id_typePermis: permis.id_typePermis,
+        },
+      });
+
+      const numProc = `PROC-${codeType}-${procCount + 1}`;
+      const codeDemande = `DEM-${codeType}-${demCount + 1}`;
+
       const newProcedure = await tx.procedure.create({
         data: {
-          num_proc: `TRF-${Date.now()}`,
+          num_proc: numProc,
           date_debut_proc: new Date(),
           statut_proc: StatutProcedure.EN_COURS,
           typeProcedureId: typeProc.id,
@@ -293,7 +315,7 @@ export class TransfertService {
           id_proc: newProcedure.id_proc,
           id_typeProc: typeProc.id,
           id_typePermis: permis.id_typePermis,
-          code_demande: `TRF-DEMANDE-${Date.now()}`,
+          code_demande: codeDemande,
           date_demande: dto.date_demande ? new Date(dto.date_demande) : new Date(),
           statut_demande: StatutProcedure.EN_COURS,
           ...(permis.id_detenteur
@@ -415,7 +437,6 @@ export class TransfertService {
     });
   }
 }
-
 
 
 

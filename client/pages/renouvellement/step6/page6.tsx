@@ -136,28 +136,16 @@ export default function AvisWaliStep() {
     idProc,
     etapeNum: 6,
     shouldActivate: currentStep === 6 && !activatedSteps.has(6) && isPageReady,
-    onActivationSuccess: () => {
-      setActivatedSteps((prev) => new Set(prev).add(6));
-      if (procedureData) {
-        const updatedData = { ...procedureData };
-        if (updatedData.ProcedureEtape) {
-          const stepToUpdate = updatedData.ProcedureEtape.find((pe) => pe.id_etape === 6);
-          if (stepToUpdate) {
-            stepToUpdate.statut = 'EN_COURS' as StatutProcedure;
-          }
-          setCurrentEtape({ id_etape: 6 });
-        }
-        if (updatedData.ProcedurePhase) {
-          const phaseContainingStep6 = updatedData.ProcedurePhase.find((pp) =>
-            pp.phase?.etapes?.some((etape) => etape.id_etape === 6)
-          );
-          if (phaseContainingStep6) {
-            phaseContainingStep6.statut = 'EN_COURS' as StatutProcedure;
-          }
-        }
-        setProcedureData(updatedData);
+    onActivationSuccess: (stepStatus: string) => {
+      if (stepStatus === 'TERMINEE') {
+        setActivatedSteps((prev) => new Set(prev).add(6));
         setHasActivatedStep6(true);
+        return;
       }
+
+      setActivatedSteps((prev) => new Set(prev).add(6));
+      setHasActivatedStep6(true);
+      setTimeout(() => setRefetchTrigger(prev => prev + 1), 500);
     },
   });
 
@@ -575,12 +563,13 @@ const latestEnvoi = interactions
           <div className={styles.contentWrapper}>
              {procedureData && (
             <ProgressStepper
-              phases={phases}
-              currentProcedureId={idProc}
-              currentEtapeId={currentEtape?.id_etape}
-              procedurePhases={procedureData.ProcedurePhase || []}
-              procedureTypeId={procedureTypeId}
-            />
+               phases={phases}
+               currentProcedureId={idProc}
+               currentEtapeId={currentEtape?.id_etape}
+               procedurePhases={procedureData.ProcedurePhase || []}
+               procedureTypeId={procedureTypeId}
+               procedureEtapes={procedureData.ProcedureEtape || []}
+             />
           )}
             <div className={styles.pageHeader}>
             <div className={styles.headerLeft}>

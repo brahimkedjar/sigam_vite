@@ -190,31 +190,8 @@ useEffect(() => {
       }
 
       setActivatedSteps(prev => new Set(prev).add(7));
-      if (procedureData) {
-        const updatedData = { ...procedureData };
-        
-        if (updatedData.ProcedureEtape) {
-          const stepToUpdate = updatedData.ProcedureEtape.find(pe => pe.id_etape === 7);
-          if (stepToUpdate && stepStatus === 'EN_ATTENTE') {
-            stepToUpdate.statut = 'EN_COURS' as StatutProcedure;
-          }
-          setCurrentEtape({ id_etape: 7 });
-        }
-        
-        if (updatedData.ProcedurePhase) {
-          const phaseContainingStep7 = updatedData.ProcedurePhase.find(pp => 
-            pp.phase?.etapes?.some(etape => etape.id_etape === 7)
-          );
-          if (phaseContainingStep7 && stepStatus === 'EN_ATTENTE') {
-            phaseContainingStep7.statut = 'EN_COURS' as StatutProcedure;
-          }
-        }
-        
-        setProcedureData(updatedData);
-        setHasActivatedStep7(true);
-      }
-      
-      setTimeout(() => setRefetchTrigger(prev => prev + 1), 1000);
+      setHasActivatedStep7(true);
+      setTimeout(() => setRefetchTrigger(prev => prev + 1), 500);
     }
   });
 
@@ -569,6 +546,43 @@ console.log('Procedure fetched:', detenteur?.data);
     await handleDecisionSubmit();
   };
 
+  const handleSaveEtapeFixed = async () => {
+  if (!idProc) {
+    setEtapeMessage("ID procedure introuvable !");
+    return;
+  }
+
+  setSavingEtape(true);
+  setEtapeMessage(null);
+
+  try {
+    let etapeId = 7;
+
+    try {
+      if (procedureData?.ProcedurePhase) {
+        const pathname = window.location.pathname.replace(/^\/+/, '');
+        const phasesList = (procedureData.ProcedurePhase || []) as ProcedurePhase[];
+        const allEtapes = phasesList.flatMap(pp => pp.phase?.etapes ?? []);
+        const match = allEtapes.find((e: any) => e.page_route === pathname);
+        if (match?.id_etape != null) {
+          etapeId = match.id_etape;
+        }
+      }
+    } catch {
+      // fallback to default etapeId
+    }
+
+    await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/${etapeId}`);
+    setEtapeMessage("étape 7 enregistrée avec succés !");
+    setRefetchTrigger(prev => prev + 1);
+  } catch (err) {
+    console.error(err);
+    setEtapeMessage("Erreur lors de l'enregistrement de l'étape.");
+  } finally {
+    setSavingEtape(false);
+  }
+};
+
   const handleSaveEtape = async () => {
   if (!idProc) {
     setEtapeMessage("ID procedure introuvable !");
@@ -608,12 +622,13 @@ console.log('Procedure fetched:', detenteur?.data);
 
              {procedureData && (
   <ProgressStepper
-    phases={phases}
-    currentProcedureId={idProc}
-    currentEtapeId={currentEtape?.id_etape}
-    procedurePhases={procedureData.ProcedurePhase || []}
-    procedureTypeId={procedureTypeId}
-  />
+     phases={phases}
+     currentProcedureId={idProc}
+     currentEtapeId={currentEtape?.id_etape}
+     procedurePhases={procedureData.ProcedurePhase || []}
+     procedureTypeId={procedureTypeId}
+     procedureEtapes={procedureData.ProcedureEtape || []}
+   />
 )}
             <div className={styles.loadingContainer}>
               <div className={styles.loadingSpinner}></div>
@@ -640,12 +655,13 @@ console.log('Procedure fetched:', detenteur?.data);
                     <div className={styles.contentWrapper}>
            {procedureData && (
   <ProgressStepper
-    phases={phases}
-    currentProcedureId={idProc}
-    currentEtapeId={currentEtape?.id_etape}
-    procedurePhases={procedureData.ProcedurePhase || []}
-    procedureTypeId={procedureTypeId}
-  />
+     phases={phases}
+     currentProcedureId={idProc}
+     currentEtapeId={currentEtape?.id_etape}
+     procedurePhases={procedureData.ProcedurePhase || []}
+     procedureTypeId={procedureTypeId}
+     procedureEtapes={procedureData.ProcedureEtape || []}
+   />
 )}
 
            <h1 className={styles.mainTitle}>
@@ -860,7 +876,7 @@ console.log('Procedure fetched:', detenteur?.data);
               </button>
               
               <button
-                onClick={handleSaveEtape}
+                onClick={handleSaveEtapeFixed}
                 className={`${styles.button} ${styles.saveButton}`}
                 disabled={saving}
               >

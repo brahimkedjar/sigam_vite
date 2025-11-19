@@ -161,6 +161,7 @@ export default function Step4_Substances() {
   const apiURL = process.env.NEXT_PUBLIC_API_URL;
   const [currentEtape, setCurrentEtape] = useState<{ id_etape: number } | null>(null);
   const [procedureTypeId, setProcedureTypeId] = useState<number | undefined>();
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
   const [hasActivatedStep4, setHasActivatedStep4] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -645,7 +646,7 @@ useEffect(() => {
   };
 
   fetchAllData();
-}, [idProc, apiURL]);
+}, [idProc, apiURL, refetchTrigger]);
 
 
   // Fetch dairas when wilaya changes
@@ -697,28 +698,16 @@ useEffect(() => {
     idProc,
     etapeNum: 4,
     shouldActivate: currentStep === 4 && !activatedSteps.has(4) && isPageReady,
-    onActivationSuccess: () => {
-      setActivatedSteps((prev) => new Set(prev).add(4));
-      if (procedureData) {
-        const updatedData = { ...procedureData };
-        if (updatedData.ProcedureEtape) {
-          const stepToUpdate = updatedData.ProcedureEtape.find((pe) => pe.id_etape === 4);
-          if (stepToUpdate) {
-            stepToUpdate.statut = 'EN_COURS' as StatutProcedure;
-          }
-          setCurrentEtape({ id_etape: 4 });
-        }
-        if (updatedData.ProcedurePhase) {
-          const phaseContainingStep4 = updatedData.ProcedurePhase.find((pp) =>
-            pp.phase?.etapes?.some((etape) => etape.id_etape === 4)
-          );
-          if (phaseContainingStep4) {
-            phaseContainingStep4.statut = 'EN_COURS' as StatutProcedure;
-          }
-        }
-        setProcedureData(updatedData);
+    onActivationSuccess: (stepStatus: string) => {
+      if (stepStatus === 'TERMINEE') {
+        setActivatedSteps(prev => new Set(prev).add(4));
         setHasActivatedStep4(true);
+        return;
       }
+
+      setActivatedSteps(prev => new Set(prev).add(4));
+      setHasActivatedStep4(true);
+      setTimeout(() => setRefetchTrigger(prev => prev + 1), 500);
     },
   });
 
@@ -1178,6 +1167,43 @@ const checkButtonConditions = () => {
     setPoints(newCoords);
   };
 
+  const handleSaveEtapeFixed = async () => {
+    if (!idProc) {
+      setEtapeMessage('ID de procédure introuvable !');
+      return;
+    }
+
+    setSavingEtape(true);
+    setEtapeMessage(null);
+
+    try {
+      let etapeId = 4;
+
+      try {
+        if (procedureData?.ProcedurePhase) {
+          const pathname = window.location.pathname.replace(/^\/+/, '');
+          const phasesList = (procedureData.ProcedurePhase || []) as ProcedurePhase[];
+          const allEtapes = phasesList.flatMap(pp => pp.phase?.etapes ?? []);
+          const match = allEtapes.find((e: any) => e.page_route === pathname);
+          if (match?.id_etape != null) {
+            etapeId = match.id_etape;
+          }
+        }
+      } catch {
+        // fallback to default etapeId
+      }
+
+      await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/${etapeId}`);
+      setEtapeMessage('étape 4 enregistrée avec succés !');
+      setRefetchTrigger(prev => prev + 1);
+    } catch (err) {
+      
+      setEtapeMessage("Erreur lors de l'enregistrement de l'étape.");
+    } finally {
+      setSavingEtape(false);
+    }
+  };
+
   const handleSaveEtape = async () => {
     if (!idProc) {
       setEtapeMessage('ID de procédure introuvable !');
@@ -1465,12 +1491,13 @@ const checkButtonConditions = () => {
           <div className={styles['informations-container']}>
             {procedureData && (
               <ProgressStepper
-                phases={phases}
-                currentProcedureId={idProc}
-                currentEtapeId={currentStep}
-                procedurePhases={procedureData.ProcedurePhase || []}
-                procedureTypeId={procedureTypeId}
-              />
+                 phases={phases}
+                 currentProcedureId={idProc}
+                 currentEtapeId={currentStep}
+                 procedurePhases={procedureData.ProcedurePhase || []}
+                 procedureTypeId={procedureTypeId}
+                 procedureEtapes={procedureData.ProcedureEtape || []}
+               />
             )}
             <div className={styles['header-section']}>
               <h1 className={styles['page-title']}>
@@ -1887,7 +1914,7 @@ const checkButtonConditions = () => {
               </button>
               <button
                 className={styles['btnSave']}
-                onClick={handleSaveEtape}
+                onClick={handleSaveEtapeFixed}
                 disabled={savingEtape || statutProc === 'TERMINEE' || !statutProc}
               >
                 <BsSave className={styles['btnIcon']} />

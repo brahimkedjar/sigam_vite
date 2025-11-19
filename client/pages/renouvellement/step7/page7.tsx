@@ -103,31 +103,8 @@ const PermitRenewalPage = () => {
       }
 
       setActivatedSteps(prev => new Set(prev).add(8));
-      if (procedureData) {
-        const updatedData = { ...procedureData };
-        
-        if (updatedData.ProcedureEtape) {
-          const stepToUpdate = updatedData.ProcedureEtape.find(pe => pe.id_etape === 8);
-          if (stepToUpdate && stepStatus === 'EN_ATTENTE') {
-            stepToUpdate.statut = 'EN_COURS' as StatutProcedure;
-          }
-          setCurrentEtape({ id_etape: 8 });
-        }
-        
-        if (updatedData.ProcedurePhase) {
-          const phaseContainingStep8 = updatedData.ProcedurePhase.find(pp => 
-            pp.phase?.etapes?.some(etape => etape.id_etape === 8)
-          );
-          if (phaseContainingStep8 && stepStatus === 'EN_ATTENTE') {
-            phaseContainingStep8.statut = 'EN_COURS' as StatutProcedure;
-          }
-        }
-        
-        setProcedureData(updatedData);
-        setHasActivatedStep8(true);
-      }
-      
-      setTimeout(() => setRefetchTrigger(prev => prev + 1), 1000);
+      setHasActivatedStep8(true);
+      setTimeout(() => setRefetchTrigger(prev => prev + 1), 500);
     }
   });
 
@@ -394,12 +371,13 @@ const handleSubmit = async () => {
           <div className={styles.contentWrapper}>
             {procedureData && (
               <ProgressStepper
-                phases={phases}
-                currentProcedureId={idProc}
-                currentEtapeId={currentStep}
-                procedurePhases={procedureData.ProcedurePhase || []}
-                procedureTypeId={procedureTypeId}
-              />
+                 phases={phases}
+                 currentProcedureId={idProc}
+                 currentEtapeId={currentStep}
+                 procedurePhases={procedureData.ProcedurePhase || []}
+                 procedureTypeId={procedureTypeId}
+                 procedureEtapes={procedureData.ProcedureEtape || []}
+               />
             )}
 
             <div className={styles.renewalContainer}>

@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { useMemo } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
 import { useSearchParams } from "@/src/hooks/useSearchParams";
@@ -507,7 +508,7 @@ export default function Step5_Documents() {
 
   useActivateEtape({
     idProc,
-    etapeNum: 1,
+    etapeNum: 1, // kept for backward compatibility, actual id resolved in hook via page_route
     shouldActivate: currentStep === 1 && !activatedSteps.has(1) && isPageReady,
     onActivationSuccess: (stepStatus: string) => {
       if (stepStatus === 'TERMINEE') {
@@ -517,31 +518,10 @@ export default function Step5_Documents() {
       }
 
       setActivatedSteps(prev => new Set(prev).add(1));
-      if (procedureData) {
-        const updatedData = { ...procedureData };
-        
-        if (updatedData.ProcedureEtape) {
-          const stepToUpdate = updatedData.ProcedureEtape.find(pe => pe.id_etape === 1);
-          if (stepToUpdate && stepStatus === 'EN_ATTENTE') {
-            stepToUpdate.statut = 'EN_COURS' as StatutProcedure;
-          }
-          setCurrentEtape({ id_etape: 1 });
-        }
-        
-        if (updatedData.ProcedurePhase) {
-          const phaseContainingStep1 = updatedData.ProcedurePhase.find(pp => 
-            pp.phase?.etapes?.some(etape => etape.id_etape === 1)
-          );
-          if (phaseContainingStep1 && stepStatus === 'EN_ATTENTE') {
-            phaseContainingStep1.statut = 'EN_COURS' as StatutProcedure;
-          }
-        }
-        
-        setProcedureData(updatedData);
-        setHasActivatedStep1(true);
-      }
-      
-      setTimeout(() => setRefetchTrigger(prev => prev + 1), 1000);
+      setHasActivatedStep1(true);
+
+      // Force a refetch so local procedureData matches backend
+      setTimeout(() => setRefetchTrigger(prev => prev + 1), 500);
     }
   });
 
@@ -554,6 +534,19 @@ export default function Step5_Documents() {
           ordre: pp.ordre,
         }))
     : [];
+
+  // Resolve the backend etape id for this page using page_route
+  const etapeIdForThisPage = useMemo(() => {
+    if (!procedureData) return null;
+    const pathname = 'demande/step1/page1';
+    const phasesList = (procedureData.ProcedurePhase || []) as ProcedurePhase[];
+    for (const pp of phasesList) {
+      const etapes = pp.phase?.etapes || [];
+      const match = etapes.find((e: any) => e.page_route === pathname);
+      if (match) return match.id_etape;
+    }
+    return null;
+  }, [procedureData]);
 
   const handleOpenCahierForm = (doc: DocumentWithStatus) => {
     setSelectedCahierDoc(doc);
@@ -980,7 +973,8 @@ export default function Step5_Documents() {
 
     try {
       await submitDossier();
-      await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/${currentStep}`);
+      const etapeId = etapeIdForThisPage ?? 1;
+      await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/${etapeId}`);
       setEtapeMessage(`Étape ${currentStep} enregistrée avec succès !`);
       setRefetchTrigger(prev => prev + 1);
     } catch (err) {
@@ -1059,6 +1053,7 @@ export default function Step5_Documents() {
                     currentEtapeId={currentStep}
                     procedurePhases={procedureData.ProcedurePhase || []}
                     procedureTypeId={procedureTypeId}
+                    procedureEtapes={procedureData.ProcedureEtape || []}
                   />
                 )}
 

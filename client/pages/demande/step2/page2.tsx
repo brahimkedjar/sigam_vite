@@ -301,7 +301,7 @@ export default function Step2() {
     };
 
     fetchProcedureData();
-  }, [idProc, apiURL]);
+  }, [idProc, apiURL, refetchTrigger]);
 
   // Fetch demande data when procedure data is available
   useEffect(() => {
@@ -431,22 +431,6 @@ export default function Step2() {
     fetchAdditionalData();
   }, [idDemande, apiURL]);
 
-  // Set up interval to check for required data if not all available
-  useEffect(() => {
-    if (!checkRequiredData() && !checkInterval) {
-      const interval = setInterval(() => {
-        setRefetchTrigger(prev => prev + 1);
-      }, 500); // Check every 500ms
-      setCheckInterval(interval);
-    }
-
-    return () => {
-      if (checkInterval) {
-        clearInterval(checkInterval);
-      }
-    };
-  }, [checkRequiredData, checkInterval]);
-
   // Search for detenteurs
   useEffect(() => {
     const fetchDetenteurs = async () => {
@@ -473,38 +457,22 @@ export default function Step2() {
     return () => clearTimeout(debounceTimer);
   }, [searchQuery, apiURL]);
 
-  // Activate step 1 when all data is ready
+  // Activate step when all data is ready
   useActivateEtape({
     idProc,
     etapeNum: 2,
     shouldActivate: currentStep === 2 && !activatedSteps.has(2) && isPageReady,
-    onActivationSuccess: () => {
-      setActivatedSteps(prev => new Set(prev).add(2));
-      if (procedureData) {
-        const updatedData = { ...procedureData };
-        
-        if (updatedData.ProcedureEtape) {
-          const stepToUpdate = updatedData.ProcedureEtape.find(pe => pe.id_etape === 2);
-          if (stepToUpdate) {
-            stepToUpdate.statut = 'EN_COURS' as StatutProcedure;
-          }
-          setCurrentEtape({ id_etape: 2 });
-        }
-        
-        if (updatedData.ProcedurePhase) {
-          const phaseContainingStep2 = updatedData.ProcedurePhase.find(pp => 
-            pp.phase?.etapes?.some(etape => etape.id_etape === 2)
-          );
-          if (phaseContainingStep2) {
-            phaseContainingStep2.statut = 'EN_COURS' as StatutProcedure;
-          }
-        }
-        
-        setProcedureData(updatedData);
+    onActivationSuccess: (stepStatus: string) => {
+      if (stepStatus === 'TERMINEE') {
+        setActivatedSteps(prev => new Set(prev).add(2));
         setHasActivatedStep2(true);
+        return;
       }
-      
-      setTimeout(() => setRefetchTrigger(prev => prev + 1), 1000);
+
+      setActivatedSteps(prev => new Set(prev).add(2));
+      setHasActivatedStep2(true);
+      // Force a refetch so local procedureData matches backend
+      setTimeout(() => setRefetchTrigger(prev => prev + 1), 500);
     }
   });
 
@@ -672,6 +640,43 @@ export default function Step2() {
 
   const handlePrevious = () => {
     router.push(`/demande/step1/page1?id=${idProc}`)
+  };
+
+  const handleSaveEtapeFixed = async () => {
+    if (!idProc) {
+      setEtapeMessage("ID procedure introuvable !");
+      return;
+    }
+
+    setSavingEtape(true);
+    setEtapeMessage(null);
+
+    try {
+      let etapeId = 2;
+
+      try {
+        if (procedureData?.ProcedurePhase) {
+          const pathname = window.location.pathname.replace(/^\/+/, '');
+          const phasesList = (procedureData.ProcedurePhase || []) as ProcedurePhase[];
+          const allEtapes = phasesList.flatMap(pp => pp.phase?.etapes ?? []);
+          const match = allEtapes.find((e: any) => e.page_route === pathname);
+          if (match?.id_etape != null) {
+            etapeId = match.id_etape;
+          }
+        }
+      } catch {
+        // fallback to default etapeId
+      }
+
+      await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/${etapeId}`);
+      setEtapeMessage("étape 2 enregistrée avec succés !");
+      setRefetchTrigger(prev => prev + 1);
+    } catch (err) {
+      console.error(err);
+      setEtapeMessage("Erreur lors de l'enregistrement de l'étape.");
+    } finally {
+      setSavingEtape(false);
+    }
   };
 
   const handleSaveEtape = async () => {
@@ -910,12 +915,13 @@ export default function Step2() {
             {/* Progress Steps */}
             {procedureData && (
               <ProgressStepper
-                phases={phases}
-                currentProcedureId={idProc}
-                currentEtapeId={currentStep}
-                procedurePhases={procedureData.ProcedurePhase || []}
-                procedureTypeId={procedureTypeId}
-              />
+                 phases={phases}
+                 currentProcedureId={idProc}
+                 currentEtapeId={currentStep}
+                 procedurePhases={procedureData.ProcedurePhase || []}
+                 procedureTypeId={procedureTypeId}
+                 procedureEtapes={procedureData.ProcedureEtape || []}
+               />
             )}
             <div className={styles.contentWrapper}>
               <h2 className={styles.pageTitle}>
@@ -1206,7 +1212,7 @@ export default function Step2() {
 
                 <button
                   className={styles.btnSave}
-                  onClick={handleSaveEtape}
+                  onClick={handleSaveEtapeFixed}
                   disabled={savingEtape || statutProc === 'TERMINEE' || !statutProc}
                 >
                   <BsSave className={styles.btnIcon} /> {savingEtape ? 'Sauvegarde en cours...' : "Sauvegarder l'étape"}

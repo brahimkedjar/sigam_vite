@@ -142,28 +142,16 @@ export default function AvisWaliStep() {
     idProc,
     etapeNum: 6,
     shouldActivate: currentStep === 6 && !activatedSteps.has(6) && isPageReady,
-    onActivationSuccess: () => {
-      setActivatedSteps((prev) => new Set(prev).add(6));
-      if (procedureData) {
-        const updatedData = { ...procedureData };
-        if (updatedData.ProcedureEtape) {
-          const stepToUpdate = updatedData.ProcedureEtape.find((pe) => pe.id_etape === 6);
-          if (stepToUpdate) {
-            stepToUpdate.statut = 'EN_COURS' as StatutProcedure;
-          }
-          setCurrentEtape({ id_etape: 6 });
-        }
-        if (updatedData.ProcedurePhase) {
-          const phaseContainingStep6 = updatedData.ProcedurePhase.find((pp) =>
-            pp.phase?.etapes?.some((etape) => etape.id_etape === 6)
-          );
-          if (phaseContainingStep6) {
-            phaseContainingStep6.statut = 'EN_COURS' as StatutProcedure;
-          }
-        }
-        setProcedureData(updatedData);
+    onActivationSuccess: (stepStatus: string) => {
+      if (stepStatus === 'TERMINEE') {
+        setActivatedSteps((prev) => new Set(prev).add(6));
         setHasActivatedStep6(true);
+        return;
       }
+
+      setActivatedSteps((prev) => new Set(prev).add(6));
+      setHasActivatedStep6(true);
+      setTimeout(() => setRefetchTrigger(prev => prev + 1), 500);
     },
   });
 
@@ -408,6 +396,43 @@ projectFields.forEach(({ label, value }) => {
     fetchDemandeAndWilaya();
   }, [fetchDemandeAndWilaya]);
 
+  const handleSaveEtapeFixed = async () => {
+    if (!idProc) {
+      setEtapeMessage("ID procedure introuvable !");
+      return;
+    }
+
+    setSavingEtape(true);
+    setEtapeMessage(null);
+
+    try {
+      let etapeId = 6;
+
+      try {
+        if (procedureData?.ProcedurePhase) {
+          const pathname = window.location.pathname.replace(/^\/+/, '');
+          const phasesList = (procedureData.ProcedurePhase || []) as ProcedurePhase[];
+          const allEtapes = phasesList.flatMap(pp => pp.phase?.etapes ?? []);
+          const match = allEtapes.find((e: any) => e.page_route === pathname);
+          if (match?.id_etape != null) {
+            etapeId = match.id_etape;
+          }
+        }
+      } catch {
+        // fallback to default etapeId
+      }
+
+      await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/${etapeId}`);
+      setEtapeMessage("étape 6 enregistrée avec succés !");
+      setRefetchTrigger(prev => prev + 1);
+    } catch (err) {
+      console.error(err);
+      setEtapeMessage("Erreur lors de l'enregistrement de l'étape.");
+    } finally {
+      setSavingEtape(false);
+    }
+  };
+
   const handleSaveEtape = async () => {
     if (!idProc) {
       setEtapeMessage("ID procedure introuvable !");
@@ -581,12 +606,13 @@ const latestEnvoi = interactions
           <div className={styles.contentWrapper}>
              {procedureData && (
             <ProgressStepper
-              phases={phases}
-              currentProcedureId={idProc}
-              currentEtapeId={currentEtape?.id_etape}
-              procedurePhases={procedureData.ProcedurePhase || []}
-              procedureTypeId={procedureTypeId}
-            />
+               phases={phases}
+               currentProcedureId={idProc}
+               currentEtapeId={currentEtape?.id_etape}
+               procedurePhases={procedureData.ProcedurePhase || []}
+               procedureTypeId={procedureTypeId}
+               procedureEtapes={procedureData.ProcedureEtape || []}
+             />
           )}
             <div className={styles.pageHeader}>
             <div className={styles.headerLeft}>
@@ -901,7 +927,7 @@ const latestEnvoi = interactions
                 
                 <button
                   className={styles.saveButton}
-                  onClick={handleSaveEtape}
+                  onClick={handleSaveEtapeFixed}
                   disabled={savingEtape || isReadOnly}
                 >
                   <BsSave className={styles.btnIcon} />
