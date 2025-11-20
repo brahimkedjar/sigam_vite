@@ -13,7 +13,7 @@ type relationPhaseTypeProcCSV = {
 export async function main() {
   const relationPhaseTypeProcData: any[] = [];
   const csvFilePath =
-    "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_relationPhaseTypeProc.csv";
+    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_relationPhaseTypeProc.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(

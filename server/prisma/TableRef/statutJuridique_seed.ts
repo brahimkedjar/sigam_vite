@@ -14,7 +14,7 @@ type StatutCSV = {
 export async function main() {
   const statutData: any[] = [];
   const csvFilePath =
-    "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_statut.csv";
+    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_statut.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(

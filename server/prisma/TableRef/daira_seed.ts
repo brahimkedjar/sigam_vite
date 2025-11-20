@@ -14,7 +14,7 @@ type DairaCSV = {
 export async function main() {
   const dairaData: any[] = [];
   const csvFilePath =
-    "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_daira.csv";
+    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_daira.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(

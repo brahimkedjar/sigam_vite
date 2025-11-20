@@ -91,7 +91,7 @@ function parseDate(dateStr: string | undefined): Date | null {
 export async function main() {
   const procedureData: any[] = [];
   const csvFilePath =
-    "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_procedure.csv";
+    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_procedure.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(

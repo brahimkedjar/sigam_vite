@@ -170,7 +170,6 @@ export class TransfertService {
             prenomAR: person.prenomAR ?? '',
             date_naissance: person.date_naissance ? new Date(person.date_naissance) : null,
             lieu_naissance: person.lieu_naissance ?? '',
-            nationalite: person.nationalite ?? '',
             adresse_domicile: person.adresse_domicile ?? '',
             telephone: person.telephone ?? '',
             fax: person.fax ?? '',

@@ -46,6 +46,12 @@ try {
   run('npx ts-node prisma/Demande/demTransfer_seed.ts');
   run('npx ts-node prisma/Demande/demandeMin_seed.ts');
   run('npx ts-node prisma/Demande/demandeVerificationGeo_seed.ts');
+  run('npx ts-node prisma/detenteur/detenteur_seed.ts');
+  run('npx ts-node prisma/detenteur/detenteurDemande_seed.ts');
+  run('npx ts-node prisma/detenteur/personnePhysique_seed.ts');
+  run('npx ts-node prisma/detenteur/fonctionPersonnePhysique_seed.ts');
+  run('npx ts-node prisma/detenteur/FormeJuridiqueDetenteur_seed.ts');
+  run('npx ts-node prisma/detenteur/registreCommerce_seed.ts');
 
   // After all seeds, resynchronise all PostgreSQL sequences with the current data
   run('npx ts-node prisma/sync_sequences.ts');

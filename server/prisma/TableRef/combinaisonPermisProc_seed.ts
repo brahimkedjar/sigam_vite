@@ -13,7 +13,7 @@ type combinaisonPermisProcCSV = {
 export async function main() {
   const combinaisonPermisProcData: any[] = [];
   const csvFilePath =
-    "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_combinaisonPermisProc.csv";
+    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_combinaisonPermisProc.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(

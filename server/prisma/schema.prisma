@@ -987,7 +987,6 @@ model DetenteurMorale {
     id_detenteur       Int                     @id @default(autoincrement())
     id_pays            Int?
     id_nationalite     Int?
-    status           Int?
     PP                Boolean?
     National           Boolean?
     Privé              Boolean?
@@ -1042,7 +1041,7 @@ model Nationalite {
 }
 
 model RegistreCommerce {
-    id                  Int      @id @default(autoincrement()) 
+    id                  Int      @id  
     id_detenteur        Int?
     numero_rc           String?
     date_enregistrement DateTime?
@@ -1058,25 +1057,25 @@ model RegistreCommerce {
 
 model PersonnePhysique {
     id_personne          Int      @id @default(autoincrement())
-    id_pays              Int
+    id_pays              Int?
     id_nationalite       Int?
     nomFR                String
-    nomAR                String
+    nomAR                String?
     prenomFR             String
-    prenomAR             String
+    prenomAR             String?
     date_naissance       DateTime?
-    lieu_naissance       String
-    nationalite         String
-    adresse_domicile     String
-    telephone            String
-    fax                  String
-    email                String
-    qualification        String
-    num_carte_identite  String   @unique
-    lieu_juridique_soc   String
-    ref_professionnelles String
+    lieu_naissance       String?
+    adresse_domicile     String?
+    telephone            String?
+    fax                  String?
+    email                String?
+    qualification        String?
+    siteWeb             String?
+    num_carte_identite  String?   @unique
+    lieu_juridique_soc   String?
+    ref_professionnelles String?
 
-    pays            Pays                    @relation(fields: [id_pays], references: [id_pays])
+    pays            Pays?                    @relation(fields: [id_pays], references: [id_pays])
     nationaliteRef  Nationalite?            @relation(fields: [id_nationalite], references: [id_nationalite])
     fonctions       FonctionPersonneMoral[]
     cessionsAncien  demCession[]            @relation("AncienCessionnaire")
@@ -1090,15 +1089,15 @@ enum EnumTypeFonction {
     Representant_Actionnaire
 }
 model FonctionPersonneMoral {
-    id_fonctionDetent Int      @id @default(autoincrement())
-    id_detenteur       Int
-    id_personne        Int
+    id_fonctionDetent Int      @id
+    id_detenteur       Int?
+    id_personne        Int?
     type_fonction      EnumTypeFonction
-    statut_personne    String
-    taux_participation Float
+    statut_personne    String?
+    taux_participation Float?
 
-    detenteur DetenteurMorale  @relation(fields: [id_detenteur], references: [id_detenteur])
-    personne  PersonnePhysique @relation(fields: [id_personne], references: [id_personne])
+    detenteur DetenteurMorale?  @relation(fields: [id_detenteur], references: [id_detenteur])
+    personne  PersonnePhysique? @relation(fields: [id_personne], references: [id_personne])
 
     @@map("fonctionpersonnemoral")
 }

@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 
 export async function main() {
-  const csvFilePath = "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_demandeMin.csv";
+  const csvFilePath = "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_demandeMin.csv";
   let totalRows = 0;
   let skippedRows = 0;
   const skippedIds: number[] = [];

@@ -21,7 +21,7 @@ type TypePermisCSV = {
 export async function main() {
   const typePermisData: any[] = [];
   const csvFilePath =
-    "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_Typepermis.csv";
+    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_Typepermis.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(

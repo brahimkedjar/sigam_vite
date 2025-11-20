@@ -78,8 +78,8 @@ function parseDate(dateStr: string | undefined): Date | null {
 function parseBoolean(value: string | undefined): boolean | null {
   if (value === undefined || value === '' || value === null) return null; // Retourne null si vide ou non défini
   const normalized = value.toLowerCase().trim();
-  if (normalized === 'true' || normalized === '1') return true;
-  if (normalized === 'false' || normalized === '0') return false;
+  if (normalized === 'true' || normalized === 't' ||normalized === '1') return true;
+  if (normalized === 'false' || normalized === 'f' || normalized === '0') return false;
   return null; 
 }
 
@@ -95,7 +95,7 @@ export async function main() {
   let successCount = 0;
   const failedRecords: { line: number; id: number; error: string }[] = [];
   const detenteurData: Prisma.DetenteurMoraleCreateManyInput[] = [];
-  const csvFilePath = "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_detenteur.csv";
+  const csvFilePath = "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_detenteur.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(
@@ -108,13 +108,10 @@ export async function main() {
       if (recordCount === 1) console.log("Colonnes CSV détectées :", Object.keys(row));
 
       recordCount++;
-      const idStatutJuridiqueValue = row.id_statutJuridique ? parseInt(row.id_statutJuridique, 10) : null;
-      const idPaysValue= row.id_pays ? parseInt(row.id_pays, 10) : null;
 
       const data: Prisma.DetenteurMoraleCreateManyInput = {
         id_detenteur:parseInt(row.id, 10),
         id_pays:parseId(row.id_pays),
-        status: idStatutJuridiqueValue ?? null,
         PP: parseBoolean(row.PP),
         National: parseBoolean(row.National)! ,
         nom_societeFR:row.nom_socFR || null,
@@ -132,9 +129,6 @@ export async function main() {
       console.log(`Ligne ${recordCount}: Données collectées pour id ${data.id_detenteur}`);
       console.log("DEBUG id brut:", JSON.stringify(row.id));
       console.log("DEBUG PaysOrigine brut:", JSON.stringify(row.PaysOrigine));
-      console.log("DEBUG PaysOrigine converti:", JSON.stringify(idPaysValue));
-      console.log("DEBUG idStatutJuridique brut:", JSON.stringify(row.idStatutJuridique));
-      console.log("DEBUG idStatutJuridique converti:", JSON.stringify(idStatutJuridiqueValue));
     })
     .on('end', async () => {
       console.log('CSV loaded, début des insertions...');

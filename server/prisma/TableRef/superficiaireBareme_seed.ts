@@ -16,7 +16,7 @@ type SuperficiaireCSV = {
 export async function main() {
   const superficiaireData: any[] = [];
   const csvFilePath =
-    "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_superficiaireBareme.csv";
+    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_superficiaireBareme.csv";
 
   fs.createReadStream(csvFilePath)
         .pipe(

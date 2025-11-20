@@ -15,7 +15,7 @@ type procedurePermisCSV = {
 export async function main() {
   const procedurePermisData: any[] = [];
   const csvFilePath =
-    "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_procedurePermis.csv";
+    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_procedurePermis.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(

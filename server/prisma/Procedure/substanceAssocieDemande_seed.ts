@@ -14,7 +14,7 @@ type substanceAssocieeDemandeCSV = {
 export async function main() {
   const substanceAssocieeDemandeData: any[] = [];
   const csvFilePath =
-    "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_substanceAssocieeDemande.csv";
+    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_substanceAssocieeDemande.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(

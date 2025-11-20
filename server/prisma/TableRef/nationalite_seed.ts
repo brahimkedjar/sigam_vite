@@ -14,7 +14,7 @@ function pickNationalityKey(obj: Record<string, any>): string | null {
 }
 
 export async function main() {
-  const csvFilePath = "C:\\Users\\A\\Desktop\\cleaned_df\\pays_nationalites_codes.csv"
+  const csvFilePath = "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\pays.csv"
   const seen = new Set<string>()
   const batch: string[] = []
 

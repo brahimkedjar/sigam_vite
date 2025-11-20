@@ -11,7 +11,7 @@ type PaysCSV = {
 
 export async function main() {
   const paysData: Array<Pick<Pays, 'code_pays' | 'nom_pays'>> = []
-  const csvFilePath = "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\pays.csv"
+  const csvFilePath = "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\pays.csv"
 
   await new Promise<void>((resolve, reject) => {
     fs.createReadStream(csvFilePath)

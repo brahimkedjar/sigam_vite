@@ -91,7 +91,7 @@ function parseBoolean(value: string | undefined): boolean | null {
 }
 
 export async function main() {
-  const csvFilePath = "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_demRenonciation.csv";
+  const csvFilePath = "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_demRenonciation.csv";
   let totalRows = 0;
   let skippedRows = 0;
   const skippedIds: number[] = [];

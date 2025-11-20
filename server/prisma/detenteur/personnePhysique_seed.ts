@@ -1,5 +1,5 @@
-import fs from 'fs';
-import csv from 'csv-parser';
+import * as fs from 'fs';
+const csv = require('csv-parser');
 import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -11,12 +11,13 @@ function parseId(value: string | undefined): number | null {
 }
 
 export async function main() {
-  await prisma.$connect(); 
+  await prisma.$connect();
   let recordCount = 0;
   let successCount = 0;
-  const failedRecords: { line: number; id: number; error: string }[] = [];
-  const personnePhysiqueData: { data: Prisma.PersonnePhysiqueCreateInput; id_personne: number }[] = [];
-  const csvFilePath = "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_personnePhysique.csv";
+  const failedRecords: { line: number; id: number | null }[] = [];
+
+  const personnePhysiqueData: { data: Prisma.PersonnePhysiqueCreateManyInput }[] = [];
+  const csvFilePath = "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_personnePhysique.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(
@@ -25,15 +26,12 @@ export async function main() {
         mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/g, ""),
       })
     )
-    .on('data', async (row: any) => {
-      if (recordCount === 1) console.log("Colonnes CSV détectées :", Object.keys(row));
-
+    .on('data', (row: any) => {
       recordCount++;
-      const id_personne = parseInt(row.id_personne, 10);
-      const idPaysValue= row.Repr_PaysOrigine ? parseInt(row.Repr_PaysOrigine, 10) : null;
 
-      const data: Prisma.PersonnePhysiqueCreateInput = {
-        pays: { connect: { id_pays: parseId(row.id_pays)! } },
+      const data: Prisma.PersonnePhysiqueCreateManyInput = {
+        id_personne: parseInt(row.id_personne),
+        id_pays: parseId(row.Repr_PaysOrigine)!,
         nomFR: row.NomRepresentant || null,
         prenomFR: row.PrenomRepresentant || null,
         nomAR: row.nomAR || null,
@@ -43,41 +41,40 @@ export async function main() {
         telephone: row.Repr_Telephone || null,
         fax: row.Repr_Fax || null,
         email: row.Repr_Email || null,
-        ref_professionnelles: row.réf_professionnelles || null,
-        num_carte_identite: row.num_carte_identité || null,
-        lieu_naissance: '',
-        nationalite: '',
-        lieu_juridique_soc: ''
+        siteWeb: row.Repr_Web || null,
       };
-      personnePhysiqueData.push({ data, id_personne });
 
-      console.log(`Ligne ${recordCount}: Données collectées pour id ${id_personne}`);
+      personnePhysiqueData.push({ data });
     })
     .on('end', async () => {
       console.log('CSV loaded, début des insertions...');
 
       for (let i = 0; i < personnePhysiqueData.length; i++) {
-      for (let i = 0; i < personnePhysiqueData.length; i++) {
+        const { data } = personnePhysiqueData[i];
+
         try {
-          await prisma.personnePhysique.create({ data: personnePhysiqueData[i].data });
-          // console.log(`Ligne ${i + 1}: Insertion réussie pour id ${detenteurData[i].id}`);
+          await prisma.personnePhysique.create({ data });
           successCount++;
-        } catch (error) {
-          console.error(`Ligne ${i + 1}: Erreur lors de l'insertion pour id ${personnePhysiqueData[i].id_personne}:`, (error as Error).message);
-          failedRecords.push({ line: i + 1, id: personnePhysiqueData[i].id_personne, error: (error as Error).message });
+        } catch (error: any) {
+          failedRecords.push({
+            line: i + 1,
+            id: data.id_personne ?? null,
+          });
         }
       }
-      console.log(`Total des lignes lues: ${recordCount}`);
-      console.log(`Insertions réussies: ${successCount}`);
-      console.log(`Échecs: ${recordCount - successCount}`);
+
+      console.log(`\n📌 Total lignes lues : ${recordCount}`);
+      console.log(`✅ Lignes insérées : ${successCount}`);
+      console.log(`❌ Lignes échouées : ${failedRecords.length}`);
+
       if (failedRecords.length > 0) {
-        console.log('Lignes non insérées :');
-        failedRecords.forEach((record) => {
-          console.log(`- Ligne ${record.line}, ID ${record.id}: ${record.error}`);
-        });
+        console.log("\n❌ Détails des erreurs :");
+        console.table(failedRecords);
       }
+
       await prisma.$disconnect();
-    }});
+      process.exit(0);
+    });
 }
 
 main().catch(async (e) => {

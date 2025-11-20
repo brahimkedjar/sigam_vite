@@ -15,7 +15,7 @@ type etapeProcCSV = {
 export async function main() {
   const etapeProcData: any[] = [];
   const csvFilePath =
-    "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_EtapeProc.csv";
+    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_EtapeProc.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(

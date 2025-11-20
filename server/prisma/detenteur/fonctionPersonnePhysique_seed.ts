@@ -1,79 +1,100 @@
-import fs from 'fs';
-import csv from 'csv-parser';
-import { PrismaClient, Prisma } from '@prisma/client';
+import * as fs from 'fs';
+const csv = require('csv-parser');
+import { PrismaClient, Prisma,  } from '@prisma/client';
 
 const prisma = new PrismaClient();
+const csvFilePath = 'C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_fonctionpersonnePhysique.csv';
 
-function parseId(value: string | undefined): number | null {
-  const parsed = parseInt(value ?? "", 10);
-  if (isNaN(parsed) || parsed === 0) return null;
-  return parsed;
-}
+type FonctionRow = {
+  id_fonctionDetent: number | null;
+  id_personne: number | null;
+  id_detenteur: number | null;
+  type_fonction: string | null;
+  taux_participation: number | null;
+  statut_personne: string | null;
+};
 
-export async function main() {
-  await prisma.$connect(); 
-  let recordCount = 0;
-  let successCount = 0;
-  const failedRecords: { line: number; id: number; error: string }[] = [];
-  const fonctionPersonnePhysiqueData: Prisma.FonctionPersonneMoralCreateManyInput[] = [];
-  const csvFilePath = "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_fonctiopersonnePhysique.csv";
+const parseNumber = (value: string | undefined): number | null => {
+  if (!value) return null;
+  const parsed = Number(value.trim());
+  return Number.isFinite(parsed) ? parsed : null;
+};
 
-  fs.createReadStream(csvFilePath)
-    .pipe(
-      csv({
-        separator: ';',
-        mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/g, ""),
-      })
-    )
-    .on('data', async (row: any) => {
-      if (recordCount === 1) console.log("Colonnes CSV détectées :", Object.keys(row));
+async function main() {
+  await prisma.$connect();
 
-      recordCount++;
-      const id_fonctionDetent = parseInt(row.id_fonction, 10);
-      const idPersonne= row.id_personne ? parseInt(row.id_personne, 10) : null;
-      const idDetenteur= row.id_detenteur ? parseInt(row.id_detenteur, 10) : null;
+  const rows: FonctionRow[] = [];
+  let total = 0;
+  let success = 0;
+  const failures: Array<{ line: number; reason: string }> = [];
 
-      const data: Prisma.FonctionPersonneMoralCreateManyInput = {
-        id_fonctionDetent,
-        id_personne: idPersonne || 0,
-        id_detenteur: idDetenteur || 0,
-        type_fonction: row.type_fonction || null,
-        taux_participation: row.taux_participation || null,
-        statut_personne: row.statut_personne || null,
-      };
-      fonctionPersonnePhysiqueData.push(data);
-
-      console.log(`Ligne ${recordCount}: Données collectées pour id ${id_fonctionDetent}`);
-    })
-    .on('end', async () => {
-      console.log('CSV loaded, début des insertions...');
-
-      for (let i = 0; i < fonctionPersonnePhysiqueData.length; i++) {
-        try {
-          await prisma.fonctionPersonneMoral.create({ data: fonctionPersonnePhysiqueData[i] });
-          // console.log(`Ligne ${i + 1}: Insertion réussie pour id ${detenteurData[i].id}`);
-          successCount++;
-        } catch (error) {
-          console.error(`Ligne ${i + 1}: Erreur lors de l'insertion pour id ${fonctionPersonnePhysiqueData[i].id_fonctionDetent}:`, error.message);
-          failedRecords.push({ line: i + 1, id: fonctionPersonnePhysiqueData[i].id_fonctionDetent!, error: error.message });
-        }
-      }
-
-      console.log(`Total des lignes lues: ${recordCount}`);
-      console.log(`Insertions réussies: ${successCount}`);
-      console.log(`Échecs: ${recordCount - successCount}`);
-      if (failedRecords.length > 0) {
-        console.log('Lignes non insérées :');
-        failedRecords.forEach((record) => {
-          console.log(`- Ligne ${record.line}, ID ${record.id}: ${record.error}`);
+  await new Promise<void>((resolve, reject) => {
+    fs.createReadStream(csvFilePath)
+      .pipe(
+        csv({
+          separator: ';',
+          mapHeaders: ({ header }) => header.trim().replace(/\uFEFF/g, ''),
+        }),
+      )
+      .on('data', (row: any) => {
+        total += 1;
+        rows.push({
+          id_fonctionDetent: parseNumber(row.id_fonctionDetent),
+          id_personne: parseNumber(row.id_personne),
+          id_detenteur: parseNumber(row.id_detenteur),
+          type_fonction: row.type_fonction,
+          taux_participation: parseNumber(row.taux_participation),
+          statut_personne: row.statut_personne?.trim() || null,
         });
-      }
-      await prisma.$disconnect();
-    });
+      })
+      .on('end', () => resolve())
+      .on('error', (error) => reject(error));
+  });
+
+  for (let index = 0; index < rows.length; index += 1) {
+    const row = rows[index];
+
+    if (!row.id_personne || !row.id_detenteur) {
+      failures.push({
+        line: index + 1,
+        reason: `Identifiants manquants (personne: ${row.id_personne}, detenteur: ${row.id_detenteur})`,
+      });
+      continue;
+    }
+
+    const data: any = {
+      type_fonction: row.type_fonction,
+      taux_participation: row.taux_participation!,
+      statut_personne: row.statut_personne!,
+      personne: { connect: { id_personne: row.id_personne } },
+      detenteur: { connect: { id_detenteur: row.id_detenteur } },
+    };
+
+    if (row.id_fonctionDetent) {
+      data.id_fonctionDetent = row.id_fonctionDetent;
+    }
+
+    try {
+      await prisma.fonctionPersonneMoral.create({ data });
+      success += 1;
+    } catch (error: any) {
+      failures.push({
+        line: index + 1,
+        reason: error?.message ?? 'Erreur inconnue',
+      });
+    }
+  }
+
+  console.log(`Lignes CSV lues        : ${total}`);
+  console.log(`Insertions réussies    : ${success}`);
+  console.log(`Insertions en échec    : ${failures.length}`);
+
+
+  await prisma.$disconnect();
 }
 
-main().catch(async (e) => {
-  console.error("Erreur globale:", e);
+main().catch(async (error) => {
+  console.error('Erreur globale :', error);
   await prisma.$disconnect();
   process.exit(1);
 });

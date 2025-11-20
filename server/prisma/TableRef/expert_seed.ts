@@ -12,7 +12,7 @@ type ExpertCSV = {
 export async function main() {
   const expertData: any[] = [];
   const csvFilePath =
-    "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_expert.csv";
+    "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_expert.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(

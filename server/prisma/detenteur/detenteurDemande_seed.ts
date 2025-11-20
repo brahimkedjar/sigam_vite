@@ -2,6 +2,7 @@ import * as fs from 'fs';
 const csv = require('csv-parser');
 import { PrismaClient } from '@prisma/client';
 import type { Prisma } from '@prisma/client';
+import { parse } from 'path';
 
 const prisma = new PrismaClient();
 function parseDate(dateStr: string | undefined): Date | null {
@@ -94,7 +95,7 @@ export async function main() {
   let successCount = 0;
   const failedRecords: { line: number; id: number; error: string }[] = [];
   const detenteurDemandeData: Prisma.detenteurDemandeCreateManyInput[] = [];
-  const csvFilePath = "C:\\Users\\A\\Desktop\\sigam_vite\\BaseSicma_Urgence\\df_detenteurDemande.csv";
+  const csvFilePath = "C:\\Users\\ANAM1408\\Desktop\\BaseSicma_Urgence\\df_detenteurDemande.csv";
 
   fs.createReadStream(csvFilePath)
     .pipe(
@@ -111,13 +112,12 @@ export async function main() {
       const id_demandeGeneral = row.id_demandeGeneral ? parseInt(row.id_demandeGeneral, 10) : null;
       const id_detenteur = row.id_detenteur ? parseInt(row.id_detenteur, 10) : null;
 
-      const data: any = {
+      const data: Prisma.detenteurDemandeCreateManyInput = {
         id_detenteurDemande,
-        id_demandeType: parseId(row.id_demandeType),
-        demandeGeneral: id_demandeGeneral ? { connect: { id_demandeGeneral: id_demandeGeneral } } : undefined,
-       detenteur: id_detenteur ? { connect: { id: id_detenteur } } : undefined,
-        decision: row.decision || 'TRAITE',
-      };
+        id_demande: parseInt(row.id_demandeGeneral),
+        id_detenteur: parseInt(row.id_detenteur),
+        role_detenteur: row.role_detenteur || null,
+        };
       detenteurDemandeData.push(data);
 
       console.log(`Ligne ${recordCount}: Données collectées pour id ${id_detenteurDemande}`);
