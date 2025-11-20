@@ -496,7 +496,7 @@ export default function CadastrePage() {
       await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/${etapeId}`);
       setSuccess("étape 5 enregistrée avec succés !");
       setTimeout(() => setSuccess(null), 3000);
-      setRefetchTrigger(prev => prev + 1);
+      
     } catch (err) {
       console.error("Erreur étape", err);
       setError("Erreur lors de l'enregistrement de l'étape");

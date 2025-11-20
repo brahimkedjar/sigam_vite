@@ -121,13 +121,21 @@ export class TransfertService {
       data: {
         nom_societeFR: payload.nom_societeFR,
         nom_societeAR: payload.nom_societeAR,
-        id_statutJuridique: payload.id_statutJuridique ? Number(payload.id_statutJuridique) : null,
         id_pays: payload.id_pays ?? null,
         adresse_siege: payload.adresse_siege ?? null,
         telephone: payload.telephone ?? null,
         fax: payload.fax ?? null,
         email: payload.email ?? null,
         site_web: payload.site_web ?? null,
+        // Link statut juridique via join table when provided
+        ...(payload.id_statutJuridique && {
+          FormeJuridiqueDetenteur: {
+            create: {
+              id_statut: Number(payload.id_statutJuridique),
+              date: new Date(),
+            },
+          },
+        }),
       },
     });
 
@@ -437,7 +445,6 @@ export class TransfertService {
     });
   }
 }
-
 
 
 

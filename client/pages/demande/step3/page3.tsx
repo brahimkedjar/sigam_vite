@@ -327,7 +327,7 @@ export default function Capacites() {
 
       await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/${etapeId}`);
       setEtapeMessage("étape 3 enregistrée avec succés !");
-      setRefetchTrigger(prev => prev + 1);
+      
     } catch (err) {
       console.error(err);
       setEtapeMessage("Erreur lors de l'enregistrement de l'étape.");

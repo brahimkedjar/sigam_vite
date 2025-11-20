@@ -376,7 +376,7 @@ export default function Step2() {
   useEffect(() => {
     if (!checkRequiredData() && !checkInterval) {
       const interval = setInterval(() => {
-        setRefetchTrigger(prev => prev + 1);
+        
       }, 500); // Check every 500ms
       setCheckInterval(interval);
     }
@@ -625,7 +625,7 @@ export default function Step2() {
 
       await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/${etapeId}`);
       setEtapeMessage("�tape 2 enregistr�e avec succ�s !");
-      setRefetchTrigger(prev => prev + 1);
+      
     } catch (err) {
       console.error(err);
       setEtapeMessage("Erreur lors de l'enregistrement de l'�tape.");

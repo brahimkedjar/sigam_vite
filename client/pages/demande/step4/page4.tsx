@@ -125,7 +125,7 @@ export default function Step4_Substances() {
   const [summaryData, setSummaryData] = useState<any>(null);
   const [showReplaceModal, setShowReplaceModal] = useState(false);
   const [superficiermax, setSuperficiermax] = useState(0);
-    const [procedureData, setProcedureData] = useState<Procedure | null>(null);
+  const [procedureData, setProcedureData] = useState<Procedure | null>(null);
 
   const lockPerimeter = useMemo(() => {
     try {
@@ -378,28 +378,32 @@ useEffect(() => {
       setProcedureData(procedureRes.data);
 
       if (procedureRes.data.demandes && procedureRes.data.demandes.length > 0) {
-        setProcedureTypeId(procedureRes.data.demandes[0].typeProcedure?.id);
-        setIdDemande(procedureRes.data.demandes[0].id_demande);
-        setCodeDemande(procedureRes.data.demandes[0].code_demande);
+        const demandeLite = procedureRes.data.demandes[0];
+        setProcedureTypeId(demandeLite.typeProcedure?.id);
+        setIdDemande(demandeLite.id_demande);
+        setCodeDemande(demandeLite.code_demande);
         setStatutProc(procedureRes.data.statut_proc);
-        setSuperficiermax(procedureRes.data.demandes[0].typePermis?.superficie_max || 0);
+        setSuperficiermax(demandeLite.typePermis?.superficie_max || 0);
 
         // Set demande-related fields
-        const demande = procedureRes.data.demandes[0];
-        setWilaya(demande.wilaya?.nom_wilayaFR || '');
-        setDaira(demande.daira?.nom_dairaFR || '');
-        setCommune(demande.commune?.nom_communeFR || '');
-        setSelectedWilaya(demande.id_wilaya?.toString() || '');
-        setSelectedDaira(demande.id_daira?.toString() || '');
-        setSelectedCommune(demande.id_commune?.toString() || '');
-        setLieuDitFr(demande.lieu_ditFR || '');
-        setLieuDitAr(demande.lieu_dit_ar || '');
-        setStatutJuridique(demande.statut_juridique_terrain || '');
-        setOccupantLegal(demande.occupant_terrain_legal || '');
-        setSuperficie(procedureRes.data.demandes[0].superficie?.toString() || '');
-        setTravaux(demande.description_travaux || '');
-        setDureeTravaux(demande.duree_travaux_estimee?.toString() || '');
-        setDateDebutPrevue(demande.date_demarrage_prevue?.split('T')[0] || '');
+        setWilaya(demandeLite.wilaya?.nom_wilayaFR || '');
+        setDaira(demandeLite.daira?.nom_dairaFR || '');
+        setCommune(demandeLite.commune?.nom_communeFR || '');
+        setSelectedWilaya(demandeLite.id_wilaya?.toString() || '');
+        setSelectedDaira(demandeLite.id_daira?.toString() || '');
+        setSelectedCommune(demandeLite.id_commune?.toString() || '');
+        setLieuDitFr(demandeLite.lieu_ditFR || '');
+        setLieuDitAr(demandeLite.lieu_dit_ar || '');
+        setStatutJuridique(demandeLite.statut_juridique_terrain || '');
+        setOccupantLegal(demandeLite.occupant_terrain_legal || '');
+        setSuperficie(demandeLite.superficie?.toString() || '');
+        // Initialize declared area from demande if no provisional value yet
+        if (demandeLite.superficie != null) {
+          setSuperficieDeclaree(demandeLite.superficie.toString());
+        }
+        setTravaux(demandeLite.description_travaux || '');
+        setDureeTravaux(demandeLite.duree_travaux_estimee?.toString() || '');
+        setDateDebutPrevue(demandeLite.date_demarrage_prevue?.split('T')[0] || '');
       }
 
       const activeEtape = procedureRes.data.ProcedureEtape.find(
@@ -433,8 +437,18 @@ useEffect(() => {
               hemisphere: p.hemisphere,
             }))
           );
-          try { console.log('Step4: loaded coords', { source: 'provisional', count: pts.length, system: pts[0]?.system, zone: pts[0]?.zone, hemisphere: pts[0]?.hemisphere }); } catch {}
-          if (typeof rec?.superficie_declaree === 'number') setSuperficieDeclaree(rec.superficie_declaree.toString());
+          try {
+            console.log('Step4: loaded coords', {
+              source: 'provisional',
+              count: pts.length,
+              system: pts[0]?.system,
+              zone: pts[0]?.zone,
+              hemisphere: pts[0]?.hemisphere,
+            });
+          } catch {}
+          if (typeof rec?.superficie_declaree === 'number') {
+            setSuperficieDeclaree(rec.superficie_declaree.toString());
+          }
           if (pts[0]?.system) {
             setCoordinateSystem(pts[0].system);
             if (pts[0]?.zone) setUtmZone(pts[0].zone);
@@ -457,7 +471,15 @@ useEffect(() => {
               hemisphere: c.coordonnee.hemisphere,
             }))
           );
-          try { console.log('Step4: loaded coords', { source: 'definitive', count: coords.length, system: coords[0]?.coordonnee?.system, zone: coords[0]?.coordonnee?.zone, hemisphere: coords[0]?.coordonnee?.hemisphere }); } catch {}
+          try {
+            console.log('Step4: loaded coords', {
+              source: 'definitive',
+              count: coords.length,
+              system: coords[0]?.coordonnee?.system,
+              zone: coords[0]?.coordonnee?.zone,
+              hemisphere: coords[0]?.coordonnee?.hemisphere,
+            });
+          } catch {}
           if (coords.length > 0 && coords[0].coordonnee.system) {
             setCoordinateSystem(coords[0].coordonnee.system);
             setUtmZone(coords[0].coordonnee.zone || 31);
@@ -1195,7 +1217,7 @@ const checkButtonConditions = () => {
 
       await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/${etapeId}`);
       setEtapeMessage('étape 4 enregistrée avec succés !');
-      setRefetchTrigger(prev => prev + 1);
+      
     } catch (err) {
       
       setEtapeMessage("Erreur lors de l'enregistrement de l'étape.");

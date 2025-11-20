@@ -60,9 +60,10 @@ export class StatutsJuridiquesService {
 
   async remove(id: number) {
     try {
-      // Check if there are associated detenteurs before deleting
-      const associatedDetenteurs = await this.prisma.detenteurMorale.count({
-        where: { id_statutJuridique: id },
+      // Check if there are associated detenteurs before deleting.
+      // With the new many-to-many relation, the link is stored in FormeJuridiqueDetenteur.
+      const associatedDetenteurs = await this.prisma.formeJuridiqueDetenteur.count({
+        where: { id_statut: id },
       });
 
       if (associatedDetenteurs > 0) {

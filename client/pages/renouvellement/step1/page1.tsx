@@ -361,7 +361,7 @@ useActivateEtape({
       );
 
       setSuccess("Dossier mis à jour avec succés");
-      setRefetchTrigger(prev => prev + 1);
+      
       return true;
     } catch (err) {
       console.error("Erreur lors de la soumission du dossier", err);
@@ -379,7 +379,7 @@ useActivateEtape({
         { statut_demande: 'ACCEPTEE' }
       );
       setSuccess("Demande approuvee avec succes");
-      setRefetchTrigger(prev => prev + 1);
+      
     } catch (err) {
       console.error("Erreur lors de l'approbation", err);
       setError("Erreur lors de l'approbation");
@@ -399,7 +399,7 @@ useActivateEtape({
       });
 
       toast.success("Demande rejetee avec succes");
-      setRefetchTrigger(prev => prev + 1);
+      
     } catch (err) {
       console.error("Erreur lors du rejet", err);
       toast.error("Erreur lors du rejet");
@@ -493,7 +493,7 @@ useActivateEtape({
     try {
       await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/${currentStep}`);
       setEtapeMessage(`étape ${currentStep} enregistrée avec succés !`);
-      setRefetchTrigger(prev => prev + 1);
+      
     } catch (err) {
       console.error(err);
       setEtapeMessage("Erreur lors de l'enregistrement de l'étape.");

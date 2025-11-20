@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import csv from 'csv-parser'
+import csv = require('csv-parser');
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()

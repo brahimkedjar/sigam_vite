@@ -85,7 +85,7 @@ const [activatedSteps, setActivatedSteps] = useState<Set<number>>(new Set());
 
       await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/${etapeId}`);
       setEtapeMessage("étape 8 enregistrée avec succés !");
-      setRefetchTrigger(prev => prev + 1);
+      
     } catch (err) {
       console.error(err);
       setEtapeMessage("Erreur lors de l'enregistrement de l'étape.");

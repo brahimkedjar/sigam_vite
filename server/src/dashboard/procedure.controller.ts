@@ -26,56 +26,60 @@ export class ProcedureController {
   }
 
   @Get(':id_proc/demande')
-async getDemandeByProcedure(
-  @Param('id_proc', ParseIntPipe) id_proc: number
-) {
-  console.log(`GET /api/procedures/${id_proc}/demande`);
-  const demande = await this.prisma.demande.findFirst({
-    where: { id_proc },
-    include: {
-      detenteurdemande: {
-        include: {
-          detenteur: {
-            include: {
-              statutJuridique: true,
-              registreCommerce: true,
-              fonctions: {
-                where: {
-                  type_fonction: {
-                    in: ['Representant', 'Actionnaire'],
-                  },
+  async getDemandeByProcedure(
+    @Param('id_proc', ParseIntPipe) id_proc: number,
+  ) {
+    console.log(`GET /api/procedures/${id_proc}/demande`);
+    const raw = await this.prisma.demande.findFirst({
+      where: { id_proc },
+      include: {
+        detenteurdemande: {
+          include: {
+            detenteur: {
+              include: {
+                // Statut juridique is now many-to-many via FormeJuridiqueDetenteur
+                FormeJuridiqueDetenteur: {
+                  include: { statutJuridique: true },
                 },
-                include: { personne: true },
+                registreCommerce: true,
+                fonctions: {
+                  where: {
+                    type_fonction: {
+                      in: ['Representant', 'Actionnaire'],
+                    },
+                  },
+                  include: { personne: true },
+                },
               },
             },
           },
         },
-      },
-      expertMinier: true,
-      typePermis: true,       
-      typeProcedure: true,    
-      procedure: {
-        include: {
-          ProcedureEtape: {
-            include: { etape: true },
-            orderBy: { etape: { ordre_etape: 'asc' } },
+        expertMinier: true,
+        typePermis: true,
+        typeProcedure: true,
+        procedure: {
+          include: {
+            ProcedureEtape: {
+              include: { etape: true },
+              orderBy: { etape: { ordre_etape: 'asc' } },
+            },
           },
         },
       },
-    },
-  });
+    });
 
-  if (!demande) {
-    return null;
+    if (!raw) {
+      return null;
+    }
+
+    const demande: any = raw;
+    const primaryDetenteur = demande.detenteurdemande?.[0]?.detenteur ?? null;
+    const { detenteurdemande, ...rest } = demande;
+    return {
+      ...rest,
+      detenteur: primaryDetenteur,
+    };
   }
-
-  const primaryDetenteur = demande.detenteurdemande?.[0]?.detenteur ?? null;
-  const { detenteurdemande, ...rest } = demande as any;
-  return {
-    ...rest,
-    detenteur: primaryDetenteur,
-  };
-}
 
 
   @Put('terminer/:idProc')

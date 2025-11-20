@@ -690,7 +690,14 @@ model Demande {
     statut_juridique_terrain String?
     occupant_terrain_legal   String?
     destination              String?
-    LocPointOrigine   String?
+    LocPointOrigine          String?
+    // Capacities / technical details
+    duree_travaux_estimee    String?
+    date_demarrage_prevue    DateTime?
+    capital_social_disponible Float?
+    budget_prevu             Float?
+    description_travaux      String?
+    sources_financement      String?
     remarques                String?
     num_enregist             String?
     Nom_Prenom_Resp_Enregist String?
@@ -970,16 +977,21 @@ model StatutJuridique {
     code_statut        String            @unique
     statut_fr          String
     statut_ar          String
-    detenteurs         DetenteurMorale[]
+    FormeJuridiqueDetenteur FormeJuridiqueDetenteur[]
+
 
     @@map("statutjuridique")
 }
 
 model DetenteurMorale {
     id_detenteur       Int                     @id @default(autoincrement())
-    id_statutJuridique Int?
     id_pays            Int?
     id_nationalite     Int?
+    status           Int?
+    PP                Boolean?
+    National           Boolean?
+    Privé              Boolean?
+    remarques         String?
     nom_societeFR      String?
     nom_societeAR      String?
     adresse_siege     String?
@@ -987,7 +999,6 @@ model DetenteurMorale {
     fax                String?
     email              String?
     site_web           String?
-    statutJuridique    StatutJuridique?         @relation(fields: [id_statutJuridique], references: [id_statutJuridique])
     pays               Pays?                    @relation(fields: [id_pays], references: [id_pays])
     nationaliteRef     Nationalite?             @relation(fields: [id_nationalite], references: [id_nationalite])
     fonctions          FonctionPersonneMoral[]
@@ -995,10 +1006,21 @@ model DetenteurMorale {
     registreCommerce   RegistreCommerce[]
     Permis             Permis[]
     transfertDetenteur TransfertDetenteur[]
-
+    FormeJuridiqueDetenteur FormeJuridiqueDetenteur[]
     @@map("detenteurmorale")
 }
 
+model FormeJuridiqueDetenteur {
+    id_formeDetenteur Int      @id @default(autoincrement())
+    id_statut        Int
+    id_detenteur   Int
+    date         DateTime?
+
+    statutJuridique StatutJuridique @relation(fields: [id_statut], references: [id_statutJuridique])
+    detenteur DetenteurMorale @relation(fields: [id_detenteur], references: [id_detenteur])
+
+    @@map("formejuridiquedetenteur")
+}
 model Pays {
     id_pays     Int    @id @default(autoincrement())
     code_pays   String  @unique
@@ -1068,6 +1090,7 @@ enum EnumTypeFonction {
     Representant_Actionnaire
 }
 model FonctionPersonneMoral {
+    id_fonctionDetent Int      @id @default(autoincrement())
     id_detenteur       Int
     id_personne        Int
     type_fonction      EnumTypeFonction
@@ -1077,7 +1100,6 @@ model FonctionPersonneMoral {
     detenteur DetenteurMorale  @relation(fields: [id_detenteur], references: [id_detenteur])
     personne  PersonnePhysique @relation(fields: [id_personne], references: [id_personne])
 
-    @@id([id_detenteur, id_personne])
     @@map("fonctionpersonnemoral")
 }
 

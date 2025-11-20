@@ -15,6 +15,7 @@ try {
   run('npx ts-node prisma/TableRef/superficiaireBareme_seed.ts');
   run('npx ts-node prisma/TableRef/typeProcedure_seed.ts');
   run('npx ts-node prisma/TableRef/pays_seed.ts');
+  run('npx ts-node prisma/TableRef/nationalite_seed.ts');
   run('npx ts-node prisma/TableRef/antenne_seed.ts');
   run('npx ts-node prisma/TableRef/wilaya_seed.ts');
   run('npx ts-node prisma/TableRef/daira_seed.ts');

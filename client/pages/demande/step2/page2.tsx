@@ -670,7 +670,7 @@ export default function Step2() {
 
       await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/${etapeId}`);
       setEtapeMessage("étape 2 enregistrée avec succés !");
-      setRefetchTrigger(prev => prev + 1);
+      
     } catch (err) {
       console.error(err);
       setEtapeMessage("Erreur lors de l'enregistrement de l'étape.");

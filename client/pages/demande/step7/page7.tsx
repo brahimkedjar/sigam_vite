@@ -574,7 +574,7 @@ console.log('Procedure fetched:', detenteur?.data);
 
     await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/${etapeId}`);
     setEtapeMessage("étape 7 enregistrée avec succés !");
-    setRefetchTrigger(prev => prev + 1);
+    
   } catch (err) {
     console.error(err);
     setEtapeMessage("Erreur lors de l'enregistrement de l'étape.");

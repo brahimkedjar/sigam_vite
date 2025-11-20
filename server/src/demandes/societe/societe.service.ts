@@ -51,7 +51,6 @@ export class SocieteService {
     where: {
       nom_societeFR: data.nom_fr,
       nom_societeAR: data.nom_ar,
-      id_statutJuridique: parseInt(data.statut_id, 10),
     }
   });
 
@@ -67,8 +66,12 @@ export class SocieteService {
       email: data.email,
       fax: data.fax,
       adresse_siege: data.adresse,
-      statutJuridique: {
-        connect: { id_statutJuridique: parseInt(data.statut_id, 10) }
+      // Link to StatutJuridique via join table (many-to-many)
+      FormeJuridiqueDetenteur: {
+        create: {
+          id_statut: parseInt(data.statut_id, 10),
+          date: new Date(),
+        },
       },
       ...(data.id_pays && {
         pays: {
@@ -163,15 +166,12 @@ async updateRepresentant(nin: string, data: any) {
       // Update existing
       return this.prisma.fonctionPersonneMoral.update({
         where: {
-          id_detenteur_id_personne: {
-            id_detenteur,
-            id_personne
-          }
+          id_fonctionDetent: existing.id_fonctionDetent,
         },
         data: {
           statut_personne,
-          taux_participation
-        }
+          taux_participation,
+        },
       });
     }
     
@@ -439,28 +439,41 @@ async updateDetenteur(id: number, data: any): Promise<DetenteurMorale> {
     throw new HttpException('Un détenteur avec ce nom existe déjà', HttpStatus.CONFLICT);
   }
 
-  // Update the detenteur
-  return this.prisma.detenteurMorale.update({
-    where: { id_detenteur: id },
-    data: {
-      nom_societeFR: data.nom_fr,
-      nom_societeAR: data.nom_ar,
-      ...(data.statut_id && {
-        statutJuridique: { connect: { id_statutJuridique: parseInt(data.statut_id, 10) } }
-      }),
-      telephone: data.tel,
-      email: data.email,
-      fax: data.fax,
-      adresse_siege: data.adresse,
-      // connect relations if provided
-      ...(data.id_pays && {
-        pays: { connect: { id_pays: parseInt(data.id_pays, 10) } }
-      }),
-      ...(data.id_nationalite && {
-        nationaliteRef: { connect: { id_nationalite: parseInt(data.id_nationalite, 10) } }
-      })
+    // Update the detenteur
+    const updated = await this.prisma.detenteurMorale.update({
+      where: { id_detenteur: id },
+      data: {
+        nom_societeFR: data.nom_fr,
+        nom_societeAR: data.nom_ar,
+        telephone: data.tel,
+        email: data.email,
+        fax: data.fax,
+        adresse_siege: data.adresse,
+        // connect relations if provided
+        ...(data.id_pays && {
+          pays: { connect: { id_pays: parseInt(data.id_pays, 10) } }
+        }),
+        ...(data.id_nationalite && {
+          nationaliteRef: { connect: { id_nationalite: parseInt(data.id_nationalite, 10) } }
+        })
+      }
+    });
+
+    // Optionally update statut juridique link in join table
+    if (data.statut_id) {
+      await this.prisma.formeJuridiqueDetenteur.deleteMany({
+        where: { id_detenteur: id },
+      });
+      await this.prisma.formeJuridiqueDetenteur.create({
+        data: {
+          id_detenteur: id,
+          id_statut: parseInt(data.statut_id, 10),
+          date: new Date(),
+        },
+      });
     }
-  });
+
+    return updated;
 }
 
 async deleteActionnaires(id_detenteur: number) {
@@ -613,7 +626,11 @@ async getDetenteurById(id: number): Promise<any> {
   return this.prisma.detenteurMorale.findUnique({
     where: { id_detenteur: id },
     include: {
-      statutJuridique: true,
+      FormeJuridiqueDetenteur: {
+        include: {
+          statutJuridique: true,
+        },
+      },
       pays: true,
       nationaliteRef: true
     }

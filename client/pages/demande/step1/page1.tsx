@@ -811,7 +811,7 @@ export default function Step5_Documents() {
       setMissingSummary(response.data.missingSummary);
       setDeadlines(response.data.deadlines);
       setSuccess("Dossier mis à jour avec succés");
-      setRefetchTrigger(prev => prev + 1);
+      
       return response.data;
     } catch (err) {
       console.error("Erreur lors de la soumission du dossier", err);
@@ -829,7 +829,7 @@ export default function Step5_Documents() {
         { statut_demande: 'ACCEPTEE' }
       );
       setSuccess("Demande approuvée avec succés");
-      setRefetchTrigger(prev => prev + 1);
+      
     } catch (err) {
       console.error("Erreur lors de l'approbation", err);
       setError("Erreur lors de l'approbation");
@@ -849,7 +849,7 @@ export default function Step5_Documents() {
       });
 
       toast.success("✅ Demande rejetée avec succés");
-      setRefetchTrigger(prev => prev + 1);
+      
     } catch (err) {
       console.error("Erreur lors du rejet", err);
       toast.error("❌ Erreur lors du rejet");
@@ -976,7 +976,7 @@ export default function Step5_Documents() {
       const etapeId = etapeIdForThisPage ?? 1;
       await axios.post(`${apiURL}/api/procedure-etape/finish/${idProc}/${etapeId}`);
       setEtapeMessage(`Étape ${currentStep} enregistrée avec succès !`);
-      setRefetchTrigger(prev => prev + 1);
+      
     } catch (err) {
       console.error(err);
       setEtapeMessage("Erreur lors de l'enregistrement de l'étape.");

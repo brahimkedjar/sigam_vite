@@ -97,6 +97,7 @@ interface Demande {
   expertMinier?: ExpertMinier;
   dossiersFournis?: DossierFournis[];
   detenteur?: Detenteur;
+  detenteurdemande?: { detenteur: Detenteur }[];
   typePermis: TypePermis;
 }
 
@@ -117,7 +118,7 @@ export default function SummaryModal({ data, onClose }: SummaryModalProps) {
 
   const demande = data;
   const procedure = demande.procedure;
-  const detenteur = demande.detenteur;
+  const detenteur = demande.detenteur ?? demande.detenteurdemande?.[0]?.detenteur;
   const registre = detenteur?.registreCommerce![0];
   const expert = demande.expertMinier;
   const substances = procedure.SubstanceAssocieeDemande;
